@@ -23,6 +23,7 @@ nav:
   - Operação:
       - Deploy: operacao/deploy.md
       - Observabilidade: operacao/observabilidade.md
+  - O que mudou: mudancas.md
   - Estrutura: estrutura.md
 
 theme:

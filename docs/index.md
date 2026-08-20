@@ -44,3 +44,12 @@ Cliente síncrono, cliente assíncrono e a CLI — quando usar cada um.
 
 ## [Operação](operacao/deploy.md)
 Deploy, variáveis de ambiente e o que observar em produção.
+
+## [O que mudou](mudancas.md)
+As mudanças de comportamento que afetam quem integra — e o que fazer
+sobre cada uma.
+
+!!! info "Esta documentação descreve o estado atual da `main`"
+    O lote de correções da auditoria de agosto de 2026 foi promovido
+    para `main` no `fast-casehub`. Se você opera uma versão anterior,
+    veja [O que mudou](mudancas.md) para saber o que difere.
