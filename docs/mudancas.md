@@ -4,6 +4,47 @@ Registro das mudanças de comportamento que afetam quem integra. Não
 substitui o `CHANGELOG.md` de cada repositório — aqui ficam apenas as
 que mudam o **contrato** ou exigem ação de quem consome.
 
+## Contrato v1 — os tratamentos saíram
+
+Duas quebras do mesmo ciclo, uma de cada lado. Quem integra a partir de
+uma versão anterior precisa agir nas duas.
+
+=== "Tratamentos removidos do contrato"
+
+    **O que mudou.** Os endpoints de tratamento saíram do v1, junto com
+    `sub_id`, `processing_round`, o header `Idempotency-Key` e o campo
+    `is_latest`. No SDK saíram `create_treatment` e `patch_treatment`, e
+    com eles a exceção `MissingIdempotencyKeyError`.
+
+    **Por quê.** A tabela `case_treatment` duplicava controle de execução
+    e de tentativas que o Temporal já resolve nativamente — `run_id`,
+    `RetryPolicy`, deduplicação por `WorkflowID`. Não havia consumidor
+    real em produção.
+
+    **O que fazer.** Correlacione pelo Temporal: o caso ganhou
+    `temporal_workflow_id` e `temporal_run_id`, ambos opcionais e sem
+    chave estrangeira — servem para investigação, não para integridade
+    referencial. Ver [Endpoints](api/endpoints.md).
+
+=== "`worker_id` virou `case_id`"
+
+    **O que mudou.** O campo foi renomeado em todo o client e em toda a
+    CLI — `get_case`, `upsert_case`, `upsert_cases_batch` e `list-cases`.
+
+    **Por quê.** Alinhar o SDK ao nome que o contrato do servidor usa. O
+    identificador sempre foi a chave natural do caso, não de um worker.
+
+    **O que fazer.** Renomeie nas chamadas e fixe `casehub==0.2.0`. É a
+    mudança que torna o SDK anterior incompatível com a API atual — e o
+    sintoma é um 400 de campo desconhecido, porque o contrato é estrito
+    (`extra='forbid'`), não um campo silenciosamente ignorado. Ver
+    [Instalação](instalacao.md).
+
+**Novidade do mesmo release, sem ação necessária.** O SDK 0.2.0 trouxe o
+`AsyncCaseHubClient`, com a mesma API pública e o mesmo comportamento de
+autenticação do cliente síncrono. Quem usa o síncrono não precisa mudar
+nada. Ver [Cliente assíncrono](sdk/assincrono.md).
+
 ## Auditoria de segurança — agosto de 2026
 
 Uma revisão dos três repositórios do ecossistema produziu 11 correções,
