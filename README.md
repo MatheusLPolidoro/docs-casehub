@@ -40,35 +40,92 @@ python --version          # dentro do repo, deve dizer 3.13.1
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
+
+# Silencia o aviso do MkDocs 2.0 neste venv - ver a seção abaixo.
+@'
+import os
+os.environ.setdefault("NO_MKDOCS_2_WARNING", "true")
+'@ | Set-Content -Encoding utf8 .venv\Lib\site-packages\sitecustomize.py
+
 mkdocs serve
 ```
 
-No Linux/macOS, `source .venv/bin/activate`.
+No Linux/macOS, `source .venv/bin/activate`, e o `sitecustomize.py` vai
+em `.venv/lib/python3.13/site-packages/`.
 
 ### Silenciando o aviso do MkDocs 2.0
 
-O `mkdocs-material` imprime um bloco de aviso sobre mudanças planejadas
-no MkDocs 2.0 a cada `build`/`serve`. Não afeta o build — é ruído do
-ecossistema, não deste site —, mas enterra as linhas úteis do console.
+A partir da **9.7.2**, o `mkdocs-material` imprime um bloco de aviso
+sobre mudanças planejadas no MkDocs 2.0 a cada `build`/`serve`. Não
+afeta o build — é ruído do ecossistema, não deste site —, mas enterra as
+linhas úteis do console.
 
-Como ele aparece em **qualquer** projeto que use o tema, o lugar certo
-é o ambiente do usuário, uma vez só:
+**A variável de ambiente `NO_MKDOCS_2_WARNING` é o único desligamento
+que existe.** Não há opção no `mkdocs.yml`, não há flag de linha de
+comando, e não adianta tentar por `hooks:`: o MkDocs valida a opção
+`theme` antes da opção `hooks`, então o tema já foi importado — e o
+aviso já saiu — quando o primeiro hook roda. É o que a
+[documentação do tema][aviso] diz, e vale para qualquer versão ≥ 9.7.2.
+
+  [aviso]: https://squidfunk.github.io/mkdocs-material/blog/2026/02/18/mkdocs-2.0
+
+O jeito confiável de entregar essa variável é **prendê-la ao venv**, com
+um `sitecustomize.py` — módulo que o CPython importa sozinho no start de
+todo processo do venv, antes de qualquer código de aplicação:
+
+```powershell
+@'
+import os
+os.environ.setdefault("NO_MKDOCS_2_WARNING", "true")
+'@ | Set-Content -Encoding utf8 .venv\Lib\site-packages\sitecustomize.py
+```
+
+Vale para `mkdocs`, `mike` e `python -m mkdocs` igualmente, **em shell
+novo ou velho**, com ou sem `Activate.ps1`, e morre junto com o venv —
+não suja o ambiente da máquina. O `.venv/` é ignorado pelo git, então
+esse arquivo faz parte do setup acima: **se o aviso voltar depois de um
+`python -m venv` novo, é ele que faltou.**
+
+#### Por que não a variável no ambiente do usuário
+
+Dá para definir no nível User, e funciona:
 
 ```powershell
 [Environment]::SetEnvironmentVariable("NO_MKDOCS_2_WARNING","true","User")
 ```
 
-Shells já abertos não herdam a mudança — feche e reabra, ou defina
-também na sessão atual:
+Mas ela **só entra em processos criados depois** — e abrir uma aba nova
+no Windows Terminal **não basta**, porque a aba herda o ambiente do
+processo do terminal, que continua sendo o de antes. Na prática o aviso
+reaparece em terminais de sessões longas mesmo com a variável
+corretamente definida, o que faz parecer que a configuração se perdeu ou
+que o tema mudou. Não é nem um nem outro.
+
+Se acontecer, o diagnóstico são estas duas linhas:
 
 ```powershell
-$env:NO_MKDOCS_2_WARNING = "true"
+[Environment]::GetEnvironmentVariable("NO_MKDOCS_2_WARNING","User")  # persistente
+$env:NO_MKDOCS_2_WARNING                                             # sessão atual
 ```
 
-No Linux/macOS, `export NO_MKDOCS_2_WARNING=true` no `~/.bashrc` (ou
-equivalente). O CI já define a variável nos jobs.
+Primeiro responde `true` e o segundo vem vazio ⇒ shell velho. Conserto
+imediato, sem fechar nada: `$env:NO_MKDOCS_2_WARNING = "true"`.
 
-Para reverter: `[Environment]::SetEnvironmentVariable("NO_MKDOCS_2_WARNING",$null,"User")`.
+Para tirar do nível User:
+`[Environment]::SetEnvironmentVariable("NO_MKDOCS_2_WARNING",$null,"User")`.
+
+O `sitecustomize.py` existe justamente para tirar esse modo de falha do
+caminho. O CI não precisa dele: define a variável em `variables`, e cada
+job é um processo novo.
+
+#### Fixar versão não resolve
+
+O `requirements.txt` fixa o piso em **9.7.7** porque é a versão que
+restringe o aviso ao entrypoint do `mkdocs` (o `mike` e outros
+importadores do tema ficam limpos), mas ela **continua imprimindo** no
+`build`/`serve`. Silenciar por versão exigiria travar em `<9.7.2`,
+abrindo mão de cinco releases do tema por um bloco cosmético. O
+comentário no `requirements.txt` tem o histórico completo.
 
 > **O nome é `NO_`, não `DISABLE_`.** Existiam **dois** avisos parecidos,
 > de projetos diferentes e com variáveis diferentes. O segundo vinha do
@@ -138,6 +195,50 @@ $env:VIRTUAL_ENV                # o venv realmente ativo
 Se estiver errado, `deactivate` e ative o daqui. O sintoma é traiçoeiro
 porque o build até **funciona** — só que com o conjunto de plugins do
 outro projeto, que pode divergir do `requirements.txt` deste.
+
+## O 404 de `versions.json` no console
+
+Rodando `mkdocs serve`, o console repete isto a cada página aberta:
+
+```
+WARNING -  "GET /versions.json HTTP/1.1" code 404
+```
+
+É conhecido e **está aceito** — não investigue de novo.
+
+O `mkdocs.yml` declara `extra.version.provider: mike`, o que faz o tema
+embutir `"version": {"provider": "mike"}` no HTML de toda página. O
+JavaScript do seletor de versões então busca `versions.json` na raiz do
+site a cada carregamento (duas vezes por página: uma no load, outra
+quando o *instant loading* troca de rota). Quem gera esse arquivo é o
+`mike`, **no momento do deploy** — o `mkdocs build` não o produz.
+
+**Local: esperado.** No `serve` o `mike` nunca entra em cena, então o
+404 aparece até em projeto com versionamento perfeitamente configurado.
+O `docs-param-manager`, que versiona por mike de verdade, dá o mesmo 404
+no serve local.
+
+**Publicado: o seletor está inerte.** O job `pages` daqui é um
+`mkdocs build --strict --site-dir public` puro — o `mike` não é invocado
+em lugar nenhum do `.gitlab-ci.yml`, e não existe branch `gh-pages`.
+Então `versions.json` também não existe no site publicado, e o seletor
+nunca funcionou. A configuração veio copiada do `mkdocs.yml` do
+`docs-param-manager` sem a maquinaria de CI que a alimenta.
+
+Isso foi avaliado e mantido: o CaseHub não publica versões concorrentes
+de documentação hoje, e o custo do 404 é uma linha de log.
+
+**Para ligar de verdade**, o modelo é o job `pages` do
+`docs-param-manager`: `mike deploy --branch gh-pages --update-aliases`,
+push com um token de projeto `MIKE_TOKEN` de escopo `write_repository`
+(o `CI_JOB_TOKEN` não empurra), `GIT_DEPTH: '0'` e imagem `python:3.13`
+cheia por causa do `git`, e só então a extração daquela branch para
+`public/`. Falta decidir uma coisa que lá é trivial e aqui não: **de
+onde sai o número da versão** — o `docs-param-manager` lê do seu
+`pyproject.toml`, e este projeto não tem um.
+
+**Para desligar**, basta remover as três linhas de `extra.version` do
+`mkdocs.yml`; o 404 some no serve e no site publicado.
 
 ## A página "Estrutura"
 
