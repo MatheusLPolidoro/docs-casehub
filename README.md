@@ -40,24 +40,43 @@ python --version          # dentro do repo, deve dizer 3.13.1
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-$env:NO_MKDOCS_2_WARNING = "true"     # opcional, ver abaixo
 mkdocs serve
 ```
 
-No Linux/macOS, `source .venv/bin/activate` e
-`export NO_MKDOCS_2_WARNING=true`.
+No Linux/macOS, `source .venv/bin/activate`.
 
-`NO_MKDOCS_2_WARNING` só silencia um bloco de aviso que o
-`mkdocs-material` imprime a cada execução, sobre mudanças planejadas no
-MkDocs 2.0. Não afeta o build — é ruído do ecossistema, não deste site,
-e sem ele as linhas úteis ficam enterradas. O CI já define essa
-variável.
+### Silenciando o aviso do MkDocs 2.0
 
-> O nome é `NO_`, não `DISABLE_`. Existiam **dois** avisos parecidos, de
-> projetos diferentes e com variáveis diferentes: o segundo vinha do
+O `mkdocs-material` imprime um bloco de aviso sobre mudanças planejadas
+no MkDocs 2.0 a cada `build`/`serve`. Não afeta o build — é ruído do
+ecossistema, não deste site —, mas enterra as linhas úteis do console.
+
+Como ele aparece em **qualquer** projeto que use o tema, o lugar certo
+é o ambiente do usuário, uma vez só:
+
+```powershell
+[Environment]::SetEnvironmentVariable("NO_MKDOCS_2_WARNING","true","User")
+```
+
+Shells já abertos não herdam a mudança — feche e reabra, ou defina
+também na sessão atual:
+
+```powershell
+$env:NO_MKDOCS_2_WARNING = "true"
+```
+
+No Linux/macOS, `export NO_MKDOCS_2_WARNING=true` no `~/.bashrc` (ou
+equivalente). O CI já define a variável nos jobs.
+
+Para reverter: `[Environment]::SetEnvironmentVariable("NO_MKDOCS_2_WARNING",$null,"User")`.
+
+> **O nome é `NO_`, não `DISABLE_`.** Existiam **dois** avisos parecidos,
+> de projetos diferentes e com variáveis diferentes. O segundo vinha do
 > `properdocs`, um fork do MkDocs que o `mkdocs-gen-files` 0.6+ declara
-> como dependência obrigatória. Esse saiu do projeto junto com o pin do
-> `mkdocs-gen-files` — ver `requirements.txt`.
+> como dependência obrigatória e que se anunciava no console. Esse saiu
+> do ambiente junto com o pin do `mkdocs-gen-files` — ver
+> `requirements.txt`. Se um dia o bloco de propaganda voltar, é sinal de
+> que o pin foi solto.
 
 O site sobe em **`http://127.0.0.1:8009`** — a porta está fixada em
 `dev_addr` no `mkdocs.yml`, não é a 8000 padrão do mkdocs. Neste
