@@ -1,0 +1,46 @@
+stages:
+  - qualidade
+  - publicar
+
+variables:
+  PIP_CACHE_DIR: '$CI_PROJECT_DIR/.cache/pip'
+  # O aviso sobre o MkDocs 2.0 é ruído do ecossistema (vem de um plugin,
+  # não deste site) e polui o log do job.
+  DISABLE_MKDOCS_2_WARNING: 'true'
+
+cache:
+  key: '$CI_COMMIT_REF_SLUG'
+  paths:
+    - .cache/pip
+
+# ----------------------------------------------------------- qualidade
+build:
+  stage: qualidade
+  image: python:3.13-slim
+  before_script:
+    - pip install --upgrade pip
+    - pip install -r requirements.txt
+  script:
+    # `--strict` transforma link quebrado e referência inválida em erro.
+    # Sem ele o build fica verde publicando páginas quebradas - que é o
+    # modo de falha típico de site de documentação.
+    - mkdocs build --strict
+  artifacts:
+    paths:
+      - site
+    expire_in: 1 week
+
+# ------------------------------------------------------------ publicar
+pages:
+  stage: publicar
+  image: python:3.13-slim
+  before_script:
+    - pip install --upgrade pip
+    - pip install -r requirements.txt
+  script:
+    - mkdocs build --strict --site-dir public
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH

@@ -1,0 +1,15 @@
+# Site gerado pelo mkdocs — artefato de build, publicado pelo CI.
+/site/
+
+# Ambiente local
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# Editor / sistema
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+.DS_Store

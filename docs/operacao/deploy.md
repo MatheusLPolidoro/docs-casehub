@@ -1,0 +1,102 @@
+# Deploy
+
+## Como o serviço sobe
+
+```mermaid
+flowchart TD
+    S["Processo inicia"] --> V["Valida configuração"]
+    V -->|"auth_mode inválido"| F1["❌ Não sobe"]
+    V -->|"oidc/dual sem issuer/JWKS"| F2["❌ Não sobe"]
+    V -->|"require_audience sem audience"| F3["❌ Não sobe"]
+    V -->|ok| M["Aplica migrações<br/><small>entrypoint</small>"]
+    M --> T["Inicia telemetria"]
+    T --> R["Sobe scheduler de retenção<br/><small>se habilitado</small>"]
+    R --> U["Uvicorn aceita tráfego"]
+```
+
+!!! tip "Falhar na subida é o comportamento desejado"
+    Configuração incompleta derruba o processo em vez de subir num
+    estado degradado. É muito mais barato um deploy que não completa do
+    que um serviço no ar aceitando requisições que não deveria.
+
+## Perfis do compose
+
+| Profile | O que sobe |
+|---|---|
+| `uat` | API + Postgres + Keycloak — stack local completa e descartável. |
+| `prod` | Só a API, apontando para a infraestrutura que já existe. |
+
+<div style="position: relative;">
+  <button class="copy-btn" onclick="copyText('docker compose --profile uat up -d', this)">📋 Copiar</button>
+  <div class="termynal" data-termynal data-termynal-startDelay="600" style="min-height: 200px;" data-command="docker compose --profile uat up -d">
+    <span data-ty="input">docker compose --profile uat up -d</span>
+    <span data-ty="progress"></span>
+    <span data-ty>✔ 3 containers running</span>
+  </div>
+</div>
+
+!!! warning "O `.env` precisa existir antes"
+    O compose lê dele via `env_file`. Sem o arquivo, os valores caem em
+    defaults de desenvolvimento — inclusive credenciais de banco.
+
+## Build reproduzível
+
+A imagem instala a partir de `requirements.lock`, versionado no
+repositório, e só então instala o pacote com `--no-deps`.
+
+!!! note "Por que duas etapas"
+    Instalar direto do `pyproject.toml` resolveria as faixas `>=` no
+    momento do build — dois builds do mesmo commit produziriam imagens
+    diferentes, e uma dependência publicada no meio do caminho entraria
+    em produção sem ninguém ter decidido.
+
+Para regerar o lock, sempre em container Linux (que é o alvo da
+imagem):
+
+<div style="position: relative;">
+  <button class="copy-btn" onclick="copyText('docker run --rm -v &quot;$PWD:/src&quot; -w /src python:3.13-slim sh -c &quot;pip install pip-tools && pip-compile --no-header --strip-extras --output-file=requirements.lock pyproject.toml&quot;', this)">📋 Copiar</button>
+  <div class="termynal" data-termynal data-termynal-startDelay="600" style="min-height: 200px;" data-command="regerar lock">
+    <span data-ty="input">docker run --rm -v "$PWD:/src" -w /src python:3.13-slim \</span>
+    <span data-ty="input">  sh -c "pip install pip-tools && pip-compile --no-header \</span>
+    <span data-ty="input">  --strip-extras --output-file=requirements.lock pyproject.toml"</span>
+    <span data-ty="progress"></span>
+  </div>
+</div>
+
+!!! danger "Não regere o lock no Windows"
+    Os marcadores de plataforma resolvidos seriam os do Windows, e a
+    imagem Linux receberia o conjunto errado de pacotes.
+
+## Migrações
+
+Aplicadas automaticamente pelo entrypoint da imagem, antes de o
+processo aceitar tráfego. `tables.py` é a fonte de verdade do DDL:
+alterar a tabela lá e então gerar a revisão do Alembic — nunca escrever
+a revisão à mão a partir do banco.
+
+## Variáveis por ambiente
+
+| | dev | homolog / prod |
+|---|---|---|
+| `CASEHUB_STORAGE` | `memory` ou `postgres` | `postgres` |
+| `CASEHUB_AUTH_MODE` | `apikey` (local) | `oidc` |
+| `CASEHUB_OIDC_*` | do Keycloak local | do Keycloak corporativo |
+| `CASEHUB_RETENTION_ENABLED` | `false` | `true` |
+
+!!! danger "`apikey` nunca em ambiente compartilhado"
+    Ele aceita qualquer string como credencial e não aplica autorização
+    por automação. Ver [Autenticação](../api/autenticacao.md).
+
+## Pipeline
+
+| Estágio | O que roda |
+|---|---|
+| `lint` | `ruff check` e `ruff format --check`. |
+| `test` | Suíte contra mock **e** Postgres real. |
+| `build` | Valida que a imagem builda. |
+| `security` | `pip-audit` (bloqueante) e `gitleaks` sobre o histórico completo. |
+
+!!! note "Por que o gitleaks precisa de `GIT_DEPTH: 0`"
+    O clone raso padrão só enxerga os commits recentes. Um segredo
+    introduzido antes disso passaria despercebido — a varredura só vale
+    sobre o histórico inteiro.

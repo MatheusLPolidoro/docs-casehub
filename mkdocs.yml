@@ -1,0 +1,105 @@
+site_name: CaseHub
+site_description: >-
+  Documentação central do ecossistema CaseHub — a API fast-casehub e o
+  SDK cliente casehub.
+docs_dir: docs
+nav:
+  - Docs: index.md
+  - O que é o CaseHub: sobre.md
+  - Arquitetura: arquitetura.md
+  - Primeiros passos:
+      - Introdução: primeiros_passos.md
+      - Instalação: instalacao.md
+      - Tutorial: tutorial.md
+  - API (fast-casehub):
+      - Autenticação: api/autenticacao.md
+      - Endpoints: api/endpoints.md
+      - Erros: api/erros.md
+      - Retenção: api/retencao.md
+  - SDK (casehub):
+      - Cliente síncrono: sdk/cliente.md
+      - Cliente assíncrono: sdk/assincrono.md
+      - CLI: sdk/cli.md
+  - Operação:
+      - Deploy: operacao/deploy.md
+      - Observabilidade: operacao/observabilidade.md
+  - Estrutura: estrutura.md
+
+theme:
+  name: material
+  logo: assets/logo.svg
+  favicon: assets/logo.svg
+  language: pt-BR
+  highlightjs: true
+  features:
+    - content.code.annotate
+    - content.tabs.link
+    - content.code.copy
+    - navigation.footer
+    - navigation.sections
+    - navigation.top
+  palette:
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: blue
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: blue
+      accent: teal
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+plugins:
+  - search:
+      separator: '[\s\-\.]+'
+  - gen-files:
+      scripts:
+        - docs/gen_tree.py
+
+extra:
+  version:
+    provider: mike
+
+extra_css:
+  - assets/css/extra.css
+  - assets/css/termynal.css
+
+extra_javascript:
+  - assets/js/filetree.js
+  - assets/js/termynal-init.js
+  - assets/js/termynal.js
+  - assets/js/LogoAnimation.js
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.blocks.caption
+  - def_list
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
