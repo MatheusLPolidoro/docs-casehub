@@ -25,9 +25,26 @@ sem informação.
 
 ## Métricas
 
-| Métrica | Labels | O que conta |
-|---|---|---|
-| `casehub.retention.deleted` | `automation`, `environment` | Casos expurgados por execução do job. |
+A instrumentação automática emite as duas primeiras; `casehub.up` e
+`casehub.retention.deleted` são as escritas pelo serviço.
+
+| Métrica | Tipo | Labels | O que conta |
+|---|---|---|---|
+| `http.server.request.duration` | histograma | rota, método, status | Latência por requisição. O `_count` é o que responde "quantas requisições hoje/ontem/semana". |
+| `http.server.active_requests` | gauge | rota, método | Requisições em voo. A média responde "quantos clientes ao mesmo tempo". |
+| `casehub.up` | gauge | — | Heartbeat: `1` enquanto o processo estiver de pé. |
+| `casehub.retention.deleted` | contador | `automation`, `environment` | Casos expurgados por execução do job. |
+
+!!! tip "`casehub.up` se lê pela ausência, não pelo valor"
+    Ele vale `1` sempre que existe — nunca `0`. O sinal de serviço fora
+    do ar é a **falta de dado** na série, não uma queda de valor. Um
+    alerta escrito como `casehub.up == 0` nunca dispara; o correto é
+    alertar sobre ausência de amostras na janela.
+
+!!! note "As métricas HTTP não contam as probes"
+    `/health` e `/ready` estão fora da instrumentação, como dito acima.
+    Isso é o que se quer — mas significa que `http.server.request.duration`
+    mede o tráfego real, e não bate com o volume que o balanceador vê.
 
 !!! note "O label `environment` foi adicionado"
     Ele entrou quando o expurgo passou a ser escopado por ambiente.
@@ -71,6 +88,7 @@ não para integridade referencial.
 
 | Sinal | Por que importa |
 |---|---|
+| Ausência de `casehub.up` | O processo não está reportando — serviço fora do ar, ou telemetria quebrada. |
 | `/ready` respondendo 503 | O banco caiu; o serviço está de pé mas inutilizável. |
 | Taxa de 401/403 | Token expirado, client mal provisionado ou automação tentando escopo alheio. |
 | `errors[]` não vazio nos lotes | Falha **do lado do publicador** — não aparece como erro HTTP. |

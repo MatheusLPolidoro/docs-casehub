@@ -14,8 +14,16 @@ CLI.
   </div>
 </div>
 
-Requer **Python 3.10+**. As dependências de runtime são `httpx`,
-`typer` e `rich`.
+Requer **Python 3.11+**. As dependências de runtime são `httpx`,
+`typer`, `toml` e `rich`.
+
+!!! warning "Fixe a versão — a 0.2.0 renomeou um campo"
+    A versão atual do SDK é a **0.2.0**, e a da API é a **0.1.0**. A
+    0.2.0 renomeou `worker_id` para `case_id` em todo o client e na CLI,
+    então um SDK anterior **não fala** o contrato que a API atende hoje.
+    Prefira `pip install "casehub==0.2.0"` a instalar sem piso, para que
+    um ambiente não acorde numa versão incompatível. Ver
+    [O que mudou](mudancas.md).
 
 !!! info "Registry interno"
     O pacote é publicado no registry interno, não no PyPI público. Se o
@@ -105,9 +113,49 @@ mesmo contrato e serve para desenvolver contra a API sem infraestrutura.
 | `CASEHUB_MAX_SOURCE_RECORD_BYTES` | `262144` | Teto por `source_record`. |
 | `CASEHUB_MAX_SOURCE_FILTERS` | `20` | Teto de filtros `f.` por consulta. |
 | `CASEHUB_RETENTION_ENABLED` | `true` | Liga o job de expurgo. |
+| `CASEHUB_HOST` | `127.0.0.1` | Interface em que o Uvicorn escuta. |
+| `CASEHUB_PORT` | `8080` | Porta do serviço. |
+| `CASEHUB_OIDC_LEEWAY_SECONDS` | `10` | Tolerância de relógio ao validar o token. |
+| `CASEHUB_OIDC_JWKS_CACHE_TTL_SECONDS` | `300` | Tempo de cache do JWKS. |
+
+!!! tip "As duas últimas explicam 401 que parece sem causa"
+    `LEEWAY_SECONDS` é a folga de relógio aceita entre o emissor e o
+    serviço: um 401 intermitente em máquina com relógio à deriva
+    costuma ser skew maior que esse valor, não token inválido.
+
+    `JWKS_CACHE_TTL_SECONDS` é o atraso máximo entre rotacionar a chave
+    no Keycloak e ela passar a valer aqui — durante essa janela, tokens
+    assinados com a chave nova são recusados.
 
 !!! danger "Configuração incompleta derruba o processo, de propósito"
     Com `CASEHUB_AUTH_MODE=oidc` ou `dual` e sem `issuer`/`jwks_url`, o
     serviço **recusa subir**. É deliberado: é muito mais barato falhar
     no deploy do que descobrir por um 401 inexplicável em produção — ou,
     pior, subir aceitando qualquer requisição.
+
+### Do banco
+
+Só valem com `CASEHUB_STORAGE=postgres`. `CASEHUB_DB` (a URL completa,
+na tabela acima) **tem precedência sobre todas elas** — quando ela está
+preenchida, as demais são ignoradas.
+
+| Variável | Default | Para quê |
+|---|---|---|
+| `CASEHUB_DB_HOST` | vazio | Host do Postgres. |
+| `CASEHUB_DB_PORT` | `5432` | Porta. |
+| `CASEHUB_DB_NAME` | vazio | Nome do banco. |
+| `CASEHUB_DB_USER` | vazio | Usuário. |
+| `CASEHUB_DB_PASSWORD` | vazio | Senha. |
+| `CASEHUB_DB_DRIVER` | `postgresql+psycopg` | Driver SQLAlchemy. |
+| `CASEHUB_DB_POOL_SIZE` | `5` | Conexões mantidas abertas no pool. |
+| `CASEHUB_DB_MAX_OVERFLOW` | `10` | Conexões extras além do pool sob pico. |
+| `CASEHUB_DB_POOL_TIMEOUT` | `30` | Segundos esperando uma conexão livre. |
+| `CASEHUB_DB_POOL_RECYCLE` | `1800` | Segundos até reciclar uma conexão ociosa. |
+| `CASEHUB_DB_CONNECT_TIMEOUT` | `10` | Segundos para estabelecer a conexão. |
+| `CASEHUB_DB_ECHO` | `false` | Loga o SQL emitido. |
+
+!!! danger "`CASEHUB_DB_ECHO` vaza `source_record` para o stdout"
+    O echo do SQLAlchemy imprime a query **com os parâmetros**, e isso
+    inclui o conteúdo de `source_record`. Serve para depuração local e
+    **não deve ser ligado em ambiente compartilhado** — ver
+    [Observabilidade](operacao/observabilidade.md).

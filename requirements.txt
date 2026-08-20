@@ -1,4 +1,37 @@
-mkdocs-material>=9.5
+# Piso em 9.7.7 por causa do aviso sobre o MkDocs 2.0 que o tema imprime
+# no console. O histórico importa, porque já se fixou aqui a versão
+# errada:
+#
+#   até 9.7.1       não imprime
+#   9.7.2 .. 9.7.5  imprime, em `material/plugins/__init__.py`
+#   9.7.6, 9.7.7    imprime, em `material/templates/__init__.py`
+#
+# O aviso entrou na 9.7.2 (confirmado no anúncio do tema,
+# https://squidfunk.github.io/mkdocs-material/blog/2026/02/18/mkdocs-2.0),
+# não na 9.7.6 — um teto `<9.7.6` resolve para
+# a 9.7.5, que imprime. Congela o tema e não silencia nada. Silenciar
+# por versão custaria `<9.7.2`, cinco releases atrás.
+#
+# A 9.7.7 é a melhor das que imprimem: só imprime quando o entrypoint é
+# o próprio `mkdocs`, e desliga o aviso para os imports seguintes do
+# mesmo processo. O `mike` e qualquer outra coisa que importe o tema
+# ficam limpos — na 9.7.5 eles imprimiam junto.
+#
+# O silenciamento de verdade é a env var `NO_MKDOCS_2_WARNING`: o CI a
+# define em `variables` e o ambiente local a define no nível User (ver
+# README). Um shell aberto antes de a variável existir não a herda.
+#
+# Antes de subir a versão, confira se o aviso continua lá — ele já mudou
+# de arquivo uma vez, então olhe os dois caminhos:
+#   pip download --no-deps mkdocs-material==<versao> -d /tmp/mm
+#   unzip -p /tmp/mm/mkdocs_material-<versao>-py3-none-any.whl \
+#     material/templates/__init__.py | grep NO_MKDOCS_2_WARNING
+mkdocs-material>=9.7.7
+
+# Declarado, mas hoje NAO invocado: o job `pages` publica um `mkdocs`
+# build puro, sem versionamento. Fica aqui para que ligar o seletor de
+# versoes seja mudanca so de CI. E a razao do 404 de `versions.json` no
+# console - ver o README, secao "O 404 de `versions.json`".
 mike>=2.1
 pymdown-extensions>=10.7
 
@@ -6,7 +39,7 @@ pymdown-extensions>=10.7
 # 0.6.0 o pacote passou a declarar `properdocs` (um fork do MkDocs) como
 # dependência OBRIGATÓRIA, e o plugin chama
 # `properdocs.replacement_warning.setup()` no import - o que despeja um
-# bloco de propaganda do fork em toda execução de `mkdocs build/serve`.
+# bloco de propaganda do fork em toda execução.
 #
 # 0.5.0 depende só de `mkdocs` e a API que usamos
 # (`mkdocs_gen_files.open`) é a mesma - verificado: a página "Estrutura"
