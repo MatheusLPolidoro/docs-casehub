@@ -40,10 +40,24 @@ python --version          # dentro do repo, deve dizer 3.13.1
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
+$env:NO_MKDOCS_2_WARNING = "true"     # opcional, ver abaixo
 mkdocs serve
 ```
 
-No Linux/macOS, `source .venv/bin/activate`.
+No Linux/macOS, `source .venv/bin/activate` e
+`export NO_MKDOCS_2_WARNING=true`.
+
+`NO_MKDOCS_2_WARNING` só silencia um bloco de aviso que o
+`mkdocs-material` imprime a cada execução, sobre mudanças planejadas no
+MkDocs 2.0. Não afeta o build — é ruído do ecossistema, não deste site,
+e sem ele as linhas úteis ficam enterradas. O CI já define essa
+variável.
+
+> O nome é `NO_`, não `DISABLE_`. Existiam **dois** avisos parecidos, de
+> projetos diferentes e com variáveis diferentes: o segundo vinha do
+> `properdocs`, um fork do MkDocs que o `mkdocs-gen-files` 0.6+ declara
+> como dependência obrigatória. Esse saiu do projeto junto com o pin do
+> `mkdocs-gen-files` — ver `requirements.txt`.
 
 O site sobe em **`http://127.0.0.1:8009`** — a porta está fixada em
 `dev_addr` no `mkdocs.yml`, não é a 8000 padrão do mkdocs. Neste

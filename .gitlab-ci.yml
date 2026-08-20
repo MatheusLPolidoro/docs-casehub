@@ -4,9 +4,15 @@ stages:
 
 variables:
   PIP_CACHE_DIR: '$CI_PROJECT_DIR/.cache/pip'
-  # O aviso sobre o MkDocs 2.0 é ruído do ecossistema (vem de um plugin,
-  # não deste site) e polui o log do job.
-  DISABLE_MKDOCS_2_WARNING: 'true'
+  # Silencia o aviso do MkDocs 2.0 que o `mkdocs-material` imprime em
+  # toda execução - ruído do ecossistema, não deste site, e que enterra
+  # as linhas úteis do log do job.
+  #
+  # O nome da variável é `NO_...`, não `DISABLE_...`: são avisos de
+  # projetos diferentes, com env vars diferentes. `DISABLE_MKDOCS_2_WARNING`
+  # é do `properdocs`, que saiu do projeto junto com o pin do
+  # `mkdocs-gen-files` (ver requirements.txt).
+  NO_MKDOCS_2_WARNING: 'true'
 
 cache:
   key: '$CI_COMMIT_REF_SLUG'
