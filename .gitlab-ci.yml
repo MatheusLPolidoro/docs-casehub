@@ -37,16 +37,72 @@ build:
     expire_in: 1 week
 
 # ------------------------------------------------------------ publicar
+#
+# GitLab Pages e `mike` nao se encaixam sozinhos: o mike versiona
+# empurrando para uma branch, e o Pages publica o diretorio `public/` de
+# um artefato. Este job costura os dois - roda o `mike deploy` na
+# `gh-pages`, empurra para que as versoes sobrevivam entre pipelines, e
+# so entao extrai a arvore daquela branch para `public/`.
 pages:
   stage: publicar
-  image: python:3.13-slim
+  # Imagem cheia, e nao a slim: esta traz `git`, de que o mike e o push
+  # dependem. Instalar por apt na slim funcionaria, mas poe a rede do
+  # runner no caminho critico de toda publicacao.
+  image: python:3.13
+  # So o branch padrao publica. Um site publicado a partir de `desenv`
+  # mostraria ao leitor documentacao que ainda nao foi promovida.
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  variables:
+    # Clone completo: `git push` a partir de clone raso e recusado com
+    # "shallow update not allowed", e o mike precisa do historico da
+    # gh-pages para acumular versoes em vez de sobrescrever.
+    GIT_DEPTH: '0'
   before_script:
     - pip install --upgrade pip
     - pip install -r requirements.txt
   script:
-    - mkdocs build --strict --site-dir public
+    - git config user.email "ci@docs-casehub.local"
+    - git config user.name "CI do docs-casehub"
+    # MIKE_TOKEN e um token de projeto com `write_repository`. O
+    # CI_JOB_TOKEN NAO serve: ele nao empurra para o repositorio.
+    #
+    # Sem o token o job ainda publica - o que se perde e a acumulacao:
+    # cada pipeline recomeca a gh-pages do zero e o versions.json fica
+    # so com a versao corrente. Inofensivo enquanto existir uma versao
+    # so, e passa a apagar historico assim que existir a segunda.
+    - |
+      if [ -n "$MIKE_TOKEN" ]; then
+        git remote set-url origin "http://gitlab-ci-token:${MIKE_TOKEN}@gitlab.127.0.0.1.nip.io/${CI_PROJECT_PATH}.git"
+        git fetch origin gh-pages:gh-pages || echo "gh-pages ainda nao existe"
+      else
+        echo "AVISO: MIKE_TOKEN ausente. Publicando sem persistir a gh-pages;"
+        echo "AVISO: versoes anteriores nao serao preservadas."
+      fi
+    # A versao do site e propria, nao a da API nem a do SDK: o site
+    # documenta os dois, com numeros diferentes, e amarrar em um faria o
+    # seletor mentir sobre o outro. Ver o README.
+    - VERSAO=$(cat VERSION)
+    - echo "publicando versao $VERSAO"
+    # Sem `--strict` aqui, e nao por descuido: `mike deploy` nao repassa
+    # opcoes ao mkdocs - o que viesse depois de `--` seria lido como
+    # ALIAS posicional e criaria uma versao de nome invalido na
+    # gh-pages. Quem garante o strict e o job `build`, no estagio
+    # anterior: os estagios sao seriais, entao nada publica sem ele
+    # passar antes.
+    - mike deploy --branch gh-pages --update-aliases "$VERSAO" latest
+    - mike set-default --branch gh-pages latest
+    - |
+      if [ -n "$MIKE_TOKEN" ]; then
+        git push origin gh-pages
+      fi
+    # O Pages publica o conteudo de `public/`, e nao a branch. Dai
+    # extrair a arvore da gh-pages - que ja contem as versoes e o
+    # versions.json que o seletor busca.
+    - rm -rf public && mkdir public
+    - git archive gh-pages | tar -x -C public
+    - echo "conteudo publicado:" && ls public
   artifacts:
     paths:
       - public
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    expire_in: 1 week

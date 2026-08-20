@@ -196,49 +196,71 @@ Se estiver errado, `deactivate` e ative o daqui. O sintoma é traiçoeiro
 porque o build até **funciona** — só que com o conjunto de plugins do
 outro projeto, que pode divergir do `requirements.txt` deste.
 
-## O 404 de `versions.json` no console
+## Versionamento com `mike`
 
-Rodando `mkdocs serve`, o console repete isto a cada página aberta:
+O site é publicado **versionado**. O job `pages` roda o `mike`, que
+mantém cada versão numa pasta própria dentro da branch `gh-pages`, e só
+então extrai aquela árvore para `public/` — que é o que o GitLab Pages
+serve.
+
+```
+gh-pages/
+├── versions.json     ← o que o seletor de versões busca
+├── index.html        ← redirect para latest/
+├── latest/           ← alias, aponta para a versão corrente
+└── 1.0.0/            ← uma pasta por versão publicada
+```
+
+> **As URLs passaram a ter prefixo de versão.** A raiz redireciona para
+> `latest/`, então uma página vive em `/latest/instalacao/` e em
+> `/1.0.0/instalacao/`. **`/instalacao/` sem prefixo responde 404.**
+> Link antigo, sem prefixo, precisa ser atualizado.
+
+### De onde sai o número
+
+Do arquivo **`VERSION`** na raiz do repositório, lido pelo job com
+`cat`. É uma versão **própria do site**, deliberadamente não a da API
+nem a do SDK: o site documenta os dois, e eles têm números diferentes
+(hoje API 0.1.0 e SDK 0.2.0), então amarrar em um faria o seletor mentir
+sobre o outro. O mapeamento entre eles está declarado na página de
+[instalação](docs/instalacao.md).
+
+Para publicar uma versão nova: edite o `VERSION`, comite, e promova para
+a `main`. O `mike` cria a pasta nova, move o alias `latest` para ela e
+acrescenta a entrada no `versions.json`.
+
+### O token, e o que se perde sem ele
+
+A persistência entre pipelines depende de uma variável de CI chamada
+**`MIKE_TOKEN`**, um token de projeto com escopo `write_repository`. O
+`CI_JOB_TOKEN` **não serve** — ele não empurra para o repositório.
+
+O job foi escrito para degradar, não para quebrar: sem o token ele
+publica assim mesmo e avisa no log. O que se perde é a **acumulação** —
+cada pipeline recomeça a `gh-pages` do zero e o `versions.json` fica só
+com a versão corrente. Inofensivo enquanto existir uma versão só, e
+passa a apagar histórico assim que existir a segunda. **Crie o token
+antes de publicar a segunda versão.**
+
+### O 404 de `versions.json` no `serve` local continua
+
+Rodando `mkdocs serve`, o console segue repetindo:
 
 ```
 WARNING -  "GET /versions.json HTTP/1.1" code 404
 ```
 
-É conhecido e **está aceito** — não investigue de novo.
+Isso **não** mudou e não é defeito. O `mike` só entra no deploy; no
+`serve` quem responde é o servidor de desenvolvimento do mkdocs, que
+serve o build direto, sem estrutura de versões. O mesmo acontece no
+`docs-param-manager`. No site publicado o arquivo existe e o seletor
+funciona.
 
-O `mkdocs.yml` declara `extra.version.provider: mike`, o que faz o tema
-embutir `"version": {"provider": "mike"}` no HTML de toda página. O
-JavaScript do seletor de versões então busca `versions.json` na raiz do
-site a cada carregamento (duas vezes por página: uma no load, outra
-quando o *instant loading* troca de rota). Quem gera esse arquivo é o
-`mike`, **no momento do deploy** — o `mkdocs build` não o produz.
+### Para desligar o versionamento
 
-**Local: esperado.** No `serve` o `mike` nunca entra em cena, então o
-404 aparece até em projeto com versionamento perfeitamente configurado.
-O `docs-param-manager`, que versiona por mike de verdade, dá o mesmo 404
-no serve local.
-
-**Publicado: o seletor está inerte.** O job `pages` daqui é um
-`mkdocs build --strict --site-dir public` puro — o `mike` não é invocado
-em lugar nenhum do `.gitlab-ci.yml`, e não existe branch `gh-pages`.
-Então `versions.json` também não existe no site publicado, e o seletor
-nunca funcionou. A configuração veio copiada do `mkdocs.yml` do
-`docs-param-manager` sem a maquinaria de CI que a alimenta.
-
-Isso foi avaliado e mantido: o CaseHub não publica versões concorrentes
-de documentação hoje, e o custo do 404 é uma linha de log.
-
-**Para ligar de verdade**, o modelo é o job `pages` do
-`docs-param-manager`: `mike deploy --branch gh-pages --update-aliases`,
-push com um token de projeto `MIKE_TOKEN` de escopo `write_repository`
-(o `CI_JOB_TOKEN` não empurra), `GIT_DEPTH: '0'` e imagem `python:3.13`
-cheia por causa do `git`, e só então a extração daquela branch para
-`public/`. Falta decidir uma coisa que lá é trivial e aqui não: **de
-onde sai o número da versão** — o `docs-param-manager` lê do seu
-`pyproject.toml`, e este projeto não tem um.
-
-**Para desligar**, basta remover as três linhas de `extra.version` do
-`mkdocs.yml`; o 404 some no serve e no site publicado.
+Remova as três linhas de `extra.version` do `mkdocs.yml` e devolva o job
+`pages` a um `mkdocs build --strict --site-dir public`. O 404 some do
+serve, as URLs voltam a não ter prefixo, e o seletor desaparece.
 
 ## A página "Estrutura"
 

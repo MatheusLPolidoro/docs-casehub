@@ -28,10 +28,11 @@
 #     material/templates/__init__.py | grep NO_MKDOCS_2_WARNING
 mkdocs-material>=9.7.7
 
-# Declarado, mas hoje NAO invocado: o job `pages` publica um `mkdocs`
-# build puro, sem versionamento. Fica aqui para que ligar o seletor de
-# versoes seja mudanca so de CI. E a razao do 404 de `versions.json` no
-# console - ver o README, secao "O 404 de `versions.json`".
+# Usado pelo job `pages`: e ele que versiona o site, mantendo uma pasta
+# por versao na branch `gh-pages` e gerando o `versions.json` que o
+# seletor de versoes busca. Ver o README, secao "Versionamento com
+# mike" - inclusive o `MIKE_TOKEN`, sem o qual a publicacao funciona mas
+# nao acumula versoes.
 mike>=2.1
 pymdown-extensions>=10.7
 
