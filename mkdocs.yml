@@ -3,6 +3,15 @@ site_description: >-
   Documentação central do ecossistema CaseHub — a API fast-casehub e o
   SDK cliente casehub.
 docs_dir: docs
+
+# Porta explícita, não a 8000 padrão do mkdocs: neste workspace a 8000 é
+# a da API do fast-casehub em Docker, e um `mkdocs serve` esbarrava nela
+# com um `PermissionError [WinError 10013]` no Windows - que não diz
+# "porta ocupada", então o erro parece de permissão e manda investigar o
+# lugar errado. 8009 não é usada por nenhum serviço do ecossistema
+# (8000 API, 8001 task run, 8080 nginx, 8081 Keycloak, 8090 Pages).
+dev_addr: '127.0.0.1:8009'
+
 nav:
   - Docs: index.md
   - O que é o CaseHub: sobre.md

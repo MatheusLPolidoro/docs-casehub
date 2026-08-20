@@ -16,20 +16,95 @@ Aqui não há código: só documentação.
 
 ## Rodando localmente
 
-```bash
+### Versão do Python (pyenv)
+
+O repositório fixa a versão em `.python-version` (**3.13.1**), a mesma
+do `fast-casehub`, do `casehub-connect` e do `inflow`. Com
+[pyenv-win](https://github.com/pyenv-win/pyenv-win) instalado, entrar
+no diretório já seleciona a versão certa.
+
+```powershell
+pyenv install 3.13.1      # só na primeira vez
+pyenv versions            # confirme que 3.13.1 aparece
+python --version          # dentro do repo, deve dizer 3.13.1
+```
+
+> **Atenção:** nem todo projeto do workspace usa a mesma versão — o
+> `param-manager`, por exemplo, fixa **3.11.1**. Criar o venv daqui com
+> o interpretador errado é uma das causas do problema descrito em
+> "Quando `mkdocs serve` falha" abaixo.
+
+### Ambiente e servidor
+
+```powershell
 python -m venv .venv
-.venv/Scripts/activate          # Linux/macOS: source .venv/bin/activate
+.\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 mkdocs serve
 ```
 
-O site sobe em `http://127.0.0.1:8000`.
+No Linux/macOS, `source .venv/bin/activate`.
 
-Para conferir o build como o CI faz (falha em link quebrado):
+O site sobe em **`http://127.0.0.1:8009`** — a porta está fixada em
+`dev_addr` no `mkdocs.yml`, não é a 8000 padrão do mkdocs. Neste
+workspace a 8000 é a da API do `fast-casehub` em Docker.
 
-```bash
+Para conferir o build como o CI faz (link quebrado vira erro):
+
+```powershell
 mkdocs build --strict
 ```
+
+## Quando `mkdocs serve` falha
+
+Dois problemas com sintoma parecido e causa completamente diferente.
+
+### `PermissionError: [WinError 10013]`
+
+A mensagem fala em permissão, mas quase sempre é **porta ocupada** — o
+Windows devolve 10013 em vez de "endereço já em uso" quando outro
+processo detém o socket.
+
+```powershell
+netstat -ano | Select-String ":8009\s"          # PID de quem está na porta
+Get-Process -Id <PID> | Select-Object Id, ProcessName, Path
+```
+
+Costuma ser um `mkdocs serve` de uma sessão anterior que não morreu.
+Encerre o processo, ou suba noutra porta:
+
+```powershell
+mkdocs serve -a 127.0.0.1:8010
+```
+
+Vale checar também se a porta caiu numa faixa reservada pelo Windows
+(Hyper-V, WSL e Docker reservam intervalos dinâmicos):
+
+```powershell
+netsh interface ipv4 show excludedportrange protocol=tcp
+```
+
+### O traceback aponta para outro projeto
+
+Se a pilha de erro mostrar caminhos de **outro** repositório — por
+exemplo `C:\mlp\produtos\param-manager\.venv\Scripts\mkdocs.exe` —, o
+`mkdocs` que rodou não é o deste projeto.
+
+O `(.venv)` no prompt **não identifica qual** venv está ativo: toda
+pasta de ambiente aqui se chama `.venv`, então o prompt fica idêntico
+em todos os projetos. Trocar de diretório não troca o ambiente ativo.
+
+Confirme antes de investigar qualquer outra coisa:
+
+```powershell
+(Get-Command mkdocs).Source     # tem que apontar para ESTE repositório
+python --version                # tem que bater com o .python-version
+$env:VIRTUAL_ENV                # o venv realmente ativo
+```
+
+Se estiver errado, `deactivate` e ative o daqui. O sintoma é traiçoeiro
+porque o build até **funciona** — só que com o conjunto de plugins do
+outro projeto, que pode divergir do `requirements.txt` deste.
 
 ## A página "Estrutura"
 
