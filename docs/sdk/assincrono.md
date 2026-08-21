@@ -10,13 +10,13 @@ from casehub import AsyncCaseHubClient
 
 async with AsyncCaseHubClient(
     base_url='https://casehub.interno',
-    client_id='triagem-nao-creditada',
+    client_id='minha-automacao',
     client_secret='...',
     token_url='https://keycloak.interno/realms/x/protocol/openid-connect/token',
 ) as client:
     await client.upsert_cases_batch(
         environment='prod',
-        automation='triagem-nao-creditada',
+        automation='minha-automacao',
         cases=[...],
     )
 ```
@@ -58,11 +58,11 @@ compartilhada por várias tarefas rodando em paralelo com
 por ciclo de vida do worker e reaproveitar.
 
 ```python
-async def executar(filas: list[str]) -> None:
+async def executar(origens: list[str]) -> None:
     async with AsyncCaseHubClient(...) as client:
         # o mesmo client, em N tarefas concorrentes
         await asyncio.gather(*[
-            processar_fila(client, fila) for fila in filas
+            processar(client, origem) for origem in origens
         ])
 ```
 

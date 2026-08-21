@@ -1,7 +1,36 @@
 # CaseHub — Controle na menor unidade
 
-<svg id="LogoAnimation" width="650px" viewBox="0 0 1920 1080"></svg>
-<script src="assets/js/LogoAnimation.js"></script>
+<div class="pm-marca" data-pm-logo markdown>
+<div class="pm-marca__cartaz" markdown>
+<!-- Sintaxe Markdown, e não <img>: o mkdocs reescreve o caminho relativo
+     de imagem em Markdown por página, e um `src` fixo em HTML quebraria se
+     esta página mudasse de nível.
+
+     Este é o cartaz: um quadro da animação, parado. É o que aparece
+     enquanto os 6 MB do desenho não chegam — sem ele a área nasce vazia e
+     o texto salta de lugar quando eles chegam — e é o que fica para sempre
+     para quem pediu menos movimento ao sistema. -->
+![Marca do CaseHub](assets/marca-animada.svg)
+</div>
+<svg id="LogoAnimation" class="pm-marca__tela" viewBox="138 227 1645 620" aria-hidden="true" hidden></svg>
+</div>
+
+<div class="pm-selos" markdown>
+<!-- Selos servidos pelo img.shields.io. São a única coisa neste site que
+     depende de rede externa para *aparecer*: sem internet o navegador mostra
+     o texto alternativo de cada um, que diz a mesma coisa em palavras.
+
+     Todos estáticos, e cada um pelo seu motivo. Não há selo de versão no
+     PyPI porque o SDK é publicado num registry interno. Não há selo de
+     cobertura porque **nenhum número de cobertura é declarado** nos dois
+     repositórios — inventar um seria pior do que não ter o selo. As versões
+     vêm do `pyproject.toml` de cada projeto e o piso de Python do
+     `requires-python` dos dois; mexeu lá, mexa aqui. -->
+![SDK casehub](https://img.shields.io/badge/SDK%20casehub-0.3.0-1565c0)
+![API fast-casehub](https://img.shields.io/badge/API%20fast--casehub-0.1.0-1565c0)
+![Python](https://img.shields.io/badge/python-3.11%2B-34D058?logo=python&logoColor=white)
+![Contrato](https://img.shields.io/badge/contrato-v1-6a1b9a)
+</div>
 
 Documentação central do ecossistema **CaseHub**: a API que é dona do
 ciclo de vida dos casos importados e o SDK Python que as automações

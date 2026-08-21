@@ -34,7 +34,7 @@ O nome da automação é sanitizado para a convenção
 
 | `automation` | Parâmetro genérico | Por ambiente |
 |---|---|---|
-| `triagem-nao-creditada` | `RETENTION_DAYS_TRIAGEM_NAO_CREDITADA` | `RETENTION_DAYS_TRIAGEM_NAO_CREDITADA_DEV` |
+| `minha-automacao` | `RETENTION_DAYS_MINHA_AUTOMACAO` | `RETENTION_DAYS_MINHA_AUTOMACAO_DEV` |
 
 ## O expurgo é sempre escopado por ambiente
 

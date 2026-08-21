@@ -136,7 +136,7 @@ Qualquer parâmetro prefixado com `f.` vira um filtro sobre o caminho
 correspondente dentro do JSON:
 
 ```
-GET /v1/cases?f.CONTA=12345&f.uf=SP
+GET /v1/cases?f.referencia=REF-12345&f.uf=SP
 ```
 
 A comparação é **em texto**, então `f.valor=10` casa com o JSON tendo

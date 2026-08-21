@@ -5,13 +5,14 @@ publicar em lote e conferir o que foi recusado.
 
 ## O cenário
 
-Uma automação lê um arquivo de filas e precisa registrar cada linha
-como um caso. O arquivo pode ter dezenas de milhares de linhas, e o
-processo pode ser reexecutado — reprocessar não pode duplicar nada.
+Uma automação lê uma fonte tabular — um arquivo exportado, o resultado
+de uma consulta, um relatório — e precisa registrar cada linha como um
+caso. A fonte pode ter dezenas de milhares de linhas, e o processo pode
+ser reexecutado: reprocessar não pode duplicar nada.
 
 ```mermaid
 flowchart LR
-    F["Arquivo<br/>de origem"] --> P["Monta CasePayload<br/><small>com case_id estável</small>"]
+    F["Fonte<br/>de origem"] --> P["Monta CasePayload<br/><small>com case_id estável</small>"]
     P --> G["Agrupa por<br/>automation"]
     G --> C["Divide em lotes<br/><small>~100 itens</small>"]
     C --> A["POST /v1/cases/batch"]
@@ -28,9 +29,9 @@ import hashlib
 def montar_case_id(linha: dict) -> str:
     """Hash das colunas que identificam a linha na origem."""
     chave = '|'.join([
-        str(linha['CONTA']).strip().upper(),
-        str(linha['ARQUIVO']).strip().upper(),
-        str(linha['TAREFA']).strip().upper(),
+        str(linha['referencia']).strip().upper(),
+        str(linha['origem']).strip().upper(),
+        str(linha['item']).strip().upper(),
     ])
     return hashlib.sha256(chave.encode('utf-8')).hexdigest()[:32]
 ```
@@ -55,8 +56,8 @@ def montar_item(linha: dict) -> dict:
         'case_id': montar_case_id(linha),
         'status': 'aberto',
         'started_at': '2026-08-20T09:00:00-03:00',
-        'batch_ref': linha['ARQUIVO'],
-        'source_schema': 'filas.v1',
+        'batch_ref': linha['origem'],
+        'source_schema': 'origem.v1',
         'source_record': linha,      # o dado bruto, como veio
     }
 ```
@@ -126,7 +127,7 @@ def conferir(resposta: dict, bloco: list[dict]) -> None:
 
 ## 5. Reexecutando
 
-Rode a importação de novo com o mesmo arquivo. O total de casos **não
+Rode a importação de novo sobre a mesma fonte. O total de casos **não
 muda**: cada `case_id` já existe, então cada publicação vira um update.
 
 É isso que torna o reprocessamento seguro — e é consequência direta do
@@ -139,13 +140,13 @@ pagina = client.list_cases(
     environment='prod',
     automation='minha-automacao',
     status='aberto',
-    source_filters={'CONTA': '12345'},
+    source_filters={'referencia': 'REF-12345'},
     include='source_record',
     page_size=100,
 )
 
 for caso in pagina['items']:
-    print(caso['case_id'], caso['source_record']['ARQUIVO'])
+    print(caso['case_id'], caso['source_record']['origem'])
 ```
 
 ## Em código assíncrono

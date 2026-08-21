@@ -5,25 +5,30 @@
 O que uma automação precisa. Traz o cliente síncrono, o assíncrono e a
 CLI.
 
-<div style="position: relative;">
-  <button class="copy-btn" onclick="copyText('pip install casehub', this)">📋 Copiar</button>
-  <div class="termynal" data-termynal data-termynal-startDelay="600" style="min-height: 180px;" data-command="pip install casehub">
-    <span data-ty="input">pip install casehub</span>
-    <span data-ty="progress"></span>
-    <span data-ty>Successfully installed casehub</span>
-  </div>
+<div class="pm-terminal" data-pm-terminal data-pm-command="pip install casehub">
+<div class="termynal" data-termynal data-ty-startDelay="500" data-ty-typeDelay="45" data-ty-lineDelay="800">
+<span data-ty="input">pip install casehub</span>
+<span data-ty="progress"></span>
+<span data-ty>Successfully installed casehub</span>
+</div>
 </div>
 
 Requer **Python 3.11+**. As dependências de runtime são `httpx`,
 `typer`, `toml` e `rich`.
 
-!!! warning "Fixe a versão — a 0.2.0 renomeou um campo"
-    A versão atual do SDK é a **0.2.0**, e a da API é a **0.1.0**. A
-    0.2.0 renomeou `worker_id` para `case_id` em todo o client e na CLI,
-    então um SDK anterior **não fala** o contrato que a API atende hoje.
-    Prefira `pip install "casehub==0.2.0"` a instalar sem piso, para que
-    um ambiente não acorde numa versão incompatível. Ver
-    [O que mudou](mudancas.md).
+!!! warning "Fixe a versão"
+    A versão atual do SDK é a **0.3.0**, e a da API é a **0.1.0**.
+    Prefira `pip install "casehub==0.3.0"` a instalar sem piso, para que
+    um ambiente não acorde numa versão incompatível.
+
+    Duas versões mudaram comportamento. A **0.2.0** renomeou `worker_id`
+    para `case_id` em todo o client e na CLI, então um SDK anterior a ela
+    **não fala** o contrato que a API atende hoje. A **0.3.0** mudou três
+    coisas que quem consome percebe: lote inválido levanta `ValueError`
+    antes de gastar requisição; um lote com item sem `case_id` deixa de
+    ser reenviado automaticamente depois de um 401, e o erro sobe como
+    `APIHTTPError`; e `ConnectTimeout`/`WriteTimeout`/`PoolTimeout`
+    passaram a virar `APITimeoutError`. Ver [O que mudou](mudancas.md).
 
 !!! info "Registry interno"
     O pacote é publicado no registry interno, não no PyPI público. Se o
@@ -32,14 +37,13 @@ Requer **Python 3.11+**. As dependências de runtime são `httpx`,
 
 ### Verificando a instalação
 
-<div style="position: relative;">
-  <button class="copy-btn" onclick="copyText('casehub --help', this)">📋 Copiar</button>
-  <div class="termynal" data-termynal data-termynal-startDelay="600" style="min-height: 200px;" data-command="casehub --help">
-    <span data-ty="input">casehub --help</span>
-    <span data-ty>Usage: casehub [OPTIONS] COMMAND [ARGS]...</span>
-    <span data-ty>  configure, health, readiness, list-cases,</span>
-    <span data-ty>  get-case, upsert-case, upsert-cases-batch</span>
-  </div>
+<div class="pm-terminal" data-pm-terminal data-pm-command="casehub --help">
+<div class="termynal" data-termynal data-ty-startDelay="500" data-ty-typeDelay="45" data-ty-lineDelay="800">
+<span data-ty="input">casehub --help</span>
+<span data-ty>Usage: casehub [OPTIONS] COMMAND [ARGS]...</span>
+<span data-ty>  configure, health, readiness, list-cases,</span>
+<span data-ty>  get-case, upsert-case, upsert-cases-batch</span>
+</div>
 </div>
 
 ---
@@ -53,16 +57,15 @@ precisa do SDK acima e de um endereço.
 
 Sobe API, Postgres e Keycloak juntos.
 
-<div style="position: relative;">
-  <button class="copy-btn" onclick="copyText('docker compose --profile uat up -d', this)">📋 Copiar</button>
-  <div class="termynal" data-termynal data-termynal-startDelay="600" style="min-height: 220px;" data-command="docker compose --profile uat up -d">
-    <span data-ty="input">cp .env.example .env</span>
-    <span data-ty="input">docker compose --profile uat up -d</span>
-    <span data-ty="progress"></span>
-    <span data-ty>✔ Container postgres_casehub  Healthy</span>
-    <span data-ty>✔ Container keycloak          Healthy</span>
-    <span data-ty>✔ Container casehub_api_uat   Started</span>
-  </div>
+<div class="pm-terminal" data-pm-terminal data-pm-command="docker compose --profile uat up -d">
+<div class="termynal" data-termynal data-ty-startDelay="500" data-ty-typeDelay="45" data-ty-lineDelay="800">
+<span data-ty="input">cp .env.example .env</span>
+<span data-ty="input">docker compose --profile uat up -d</span>
+<span data-ty="progress"></span>
+<span data-ty>✔ Container postgres_casehub  Healthy</span>
+<span data-ty>✔ Container keycloak          Healthy</span>
+<span data-ty>✔ Container casehub_api_uat   Started</span>
+</div>
 </div>
 
 O `.env` precisa existir antes: o compose lê dele via `env_file`, e sem
@@ -70,14 +73,13 @@ ele os valores caem em defaults de desenvolvimento.
 
 ### Direto, para desenvolvimento
 
-<div style="position: relative;">
-  <button class="copy-btn" onclick="copyText('python -m casehub_api --storage memory', this)">📋 Copiar</button>
-  <div class="termynal" data-termynal data-termynal-startDelay="600" style="min-height: 220px;" data-command="python -m casehub_api --storage memory">
-    <span data-ty="input">pip install -e ".[dev]"</span>
-    <span data-ty="progress"></span>
-    <span data-ty="input">python -m casehub_api --storage memory</span>
-    <span data-ty>INFO:     Uvicorn running on http://127.0.0.1:8080</span>
-  </div>
+<div class="pm-terminal" data-pm-terminal data-pm-command="python -m casehub_api --storage memory">
+<div class="termynal" data-termynal data-ty-startDelay="500" data-ty-typeDelay="45" data-ty-lineDelay="800">
+<span data-ty="input">pip install -e ".[dev]"</span>
+<span data-ty="progress"></span>
+<span data-ty="input">python -m casehub_api --storage memory</span>
+<span data-ty>INFO:     Uvicorn running on http://127.0.0.1:8080</span>
+</div>
 </div>
 
 `--storage memory` sobe sem Postgres — o mock in-memory implementa o

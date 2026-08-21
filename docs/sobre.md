@@ -7,8 +7,8 @@ conecta direto no Postgres.
 
 ```mermaid
 flowchart LR
-    A["Automação A<br/><small>arquivo de filas</small>"] --> API
-    B["Automação B<br/><small>tela de mainframe</small>"] --> API
+    A["Automação A<br/><small>arquivo exportado</small>"] --> API
+    B["Automação B<br/><small>consulta a outro sistema</small>"] --> API
     C["Automação C<br/><small>qualquer fonte</small>"] --> API
     API["fast-casehub<br/><small>contrato v1</small>"] --> DB[("Postgres<br/>schema casehub")]
     API --> R["Relatórios / painéis"]
@@ -19,8 +19,9 @@ flowchart LR
 Esta é a decisão estruturante do serviço, e ela explica quase todo o
 resto do desenho.
 
-O CaseHub **não sabe** o que é um caso de triagem de fraude, um caso de
-intercâmbio ou um caso de cobrança. Ele conhece apenas a identidade
+O CaseHub **não sabe** o que a automação chama de caso, e não precisa
+saber: para ele, um caso é a unidade que a automação decidiu registrar.
+Ele conhece apenas a identidade
 (`environment`, `automation`, `case_id`), um punhado de campos de ciclo
 de vida (`status`, `started_at`, `finished_at`) e um objeto JSON livre
 chamado `source_record`, onde o dado específico de cada automação

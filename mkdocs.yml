@@ -4,6 +4,32 @@ site_description: >-
   SDK cliente casehub.
 docs_dir: docs
 
+# Cada página tem um botão "baixar .md" na barra superior que aponta para o
+# próprio fonte, copiado ao lado do HTML pelo hook de downloads. Isso só
+# funciona com URLs de diretório, que já é o padrão — explícito porque quebrar
+# aqui quebra o download sem quebrar o build.
+use_directory_urls: true
+
+# Liga o link do repositório na barra superior. **O contador de estrelas não
+# vai aparecer**: o Material só o busca em provedor público, e nenhum
+# repositório do CaseHub é público — os do GitHub respondem 404 sem
+# autenticação e os do GitLab local estão como `private`. O link continua
+# valendo para quem lê de dentro da rede, que é quem alcança este site.
+#
+# Aponta para o SDK porque é o que quem integra consome; a API é o outro
+# repositório documentado aqui.
+repo_url: http://gitlab.127.0.0.1.nip.io/matheuslpolidoro/casehub-connect
+repo_name: matheuslpolidoro/casehub-connect
+
+# Âncora quebrada é o defeito mais fácil de introduzir numa documentação com
+# referência cruzada, e o mais fácil de não notar: o link continua clicável e
+# só não leva a lugar nenhum. Com --strict isto reprova o build.
+validation:
+  links:
+    anchors: warn
+    absolute_links: warn
+    unrecognized_links: warn
+
 # Porta explícita, não a 8000 padrão do mkdocs: neste workspace a 8000 é
 # a da API do fast-casehub em Docker, e um `mkdocs serve` esbarrava nela
 # com um `PermissionError [WinError 10013]` no Windows - que não diz
@@ -37,10 +63,19 @@ nav:
 
 theme:
   name: material
+  custom_dir: overrides
   logo: assets/logo.svg
   favicon: assets/logo.svg
   language: pt-BR
   highlightjs: true
+  # Inter tem altura de x maior que a Roboto padrão do tema, o que se paga em
+  # leitura longa; a JetBrains Mono distingue 0/O e 1/l/I, que num site cheio
+  # de nome de variável de ambiente não é detalhe. As duas vêm do Google
+  # Fonts, como já vinha a Roboto. Quem estiver sem saída para a internet
+  # troca para "Do sistema" no seletor da barra superior.
+  font:
+    text: Inter
+    code: JetBrains Mono
   features:
     - content.code.annotate
     - content.tabs.link
@@ -74,19 +109,37 @@ plugins:
       scripts:
         - docs/gen_tree.py
 
+hooks:
+  - hooks/downloads.py
+
 extra:
   version:
     provider: mike
 
+# A ordem importa: `a11y.css` fica por último porque é ele que corrige o que
+# os outros possam ter estragado — anel de foco, contraste, movimento.
 extra_css:
-  - assets/css/extra.css
+  - assets/css/marca.css
+  - assets/css/tipografia.css
   - assets/css/termynal.css
+  - assets/css/extra.css
+  - assets/css/a11y.css
 
+# `pm-i18n.js` primeiro: os outros leem `window.pmText` dele. `termynal.js`
+# antes de `terminal.js` pelo mesmo motivo.
+#
+# `LogoAnimation.js` **não** está aqui, e não é esquecimento: são 6 MB de
+# quadros SVG gerados, que no `extra_javascript` seriam baixados em todas as
+# páginas do site. Quem o carrega é `logo-animation.js`, sob demanda, só na
+# página que tem o bloco da marca — ver o cabeçalho daquele arquivo.
 extra_javascript:
-  - assets/js/filetree.js
-  - assets/js/termynal-init.js
+  - assets/js/pm-i18n.js
   - assets/js/termynal.js
-  - assets/js/LogoAnimation.js
+  - assets/js/terminal.js
+  - assets/js/logo-animation.js
+  - assets/js/typography.js
+  - assets/js/doc-actions.js
+  - assets/js/filetree.js
 
 markdown_extensions:
   - admonition

@@ -111,7 +111,7 @@ Para fechar, nesta ordem — inverter derruba os consumidores com 401:
 
     client = CaseHubClient(
         base_url='https://casehub.interno',
-        client_id='triagem-nao-creditada',
+        client_id='minha-automacao',
         client_secret='...',
         token_url='https://keycloak.interno/realms/x/protocol/openid-connect/token',
     )

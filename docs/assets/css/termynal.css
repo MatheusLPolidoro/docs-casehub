@@ -1,101 +1,199 @@
-/**
- * termynal.js
+/*
+ * Terminal com digitação.
  *
- * @author Ines Montani <ines@ines.io>
- * @version 0.0.1
- * @license MIT
+ * Base: termynal.css de Ines Montani (MIT), o mesmo que o `param-manager`
+ * usa. Três coisas mudaram, e cada uma por um motivo que vale registrar:
+ *
+ * - **Medidas em `rem`, não em `px`.** O original fixa `font-size: 18px` e
+ *   `width: 750px`. Texto em `px` não acompanha o tamanho de fonte que a
+ *   pessoa configurou no navegador, e é assim que se reprova a WCAG 1.4.4.
+ * - **As variáveis ganharam prefixo `--pm-term-`.** O original declara
+ *   `--color-bg` e `--color-text` no `:root`, nomes genéricos o bastante
+ *   para colidirem com qualquer coisa que o tema venha a definir.
+ * - **A barra de controles e a transcrição** são deste site, não do
+ *   original — ver `assets/js/terminal.js` para o porquê de cada uma.
+ *
+ * O terminal é escuro nos dois temas de propósito: ele representa uma
+ * janela de terminal, e não uma superfície do site. Clarear no tema claro
+ * o faria parecer um bloco de código comum, que é justamente o que ele
+ * não é.
  */
 
 :root {
-    --color-bg: #252a33;
-    --color-text: #eee;
-    --color-text-subtle: #a2a2a2;
+  --pm-term-fundo: #252a33;
+  --pm-term-texto: #eeeeee;
+  --pm-term-sutil: #a2a2a2;
 }
+
+/* ------------------------------------------------------------- bloco */
+
+.pm-terminal {
+  margin: 1.5rem 0;
+}
+
+.pm-terminal__barra {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.pm-terminal__botao {
+  display: inline-flex;
+  align-items: center;
+  /* 44 px de alvo mínimo (WCAG 2.5.5), como na barra de ações da página. */
+  min-height: 44px;
+  padding: 0.35rem 0.85rem;
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--pm-cor, #5e35b1);
+  background: transparent;
+  border: 1px solid var(--pm-borda, rgba(94, 53, 177, 0.28));
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.pm-terminal__botao:hover {
+  background: var(--pm-fundo-suave, rgba(94, 53, 177, 0.06));
+  border-color: var(--pm-cor, #5e35b1);
+}
+
+/* Conteúdo lido por leitor de tela e invisível na tela. `display: none`
+   não serve: o que está com `display: none` também some da árvore de
+   acessibilidade, que é exatamente o oposto do que se quer aqui. */
+.pm-visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ------------------------------------------------------------ janela */
 
 [data-termynal] {
-    width: 750px;
-    max-width: 100%;
-    background: var(--color-bg);
-    color: var(--color-text);
-    font-size: 18px;
-    font-family: 'Fira Mono', Consolas, Menlo, Monaco, 'Courier New', Courier, monospace;
-    border-radius: 4px;
-    padding: 75px 45px 35px;
-    position: relative;
-    -webkit-box-sizing: border-box;
-            box-sizing: border-box;
+  width: 42rem;
+  max-width: 100%;
+  box-sizing: border-box;
+  position: relative;
+  padding: 2.6rem 1.5rem 1.2rem;
+  background: var(--pm-term-fundo);
+  color: var(--pm-term-texto);
+  font-size: 0.8rem;
+  font-family: var(--md-code-font-family, 'Fira Mono', Consolas, Menlo, monospace);
+  border-radius: 6px;
 }
 
-[data-termynal]:before {
-    content: '';
-    position: absolute;
-    top: 15px;
-    left: 15px;
-    display: inline-block;
-    width: 15px;
-    height: 15px;
-    border-radius: 50%;
-    /* A little hack to display the window buttons in one pseudo element. */
-    background: #d9515d;
-    -webkit-box-shadow: 25px 0 0 #f4c025, 50px 0 0 #3ec930;
-            box-shadow: 25px 0 0 #f4c025, 50px 0 0 #3ec930;
+/* Os três botões da janela num pseudo-elemento só, como no original. */
+[data-termynal]::before {
+  content: '';
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  display: inline-block;
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: #d9515d;
+  box-shadow: 1rem 0 0 #f4c025, 2rem 0 0 #3ec930;
 }
 
-[data-termynal]:after {
-    content: 'bash';
-    position: absolute;
-    color: var(--color-text-subtle);
-    top: 5px;
-    left: 0;
-    width: 100%;
-    text-align: center;
+/* O rótulo da janela é decorativo: descreve o shell, e a mesma informação
+   já está no comando. `data-shell` troca `bash` por `powershell` nas
+   páginas em que o exemplo é do PowerShell. */
+[data-termynal]::after {
+  content: 'bash';
+  position: absolute;
+  top: 0.5rem;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  font-size: 0.68rem;
+  color: var(--pm-term-sutil);
+}
+
+[data-termynal][data-shell]::after {
+  content: attr(data-shell);
 }
 
 [data-ty] {
-    display: block;
-    line-height: 2;
+  display: block;
+  line-height: 1.9;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
-[data-ty]:before {
-    /* Set up defaults and ensure empty lines are displayed. */
-    content: '';
-    display: inline-block;
-    vertical-align: middle;
+[data-ty]::before {
+  /* Garante que uma linha vazia continue ocupando altura. */
+  content: '';
+  display: inline-block;
+  vertical-align: middle;
 }
 
-[data-ty="input"]:before,
-[data-ty-prompt]:before {
-    margin-right: 0.75em;
-    color: var(--color-text-subtle);
+[data-ty='input']::before,
+[data-ty-prompt]::before {
+  margin-right: 0.75em;
+  color: var(--pm-term-sutil);
 }
 
-[data-ty="input"]:before {
-    content: '$';
+[data-ty='input']::before {
+  content: '$';
 }
 
-[data-ty][data-ty-prompt]:before {
-    content: attr(data-ty-prompt);
+[data-ty][data-ty-prompt]::before {
+  content: attr(data-ty-prompt);
 }
 
-[data-ty-cursor]:after {
-    content: attr(data-ty-cursor);
-    font-family: monospace;
-    margin-left: 0.5em;
-    -webkit-animation: blink 1s infinite;
-            animation: blink 1s infinite;
+[data-ty-cursor]::after {
+  content: attr(data-ty-cursor);
+  font-family: monospace;
+  margin-left: 0.5em;
+  animation: pm-term-blink 1s infinite;
 }
 
-
-/* Cursor animation */
-
-@-webkit-keyframes blink {
-    50% {
-        opacity: 0;
-    }
+@keyframes pm-term-blink {
+  50% {
+    opacity: 0;
+  }
 }
 
-@keyframes blink {
-    50% {
-        opacity: 0;
-    }
+/* A regra global de `prefers-reduced-motion` em a11y.css já reduz a
+   duração de toda animação; aqui o cursor some de vez, porque um cursor
+   congelado no meio da piscada fica com opacidade indefinida. */
+@media (prefers-reduced-motion: reduce) {
+  [data-ty-cursor]::after {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* Impressão: a janela escura vira um bloco de código comum. Fundo escuro
+   em papel gasta tinta e sai ilegível na maioria das impressoras. */
+@media print {
+  .pm-terminal__barra {
+    display: none !important;
+  }
+
+  [data-termynal] {
+    background: #fff;
+    color: #000;
+    border: 1px solid #999;
+    padding: 1rem;
+  }
+
+  [data-termynal]::before,
+  [data-termynal]::after {
+    display: none;
+  }
+
+  [data-ty='input']::before {
+    color: #000;
+  }
 }

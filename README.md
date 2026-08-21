@@ -287,8 +287,10 @@ produtos/
 | `docs/api/` | Contrato do `fast-casehub`: autenticação, endpoints, erros, retenção. |
 | `docs/sdk/` | SDK `casehub`: cliente síncrono, assíncrono e CLI. |
 | `docs/operacao/` | Deploy e observabilidade. |
-| `docs/assets/` | Logo animado, ícones e o terminal animado (termynal). |
+| `docs/assets/` | Marca animada, ícones, terminal (termynal) e as folhas de estilo. |
 | `docs/gen_tree.py` | Gera a página "Estrutura" no build. |
+| `hooks/downloads.py` | Copia o `.md` de cada página ao lado do HTML, para o botão de download. |
+| `overrides/partials/` | Cabeçalho do tema, com fonte, download e PDF na barra superior. |
 
 ## Convenções
 
@@ -296,8 +298,22 @@ produtos/
   repositórios de origem.
 - Diagramas em **mermaid**, dentro de blocos ```mermaid — renderizados
   nativamente pelo tema.
-- Comandos de terminal usam o bloco `termynal` com botão de cópia; o
-  texto copiado fica no `onclick`, então **precisa ser atualizado junto
-  com o comando exibido**.
+- Comandos de terminal usam o bloco `termynal` dentro de um
+  `<div class="pm-terminal" data-pm-terminal data-pm-command="…">`. Os
+  botões de copiar e de parar a digitação são montados por
+  `assets/js/terminal.js`; o que se copia é o `data-pm-command`, que
+  **precisa ser atualizado junto com o comando exibido**.
+- Não há página sobre acessibilidade, e é uma decisão: ela vive onde é
+  construída. `assets/css/a11y.css` cita o critério WCAG de cada bloco, e
+  o cabeçalho dele aponta o que vive nos scripts — as verificações de
+  `prefers-reduced-motion`, que nenhuma media query de CSS alcança.
+- **Os arquivos de `assets/css`, `assets/js`, `hooks/` e `overrides/` são
+  cópias byte a byte do `docs-param-manager`.** É de propósito: uma
+  correção num dos sites é um `cp` no outro. Antes de editar um deles,
+  considere se a mudança não vale para os dois.
+- Exemplos são **genéricos**. Nomes de automação, chaves de
+  `source_record` e cenários não devem reproduzir um fluxo real já
+  implementado — o padrão é `minha-automacao` e chaves ilustrativas como
+  `referencia` e `origem`.
 - Cada afirmação sobre comportamento deve corresponder ao código real.
   Ao mudar API ou SDK, esta documentação faz parte da mudança.
