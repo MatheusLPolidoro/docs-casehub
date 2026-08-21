@@ -1,9 +1,9 @@
 ## docs-casehub — o site publicado
 
 Documentação central do ecossistema CaseHub (a API `fast-casehub` e o SDK
-`casehub`). mkdocs-material, **português e inglês**, publicada em GitLab Pages e
-versionada por `mike` — a versão do site é própria (`VERSION`, hoje `1.0.0`), **não** a
-da API nem a do SDK, porque ele documenta os dois com números diferentes.
+`casehub`). mkdocs-material, **português e inglês**, versionada por `mike` — a versão
+do site é própria (`VERSION`, hoje `1.0.0`), **não** a da API nem a do SDK, porque ele
+documenta os dois com números diferentes.
 
 **Publicada em dois lugares, a partir do mesmo `main`** (2026-08-21):
 
