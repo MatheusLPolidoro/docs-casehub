@@ -92,7 +92,7 @@ não para integridade referencial.
 | `/ready` respondendo 503 | O banco caiu; o serviço está de pé mas inutilizável. |
 | Taxa de 401/403 | Token expirado, client mal provisionado ou automação tentando escopo alheio. |
 | `errors[]` não vazio nos lotes | Falha **do lado do publicador** — não aparece como erro HTTP. |
-| Aviso de `aud` na subida | O serviço está aceitando qualquer token do issuer. Ver [Autenticação](../api/autenticacao.md#validacao-de-aud). |
+| Aviso de `aud` na subida | A validação de `aud` não está ativa neste ambiente. Ver o roteiro em [Autenticação](../api/autenticacao.md#validacao-de-aud). |
 | `casehub.retention.deleted` fora do esperado | Prazo mal configurado, ou ParamManager inacessível fazendo tudo cair no default de 90 dias. |
 
 !!! danger "Lote com item recusado não gera erro HTTP"

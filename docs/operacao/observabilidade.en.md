@@ -91,7 +91,7 @@ for referential integrity.
 | `/ready` answering 503 | The database went down; the service is up but unusable. |
 | Rate of 401/403 | An expired token, a badly provisioned client, or an automation trying someone else's scope. |
 | Non-empty `errors[]` in batches | A failure **on the publisher's side** — it does not show up as an HTTP error. |
-| The `aud` warning at startup | The service is accepting any token from the issuer. See [Authentication](../api/autenticacao.md#validating-aud). |
+| The `aud` warning at startup | `aud` validation is not active in this environment. See the plan in [Authentication](../api/autenticacao.md#validating-aud). |
 | `casehub.retention.deleted` off expectation | A badly configured term, or an unreachable ParamManager making everything fall back to the 90-day default. |
 
 !!! danger "A batch with a rejected item produces no HTTP error"

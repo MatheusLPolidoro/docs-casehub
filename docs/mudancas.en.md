@@ -127,18 +127,19 @@ configuration down once Keycloak is provisioned.
 **Reproducible build and secret scanning.** The image is now built from a
 versioned lockfile, and the pipeline scans the full history with gitleaks.
 
-### :material-progress-clock: Pending, and not code
+### :material-progress-clock: What depends on provisioning
 
-!!! warning "Validating `aud` still depends on Keycloak"
+!!! warning "Validating `aud` is not a code change"
     The service validates the `aud` claim as soon as
     `CASEHUB_OIDC_AUDIENCE` is filled in — nothing is missing in the code.
-    But filling it in requires first provisioning a dedicated audience on
-    the Keycloak clients of each environment.
+    What it requires first is provisioning a dedicated audience on the
+    Keycloak clients of each environment, which is realm administration
+    work.
 
-    Until that happens, **any valid token from the same issuer is accepted
-    as authentication**. Per-automation authorization still applies, so the
-    exposure is narrow: it would take a client whose `client_id` coincided
-    with the name of an automation.
+    With the variable empty, the service accepts any valid token from the
+    same issuer as authentication, and **says so in the startup log**. That
+    warning is the check: if it is there, the configuration is not complete
+    in that environment yet.
 
     The plan is in
     [Authentication](api/autenticacao.md#validating-aud) — and the order
