@@ -1,0 +1,55 @@
+{#
+  Seletor de idioma — correção do link na página inicial.
+
+  O `mkdocs-static-i18n` monta `config.extra.alternate` uma vez, com links
+  ABSOLUTOS (`/` e `/en/`), e depois, em `reconfigure_page_context`, troca cada
+  link pela URL da página equivalente no outro idioma — o que sai relativo e
+  funciona. Só que ele desiste antes de fazer isso em dois casos, e os dois são
+  a página inicial:
+
+      if PurePath(page.url) == PurePath("."):            return context
+      if PurePath(page.url) == PurePath(page.file.locale_alternate_of):
+                                                          return context
+
+  Nas páginas internas, portanto, o seletor sempre funcionou. Na inicial ele
+  ficava com `/en/` absoluto — que só está certo se o site estiver publicado na
+  raiz do domínio. **Aqui não está**: o `mike` publica sob `/latest/`, então
+  `/en/` cai fora da árvore da versão e o GitLab Pages devolve 404. Trocar de
+  idioma a partir da capa levava a uma página que não existe.
+
+  `site_url` não resolve: ele teria que apontar para `/latest/`, e aí as outras
+  versões publicadas pelo `mike` (`/0.1.0/`, e as que vierem) passariam a
+  apontar todas para a `latest`.
+
+  A correção é usar sempre a URL do arquivo equivalente — que o plugin já
+  calcula e deixa em `page.file.alternates` mesmo nos casos em que desiste de
+  aplicá-la — e passá-la pelo filtro `url`, que a torna relativa à página
+  corrente. `alt.link` fica só como plano B, para o caso de uma página sem
+  equivalente no outro idioma.
+
+  O resto do arquivo é o `partials/alternate.html` do mkdocs-material 9.6.12,
+  copiado sem alteração. Ao atualizar o tema, conferir se o original mudou.
+#}
+<div class="md-header__option">
+  <div class="md-select">
+    {% set icon = config.theme.icon.alternate or "material/translate" %}
+    <button class="md-header__button md-icon" aria-label="{{ lang.t('select.language') }}">
+      {% include ".icons/" ~ icon ~ ".svg" %}
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        {% for alt in config.extra.alternate %}
+          {% set destino = alt.link %}
+          {% if page and page.file and page.file.alternates and alt.lang in page.file.alternates %}
+            {% set destino = page.file.alternates[alt.lang].url %}
+          {% endif %}
+          <li class="md-select__item">
+            <a href="{{ destino | url }}" hreflang="{{ alt.lang }}" class="md-select__link">
+              {{ alt.name }}
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>

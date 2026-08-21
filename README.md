@@ -262,11 +262,39 @@ Remova as três linhas de `extra.version` do `mkdocs.yml` e devolva o job
 `pages` a um `mkdocs build --strict --site-dir public`. O 404 some do
 serve, as URLs voltam a não ter prefixo, e o seletor desaparece.
 
+## Bilinguismo
+
+O site existe em **português e inglês**, por `mkdocs-static-i18n` com
+estrutura de sufixo: `pagina.md` é o português, `pagina.en.md` o inglês. O
+build em `pt` vai para a raiz e o `en` para `/en/`; o seletor de idioma fica
+na barra superior.
+
+Três coisas que isso impõe, e que já custaram tempo:
+
+- **Os assets ficam só na raiz** — não existe `/en/assets/`. O
+  `extra_css`/`extra_javascript` resolve sozinho, mas um `<img src>` cru em
+  HTML apontaria para um caminho inexistente no build em inglês. Use imagem
+  em sintaxe Markdown dentro de um bloco com atributo `markdown`.
+- **O seletor de idioma da capa precisa do override.**
+  `overrides/partials/alternate.html` existe porque o plugin desiste de
+  relativizar o link quando `page.url` é `.` — e um `/en/` absoluto cai fora
+  da árvore que o `mike` publica sob `/latest/`, dando 404.
+- **Página nova entra em dois arquivos.** Só o português quebra o inglês em
+  silêncio: com `fallback_to_default: true` o leitor recebe a página em
+  português sem aviso nenhum.
+
 ## A página "Estrutura"
 
-`docs/gen_tree.py` gera a árvore dos **repositórios documentados** no
+`hooks/estrutura.py` gera a árvore dos **repositórios documentados** no
 momento do build, procurando por `../fast-casehub` e
-`../casehub-connect`.
+`../casehub-connect`, e grava `docs/estrutura.md` e `docs/estrutura.en.md`
+— artefatos, ignorados pelo git.
+
+Era um script do `mkdocs-gen-files` e virou hook por incompatibilidade
+com o i18n: o plugin classifica cada arquivo por estar dentro do
+`docs_dir`, e o gen-files cria a página num diretório temporário, de onde
+ela sai como "Unhandled file case" e reprova o `--strict`. Reordenar
+plugins não resolve — o `on_files` do i18n tem prioridade -100.
 
 Ausentes, a página diz isso em vez de sair vazia — um checkout
 incompleto não deve quebrar o build da documentação. Para ver a árvore
@@ -288,14 +316,15 @@ produtos/
 | `docs/sdk/` | SDK `casehub`: cliente síncrono, assíncrono e CLI. |
 | `docs/operacao/` | Deploy e observabilidade. |
 | `docs/assets/` | Marca animada, ícones, terminal (termynal) e as folhas de estilo. |
-| `docs/gen_tree.py` | Gera a página "Estrutura" no build. |
+| `hooks/estrutura.py` | Gera a página "Estrutura" no `docs_dir`, nos dois idiomas. |
 | `hooks/downloads.py` | Copia o `.md` de cada página ao lado do HTML, para o botão de download. |
 | `overrides/partials/` | Cabeçalho do tema, com fonte, download e PDF na barra superior. |
 
 ## Convenções
 
 - Português no texto; identificadores de código em inglês, como nos
-  repositórios de origem.
+  repositórios de origem. **Toda página tem o par `.en.md`** — ver
+  Bilinguismo acima.
 - Diagramas em **mermaid**, dentro de blocos ```mermaid — renderizados
   nativamente pelo tema.
 - Comandos de terminal usam o bloco `termynal` dentro de um

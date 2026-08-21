@@ -1,8 +1,8 @@
 ## docs-casehub — o site publicado
 
 Documentação central do ecossistema CaseHub (a API `fast-casehub` e o SDK
-`casehub`). mkdocs-material, pt-BR, publicada em GitLab Pages e versionada
-por `mike` — a versão do site é própria (`VERSION`, hoje `1.0.0`), **não** a
+`casehub`). mkdocs-material, **português e inglês**, publicada em GitLab Pages e
+versionada por `mike` — a versão do site é própria (`VERSION`, hoje `1.0.0`), **não** a
 da API nem a do SDK, porque ele documenta os dois com números diferentes.
 
 Publicada em `http://docs-casehub-0dafe0.pages.127.0.0.1.nip.io:8090`
@@ -10,6 +10,41 @@ Publicada em `http://docs-casehub-0dafe0.pages.127.0.0.1.nip.io:8090`
 O remoto deste repositório se chama **`gitlab`**, não `origin` — `git push
 origin main` falha aqui. Branches `main` e `desenv`, promoção por merge
 `--no-ff`.
+
+### Bilinguismo — o que ele impõe
+
+`mkdocs-static-i18n`, `docs_structure: suffix`: `pagina.md` é o português,
+`pagina.en.md` o inglês. O build em `pt` vai para a raiz e o `en` para `/en/`.
+**Página nova entra em dois arquivos** — com `fallback_to_default: true`, esquecer
+o inglês entrega a página em português sem aviso nenhum.
+
+Os assets ficam **só na raiz**; não existe `/en/assets/`. `extra_css` e
+`extra_javascript` resolvem sozinhos, mas `<img src>` cru em HTML apontaria para
+um caminho inexistente no inglês — use imagem em Markdown dentro de bloco com
+atributo `markdown`. Em JavaScript, derive a URL de `document.currentScript.src`.
+
+`overrides/partials/alternate.html` existe por um defeito do plugin: ele desiste
+de relativizar o link do seletor quando `page.url` é `.`, e o `/en/` absoluto que
+sobra cai fora da árvore que o `mike` publica sob `/latest/` — 404 só na capa,
+nos dois idiomas. `site_url` não resolve: apontaria todas as versões para a
+`latest`.
+
+### A página "Estrutura" é um hook, e não gen-files
+
+`hooks/estrutura.py` grava `docs/estrutura.md` e `docs/estrutura.en.md` **dentro
+do `docs_dir`**, em `on_config`, antes da coleta. Os dois são artefatos de build,
+ignorados pelo git.
+
+Era um script do `mkdocs-gen-files`, e a troca **não é preferência**: o i18n
+classifica cada arquivo por `is_relative_to(file.abs_src_path, docs_dir)`, e o
+gen-files cria a página num diretório temporário. Ela cai no ramo final do
+`reconfigure_files`, sai de lá como `Unhandled file case` e reprova o `--strict`.
+**Reordenar os plugins não resolve**: o `on_files` do i18n tem
+`event_priority(-100)` e roda por último de qualquer jeito. O `mkdocs-gen-files`
+saiu do `requirements.txt` junto.
+
+O hook só grava quando o conteúdo mudou — o `mkdocs serve` observa o `docs_dir`,
+e reescrever igual a cada `on_config` faria o watcher entrar em laço.
 
 ### Os arquivos de interface são cópias do docs-param-manager
 

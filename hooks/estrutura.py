@@ -1,6 +1,31 @@
-import os
+"""
+Hook que gera a página "Estrutura" dentro do `docs_dir`, antes da coleta.
 
-import mkdocs_gen_files
+Isto era um script do `mkdocs-gen-files` e virou hook por uma
+incompatibilidade estrutural com o `mkdocs-static-i18n`: o i18n classifica
+cada arquivo por `is_relative_to(file.abs_src_path, docs_dir)`, e o
+gen-files cria a página num diretório temporário. Ela nunca é relativa ao
+`docs_dir`, cai no ramo final do `reconfigure_files` e sai de lá com
+"Unhandled file case" — que, com `--strict`, reprova o build. Não adianta
+reordenar os plugins: o `on_files` do i18n tem prioridade -100 e roda
+depois de qualquer jeito.
+
+Escrever no `docs_dir` tem duas consequências que valem estar registradas:
+
+- **`docs/estrutura.md` e `docs/estrutura.en.md` são artefatos de build**,
+  ignorados pelo git. Editá-los à mão não adianta: são reescritos no
+  próximo build.
+- O `mkdocs serve` observa o `docs_dir`. Por isso o hook só escreve quando
+  o conteúdo mudou — reescrever igual a cada `on_config` faria o watcher
+  disparar um build novo, que reescreveria de novo, em laço.
+
+Este site não tem código próprio para exibir: ele documenta dois
+repositórios que vivem ao lado dele. Quando um deles não está presente no
+momento do build, a página diz isso em vez de sair vazia — um checkout
+ausente não deve quebrar o build da documentação.
+"""
+
+import os
 
 # --- Configurações ---
 IGNORED_NAMES = {
@@ -382,44 +407,62 @@ def generate_tree_html(path='.', level=0, max_level=3):
     html += '</ul>\n'
     return html
 
-
-def _bloco(titulo, caminho):
+def _bloco(titulo, caminho, ausente):
     """Árvore de um repositório irmão, se ele estiver ao lado."""
     if not os.path.isdir(caminho):
-        return (
-            f'<h2>{titulo}</h2>\n'
-            f'<p><em>Repositório não encontrado em <code>{caminho}</code> '
-            f'no momento do build — a árvore é gerada a partir dos '
-            f'repositórios irmãos, quando presentes.</em></p>\n'
-        )
+        return f'<h2>{titulo}</h2>\n<p><em>{ausente % caminho}</em></p>\n'
     arvore = generate_tree_html(caminho)
-    return (
-        f'<h2>{titulo}</h2>\n'
-        f'<div class="tree-container">\n{arvore}\n</div>\n'
+    return f'<h2>{titulo}</h2>\n<div class="tree-container">\n{arvore}\n</div>\n'
+
+
+AUSENTE_PT = (
+    'Repositório não encontrado em <code>%s</code> no momento do build — '
+    'a árvore é gerada a partir dos repositórios irmãos, quando presentes.'
+)
+AUSENTE_EN = (
+    'Repository not found at <code>%s</code> at build time — the tree is '
+    'generated from the sibling repositories, when they are present.'
+)
+
+API = os.path.join('..', 'fast-casehub')
+SDK = os.path.join('..', 'casehub-connect')
+
+
+def _pagina(titulo, intro, ausente):
+    return '\n'.join([
+        f'# {titulo}\n',
+        f'{intro}\n',
+        _bloco('fast-casehub (API)', API, ausente),
+        _bloco('casehub-connect (SDK)', SDK, ausente),
+    ])
+
+
+def _grava(caminho, conteudo):
+    """Só escreve se mudou — ver o laço do `mkdocs serve` no cabeçalho."""
+    if os.path.exists(caminho):
+        with open(caminho, encoding='utf-8') as f:
+            if f.read() == conteudo:
+                return
+    with open(caminho, 'w', encoding='utf-8', newline='\n') as f:
+        f.write(conteudo)
+
+
+def on_config(config):
+    docs = config['docs_dir']
+    _grava(
+        os.path.join(docs, 'estrutura.md'),
+        _pagina(
+            'Estrutura dos projetos',
+            'Árvore dos repositórios que este site documenta, gerada no build.',
+            AUSENTE_PT,
+        ),
     )
-
-
-def main():
-    """Gera `estrutura.md` a partir dos repositórios documentados.
-
-    Este site não tem código próprio para exibir: ele documenta dois
-    repositórios que vivem ao lado dele. Varrer o CWD (o que o script
-    original faz nos repos de código) renderizaria a árvore da própria
-    documentação, que não interessa a ninguém.
-
-    Quando um dos repositórios não está presente, a página diz isso em
-    vez de sair vazia — o build de docs não deve quebrar por causa de
-    um checkout ausente.
-    """
-    partes = [
-        '# Estrutura dos projetos\n',
-        'Árvore dos repositórios que este site documenta, gerada no '
-        'build.\n',
-        _bloco('fast-casehub (API)', os.path.join('..', 'fast-casehub')),
-        _bloco('casehub-connect (SDK)', os.path.join('..', 'casehub-connect')),
-    ]
-    with mkdocs_gen_files.open('estrutura.md', 'w+', encoding='utf-8') as f:
-        f.write('\n'.join(partes))
-
-
-main()
+    _grava(
+        os.path.join(docs, 'estrutura.en.md'),
+        _pagina(
+            'Project structure',
+            'Tree of the repositories this site documents, generated at build time.',
+            AUSENTE_EN,
+        ),
+    )
+    return config
