@@ -86,9 +86,9 @@ claim `aud`: qualquer token válido do mesmo issuer é aceito como
 autenticação.
 
 A autorização ainda segura o acesso — para alcançar uma automação é
-preciso um token cujo `azp` seja exatamente o nome dela —, então a
-exposição é estreita. Mas é uma camada a menos, e o serviço **avisa no
-log de subida** enquanto estiver assim.
+preciso um token cujo `azp` seja exatamente o nome dela. Ainda assim é
+uma camada a menos, e o serviço **avisa no log de subida** enquanto a
+variável estiver vazia. Preenchê-la é parte de fechar um ambiente.
 
 Para fechar, nesta ordem — inverter derruba os consumidores com 401:
 

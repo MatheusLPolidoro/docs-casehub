@@ -85,9 +85,9 @@ validate the `aud` claim: any valid token from the same issuer is accepted
 as authentication.
 
 Authorization still holds access — reaching an automation requires a token
-whose `azp` is exactly its name — so the exposure is narrow. But it is one
-layer less, and the service **warns in the startup log** while it stays that
-way.
+whose `azp` is exactly its name. It is still one layer less, and the service
+**warns in the startup log** while the variable is empty. Filling it in is
+part of hardening an environment.
 
 To close it, in this order — inverting it knocks consumers out with 401s:
 

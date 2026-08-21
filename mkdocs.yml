@@ -10,16 +10,14 @@ docs_dir: docs
 # aqui quebra o download sem quebrar o build.
 use_directory_urls: true
 
-# Liga o link do repositório na barra superior. **O contador de estrelas não
-# vai aparecer**: o Material só o busca em provedor público, e nenhum
-# repositório do CaseHub é público — os do GitHub respondem 404 sem
-# autenticação e os do GitLab local estão como `private`. O link continua
-# valendo para quem lê de dentro da rede, que é quem alcança este site.
+# Liga o link do repositório e o contador de estrelas na barra superior — o
+# Material busca os números na API do GitHub sozinho.
 #
-# Aponta para o SDK porque é o que quem integra consome; a API é o outro
-# repositório documentado aqui.
-repo_url: http://gitlab.127.0.0.1.nip.io/matheuslpolidoro/casehub-connect
-repo_name: matheuslpolidoro/casehub-connect
+# Aponta para o repositório **desta documentação**, e não para o código: os
+# repositórios do `fast-casehub` e do `casehub-connect` não são públicos, e um
+# link que responde 404 para o leitor é pior que link nenhum.
+repo_url: https://github.com/MatheusLPolidoro/docs-casehub
+repo_name: MatheusLPolidoro/docs-casehub
 
 # Âncora quebrada é o defeito mais fácil de introduzir numa documentação com
 # referência cruzada, e o mais fácil de não notar: o link continua clicável e

@@ -128,18 +128,18 @@ travar a configuração depois que o Keycloak estiver provisionado.
 construída a partir de um lockfile versionado, e o pipeline varre o
 histórico completo com gitleaks.
 
-### :material-progress-clock: Pendente, e não é código
+### :material-progress-clock: O que depende de provisionamento
 
-!!! warning "A validação de `aud` ainda depende do Keycloak"
+!!! warning "Validar `aud` não é mudança de código"
     O serviço valida o claim `aud` assim que `CASEHUB_OIDC_AUDIENCE`
-    estiver preenchida — não falta nada no código. Mas preencher exige
-    antes provisionar um audience dedicado nos clients do Keycloak de
-    cada ambiente.
+    estiver preenchida — não falta nada no código. O que ela exige antes
+    é provisionar um audience dedicado nos clients do Keycloak de cada
+    ambiente, trabalho de quem administra o realm.
 
-    Enquanto isso não acontecer, **qualquer token válido do mesmo
-    emissor é aceito como autenticação**. A autorização por automação
-    continua valendo, então a exposição é estreita: seria preciso um
-    client cujo `client_id` coincidisse com o nome de uma automação.
+    Com a variável vazia, o serviço aceita como autenticação qualquer
+    token válido do mesmo emissor, e **avisa isso no log de subida**. O
+    aviso é a verificação: se ele está lá, a configuração ainda não está
+    completa naquele ambiente.
 
     O roteiro está em
     [Autenticação](api/autenticacao.md#validacao-de-aud) — e a ordem

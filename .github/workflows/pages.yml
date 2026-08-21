@@ -1,0 +1,67 @@
+# Publicação no GitHub Pages, versionada pelo `mike`.
+#
+# Este site é publicado em **dois lugares**: aqui e no GitLab Pages interno
+# (`.gitlab-ci.yml`, job `pages`). Não é redundância por descuido — o site
+# interno continua no ar quando o GitHub está inacessível, e é ele que a rede
+# fechada alcança. Os dois servem o mesmo conteúdo a partir do mesmo `main`.
+#
+# A diferença de mecânica entre os dois vale saber: no GitLab, o `mike` grava
+# na `gh-pages` e o job precisa **extrair a árvore** daquela branch para
+# `public/`, porque o Pages de lá publica um artefato. Aqui o GitHub Pages
+# publica a branch direto, então `mike --push` já basta.
+
+name: pages
+
+on:
+  push:
+    branches: [main]
+  # Permite republicar sem um commit novo — útil depois de mexer na
+  # configuração do Pages.
+  workflow_dispatch:
+
+# O `mike` empurra para a `gh-pages`; sem isto o push é recusado com 403.
+permissions:
+  contents: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  # Silencia o aviso do MkDocs 2.0 que o tema imprime em toda execução — ver
+  # o comentário no requirements.txt.
+  NO_MKDOCS_2_WARNING: 'true'
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    steps:
+      # `fetch-depth: 0` porque o `mike` precisa do histórico da `gh-pages`
+      # para acumular versões em vez de sobrescrever.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      # `--strict` transforma link quebrado, âncora inválida e página fora do
+      # nav em erro. Roda como passo separado porque o `mike deploy` **não**
+      # repassa opções ao mkdocs: o que viesse depois de `--` seria lido como
+      # alias posicional e criaria uma versão de nome inválido na gh-pages.
+      - name: conferir o build
+        run: mkdocs build --strict
+
+      - name: publicar com mike
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin gh-pages:gh-pages || echo "gh-pages ainda nao existe"
+          VERSAO=$(cat VERSION)
+          echo "publicando versao $VERSAO"
+          mike deploy --push --branch gh-pages --update-aliases "$VERSAO" latest
+          mike set-default --push --branch gh-pages latest

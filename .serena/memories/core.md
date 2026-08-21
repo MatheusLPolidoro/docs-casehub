@@ -104,10 +104,22 @@ Quatro selos estáticos na capa (SDK, API, Python, contrato). **Não há selo de
 PyPI nem de cobertura**: o SDK vai para registry interno e nenhum número de
 cobertura é declarado nos dois repositórios — inventar um seria pior.
 
-O `repo_url` aponta para o `casehub-connect` no GitLab local. **O contador de
-estrelas não aparece** e não é defeito: o Material só o busca em provedor
-público, e nenhum repositório do CaseHub é público — os do GitHub respondem
-404 sem autenticação e os do GitLab estão `private`.
+O `repo_url` aponta para **o repositório desta documentação no GitHub**, e não
+para o código: nem o `fast-casehub` nem o `casehub-connect` são públicos, e um
+link que responde 404 para o leitor é pior que link nenhum.
+
+### O que este site não pode dizer
+
+A documentação é pública. Duas afirmações foram reescritas por causa disso, e
+a regra que as separou vale para o texto novo: **descrever como o software se
+comporta é o trabalho da página; declarar em que estado a instalação de alguém
+está hoje é informação operacional, e não pertence a um site público.**
+
+O que saiu: que a validação de `aud` segue desligada num ambiente real, com a
+condição de exploração junto (`mudancas.md`); e, no `docs-param-manager`, que
+`client_secret` reais permanecem num histórico e não foram rotacionados. As
+duas viraram descrição de mecanismo — o aviso no log de subida como
+verificação, e a regra de rotacionar o que alcança o histórico.
 
 ### Divergência conhecida com o código
 
