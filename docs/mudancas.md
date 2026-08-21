@@ -34,7 +34,8 @@ uma versão anterior precisa agir nas duas.
     **Por quê.** Alinhar o SDK ao nome que o contrato do servidor usa. O
     identificador sempre foi a chave natural do caso, não de um worker.
 
-    **O que fazer.** Renomeie nas chamadas e fixe `casehub==0.2.0`. É a
+    **O que fazer.** Renomeie nas chamadas e fixe uma versão a partir da
+    0.2.0 — hoje, `casehub==0.3.0`. É a
     mudança que torna o SDK anterior incompatível com a API atual — e o
     sintoma é um 400 de campo desconhecido, porque o contrato é estrito
     (`extra='forbid'`), não um campo silenciosamente ignorado. Ver

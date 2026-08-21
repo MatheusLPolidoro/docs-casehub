@@ -8,17 +8,17 @@ from casehub import CaseHubClient
 
 with CaseHubClient(
     base_url='https://casehub.interno',
-    client_id='triagem-nao-creditada',
+    client_id='minha-automacao',
     client_secret='...',
     token_url='https://keycloak.interno/realms/x/protocol/openid-connect/token',
 ) as client:
     client.upsert_case(
         environment='prod',
-        automation='triagem-nao-creditada',
+        automation='minha-automacao',
         case_id='a1b2c3',
         status='aberto',
         started_at='2026-08-20T09:00:00-03:00',
-        source_record={'CONTA': '12345', 'ARQUIVO': 'X.TXT'},
+        source_record={'referencia': 'REF-12345', 'origem': 'lote-a'},
     )
 ```
 
@@ -70,19 +70,19 @@ Todos devolvem o JSON da resposta como `dict`.
 ```python
 resultado = client.upsert_cases_batch(
     environment='prod',
-    automation='triagem-nao-creditada',
+    automation='minha-automacao',
     cases=[
         {
             'case_id': 'a1',
             'status': 'aberto',
             'started_at': '2026-08-20T09:00:00-03:00',
-            'source_record': {'CONTA': '111'},
+            'source_record': {'referencia': 'REF-111'},
         },
         {
             'case_id': 'a2',
             'status': 'aberto',
             'started_at': '2026-08-20T09:01:00-03:00',
-            'source_record': {'CONTA': '222'},
+            'source_record': {'referencia': 'REF-222'},
         },
     ],
 )
@@ -106,12 +106,12 @@ if resultado['errors']:
 ```python
 pagina = client.list_cases(
     environment='prod',
-    automation='triagem-nao-creditada',
+    automation='minha-automacao',
     status='aberto',
     page=1,
     page_size=100,
     include='source_record',
-    source_filters={'CONTA': '12345'},
+    source_filters={'referencia': 'REF-12345'},
 )
 
 print(pagina['total'], len(pagina['items']))

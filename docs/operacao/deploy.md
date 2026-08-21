@@ -26,13 +26,12 @@ flowchart TD
 | `uat` | API + Postgres + Keycloak — stack local completa e descartável. |
 | `prod` | Só a API, apontando para a infraestrutura que já existe. |
 
-<div style="position: relative;">
-  <button class="copy-btn" onclick="copyText('docker compose --profile uat up -d', this)">📋 Copiar</button>
-  <div class="termynal" data-termynal data-termynal-startDelay="600" style="min-height: 200px;" data-command="docker compose --profile uat up -d">
-    <span data-ty="input">docker compose --profile uat up -d</span>
-    <span data-ty="progress"></span>
-    <span data-ty>✔ 3 containers running</span>
-  </div>
+<div class="pm-terminal" data-pm-terminal data-pm-command="docker compose --profile uat up -d">
+<div class="termynal" data-termynal data-ty-startDelay="500" data-ty-typeDelay="45" data-ty-lineDelay="800">
+<span data-ty="input">docker compose --profile uat up -d</span>
+<span data-ty="progress"></span>
+<span data-ty>✔ 3 containers running</span>
+</div>
 </div>
 
 !!! warning "O `.env` precisa existir antes"
@@ -53,14 +52,13 @@ repositório, e só então instala o pacote com `--no-deps`.
 Para regerar o lock, sempre em container Linux (que é o alvo da
 imagem):
 
-<div style="position: relative;">
-  <button class="copy-btn" onclick="copyText('docker run --rm -v &quot;$PWD:/src&quot; -w /src python:3.13-slim sh -c &quot;pip install pip-tools && pip-compile --no-header --strip-extras --output-file=requirements.lock pyproject.toml&quot;', this)">📋 Copiar</button>
-  <div class="termynal" data-termynal data-termynal-startDelay="600" style="min-height: 200px;" data-command="regerar lock">
-    <span data-ty="input">docker run --rm -v "$PWD:/src" -w /src python:3.13-slim \</span>
-    <span data-ty="input">  sh -c "pip install pip-tools && pip-compile --no-header \</span>
-    <span data-ty="input">  --strip-extras --output-file=requirements.lock pyproject.toml"</span>
-    <span data-ty="progress"></span>
-  </div>
+<div class="pm-terminal" data-pm-terminal data-pm-command="regerar lock">
+<div class="termynal" data-termynal data-ty-startDelay="500" data-ty-typeDelay="45" data-ty-lineDelay="800">
+<span data-ty="input">docker run --rm -v "$PWD:/src" -w /src python:3.13-slim \</span>
+<span data-ty="input">  sh -c "pip install pip-tools && pip-compile --no-header \</span>
+<span data-ty="input">  --strip-extras --output-file=requirements.lock pyproject.toml"</span>
+<span data-ty="progress"></span>
+</div>
 </div>
 
 !!! danger "Não regere o lock no Windows"

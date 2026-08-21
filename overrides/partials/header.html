@@ -1,0 +1,157 @@
+{#
+  Barra superior — com a fonte, o download do `.md` e o "salvar em PDF".
+
+  Estes três controles moravam numa barra própria dentro do conteúdo, logo
+  acima do `<h1>`. Subiram para cá: é onde já estão o alternador de tema, o
+  seletor de idioma e a busca, e é onde quem procura um controle olha
+  primeiro. A barra que existia no conteúdo foi removida junto — com o
+  `overrides/main.html`, que não tinha mais nada a fazer.
+
+  O resto do arquivo é o `partials/header.html` do mkdocs-material copiado sem
+  alteração. **Ao atualizar o tema, conferir se o original mudou** — é a dívida
+  que se paga por sobrescrever um parcial inteiro, e o próprio cabeçalho do
+  arquivo original avisa que ele é gerado. Conferido nas duas versões em uso
+  hoje: a 9.6.12 (docs-param-manager) e a 9.7.7 (docs-casehub) trazem este
+  parcial byte a byte igual.
+
+  Sobre os rótulos: eles vivem no bloco de tradução abaixo porque quem os
+  escreve é o Jinja. As cadeias que nascem em tempo de execução — as opções do
+  seletor de fonte, os controles da animação e do terminal — vivem em
+  `assets/js/pm-i18n.js`. Um mesmo texto declarado nos dois lugares diverge.
+-#}
+{#- `theme.language` deixa de ser string quando o i18n a converte em Locale;
+    passar por `| string` é o que mantém o `startswith` funcionando. -#}
+{% set idioma = config.theme.language | string %}
+{% if idioma.startswith('en') %}
+  {% set rotulo_fonte = 'Text font' %}
+  {% set rotulo_md = 'Download the Markdown source of this page' %}
+  {% set rotulo_pdf = 'Save this page as PDF' %}
+{% else %}
+  {% set rotulo_fonte = 'Fonte do texto' %}
+  {% set rotulo_md = 'Baixar o Markdown original desta página' %}
+  {% set rotulo_pdf = 'Salvar esta página em PDF' %}
+{% endif %}
+{% set class = "md-header" %}
+{% if "navigation.tabs.sticky" in features %}
+  {% set class = class ~ " md-header--shadow md-header--lifted" %}
+{% elif "navigation.tabs" not in features %}
+  {% set class = class ~ " md-header--shadow" %}
+{% endif %}
+<header class="{{ class }}" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="{{ lang.t('header') }}">
+    <a href="{{ config.extra.homepage | d(nav.homepage.url, true) | url }}" title="{{ config.site_name | e }}" class="md-header__button md-logo" aria-label="{{ config.site_name }}" data-md-component="logo">
+      {% include "partials/logo.html" %}
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      {% set icon = config.theme.icon.menu or "material/menu" %}
+      {% include ".icons/" ~ icon ~ ".svg" %}
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            {{ config.site_name }}
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            {% if page.meta and page.meta.title %}
+              {{ page.meta.title }}
+            {% else %}
+              {{ page.title }}
+            {% endif %}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    {#
+      Seletor de fonte, no mesmo formato `md-select` do seletor de idioma ao
+      lado — inclusive a abertura por hover e por foco, que vem do CSS do tema
+      de graça.
+
+      A casca vem daqui, para que o ícone saia do conjunto do próprio Material
+      em vez de um caminho SVG copiado à mão. A lista chega **vazia** e o
+      controle inteiro nasce com `hidden`: quem preenche e revela é
+      `assets/js/typography.js`. Sem JavaScript, portanto, ele não aparece — e
+      não sobra um menu focável que não faz nada ao ser usado.
+    -#}
+    <div class="md-header__option" data-pm-fonte hidden>
+      <div class="md-select">
+        <button class="md-header__button md-icon" aria-label="{{ rotulo_fonte }}" title="{{ rotulo_fonte }}">
+          {% include ".icons/material/format-font.svg" %}
+        </button>
+        <div class="md-select__inner">
+          <ul class="md-select__list" data-pm-fonte-lista></ul>
+        </div>
+      </div>
+    </div>
+
+    {#
+      Baixar o `.md`. É um link para um arquivo real, gravado ao lado do HTML
+      por `hooks/downloads.py` — funciona sem JavaScript, e por isso é escrito
+      aqui e não montado em tempo de execução.
+    -#}
+    {#- O `404.html` também passa por este cabeçalho, e lá `page` é None. -#}
+    {% if page and page.file %}
+      <a
+        class="md-header__button md-icon"
+        href="index.md"
+        download="{{ page.file.src_uri | replace('/', '_') }}"
+        title="{{ rotulo_md }}"
+        aria-label="{{ rotulo_md }}"
+      >
+        {% include ".icons/material/download.svg" %}
+      </a>
+    {% endif %}
+
+    {#
+      Salvar em PDF: chama `window.print()`, e a folha `@media print` em
+      `assets/css/a11y.css` é que recorta a navegação. Nasce com `hidden` e
+      `assets/js/doc-actions.js` o revela — sem JavaScript ele não faria nada,
+      e o navegador já oferece Ctrl+P para o mesmo fim.
+    -#}
+    <button
+      type="button"
+      class="md-header__button md-icon"
+      data-doc-print
+      hidden
+      title="{{ rotulo_pdf }}"
+      aria-label="{{ rotulo_pdf }}"
+    >
+      {% include ".icons/material/printer.svg" %}
+    </button>
+
+    {% if config.theme.palette %}
+      {% if not config.theme.palette is mapping %}
+        {% include "partials/palette.html" %}
+      {% endif %}
+    {% endif %}
+    {% if not config.theme.palette is mapping %}
+      {% include "partials/javascripts/palette.html" %}
+    {% endif %}
+    {% if config.extra.alternate %}
+      {% include "partials/alternate.html" %}
+    {% endif %}
+    {% if "material/search" in config.plugins %}
+      {% set search = config.plugins["material/search"] | attr("config") %}
+      {% if search.enabled %}
+        <label class="md-header__button md-icon" for="__search">
+          {% set icon = config.theme.icon.search or "material/magnify" %}
+          {% include ".icons/" ~ icon ~ ".svg" %}
+        </label>
+        {% include "partials/search.html" %}
+      {% endif %}
+    {% endif %}
+    {% if config.repo_url %}
+      <div class="md-header__source">
+        {% include "partials/source.html" %}
+      </div>
+    {% endif %}
+  </nav>
+  {% if "navigation.tabs.sticky" in features %}
+    {% if "navigation.tabs" in features %}
+      {% include "partials/tabs.html" %}
+    {% endif %}
+  {% endif %}
+</header>

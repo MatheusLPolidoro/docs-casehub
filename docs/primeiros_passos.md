@@ -9,12 +9,11 @@ flowchart LR
 
 ## 1. Instale o SDK
 
-<div style="position: relative;">
-  <button class="copy-btn" onclick="copyText('pip install casehub', this)">📋 Copiar</button>
-  <div class="termynal" data-termynal data-termynal-startDelay="600" style="min-height: 150px;" data-command="pip install casehub">
-    <span data-ty="input">pip install casehub</span>
-    <span data-ty="progress"></span>
-  </div>
+<div class="pm-terminal" data-pm-terminal data-pm-command="pip install casehub">
+<div class="termynal" data-termynal data-ty-startDelay="500" data-ty-typeDelay="45" data-ty-lineDelay="800">
+<span data-ty="input">pip install casehub</span>
+<span data-ty="progress"></span>
+</div>
 </div>
 
 ## 2. Suba uma API local
@@ -22,12 +21,11 @@ flowchart LR
 Para experimentar sem depender de nenhum ambiente, o mock in-memory
 serve — ele implementa o mesmo contrato:
 
-<div style="position: relative;">
-  <button class="copy-btn" onclick="copyText('python -m casehub_api --storage memory', this)">📋 Copiar</button>
-  <div class="termynal" data-termynal data-termynal-startDelay="600" style="min-height: 170px;" data-command="python -m casehub_api --storage memory">
-    <span data-ty="input">python -m casehub_api --storage memory</span>
-    <span data-ty>INFO:     Uvicorn running on http://127.0.0.1:8080</span>
-  </div>
+<div class="pm-terminal" data-pm-terminal data-pm-command="python -m casehub_api --storage memory">
+<div class="termynal" data-termynal data-ty-startDelay="500" data-ty-typeDelay="45" data-ty-lineDelay="800">
+<span data-ty="input">python -m casehub_api --storage memory</span>
+<span data-ty>INFO:     Uvicorn running on http://127.0.0.1:8080</span>
+</div>
 </div>
 
 !!! tip "Para experimentar, use `apikey`"
@@ -51,7 +49,7 @@ with CaseHubClient(
         case_id='caso-1',
         status='aberto',
         started_at='2026-08-20T09:00:00-03:00',
-        source_record={'CONTA': '12345', 'ARQUIVO': 'X.TXT'},
+        source_record={'referencia': 'REF-12345', 'origem': 'lote-a'},
     )
 
 print(resposta)   # {'created': True}
