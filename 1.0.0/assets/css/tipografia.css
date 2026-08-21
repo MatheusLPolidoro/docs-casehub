@@ -1,0 +1,158 @@
+/*
+ * Tipografia.
+ *
+ * A fonte base vem do `theme.font` no mkdocs.yml (Inter para texto,
+ * JetBrains Mono para código). Aqui ficam o ritmo e as medidas — o que o
+ * tema não decide e o que a leitura longa cobra.
+ *
+ * Duas restrições mandam em tudo o que está abaixo, e as duas já estão
+ * declaradas na página de acessibilidade:
+ *
+ * - **Nada em `px` no texto.** Tamanho em pixel ignora a fonte que a
+ *   pessoa configurou no navegador (WCAG 1.4.4). Tudo aqui é `rem` ou
+ *   `em`.
+ * - **Nada que dependa de largura fixa.** A ampliação até 200 % não pode
+ *   produzir rolagem horizontal (WCAG 1.4.10), então a medida de linha é
+ *   dada em `ch` com `max-width`, que encolhe junto.
+ *
+ * O controle de troca de fonte fica no fim do arquivo; a lógica dele está
+ * em `assets/js/typography.js`.
+ */
+
+/* ------------------------------------------------------------- ritmo */
+
+.md-typeset {
+  /* 0.8rem é o padrão do Material. Um passo acima, porque este site é
+     prosa longa com tabela de referência no meio, não referência de API
+     para varredura rápida. */
+  font-size: 0.84rem;
+  line-height: 1.72;
+}
+
+.md-typeset p,
+.md-typeset li {
+  /* `pretty` evita a última linha com uma palavra sozinha. Onde não é
+     suportado, é ignorado — não há fallback a escrever. */
+  text-wrap: pretty;
+}
+
+/* Medida de linha: acima de ~75 caracteres o olho perde o começo da linha
+   seguinte. Só no parágrafo e no item de lista — tabela, bloco de código e
+   diagrama precisam da largura inteira. */
+.md-typeset > p,
+.md-typeset > ul > li,
+.md-typeset > ol > li {
+  max-width: 74ch;
+}
+
+.md-typeset p + p {
+  margin-top: 0.9em;
+}
+
+/* URL comprida em texto é o que empurra a página para a rolagem
+   horizontal na largura de celular. */
+.md-typeset a,
+.md-typeset code {
+  overflow-wrap: break-word;
+}
+
+/* ---------------------------------------------------------- títulos */
+
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3,
+.md-typeset h4 {
+  font-weight: 700;
+  line-height: 1.25;
+  /* `balance` distribui as palavras entre as linhas de um título curto;
+     sem ele, um título de duas linhas costuma sair 90 % / 10 %. */
+  text-wrap: balance;
+}
+
+.md-typeset h1 {
+  font-size: 1.9em;
+  letter-spacing: -0.02em;
+  color: var(--md-default-fg-color);
+}
+
+.md-typeset h2 {
+  font-size: 1.4em;
+  letter-spacing: -0.01em;
+  margin-top: 2em;
+}
+
+.md-typeset h3 {
+  font-size: 1.1em;
+  margin-top: 1.6em;
+}
+
+/* ----------------------------------------------------------- tabelas */
+
+.md-typeset table:not([class]) {
+  font-size: 0.72rem;
+  line-height: 1.5;
+}
+
+.md-typeset table:not([class]) th {
+  font-weight: 700;
+}
+
+/* Números que se comparam coluna a coluna — versões, portas, tamanhos —
+   só alinham com algarismos de largura fixa. */
+.md-typeset table:not([class]) td {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------------ código */
+
+.md-typeset code {
+  font-size: 0.85em;
+}
+
+.md-typeset pre > code {
+  font-size: 0.7rem;
+  line-height: 1.6;
+}
+
+/* --------------------------------------- controles da barra superior */
+
+/* O seletor de fonte e o botão de PDF nascem com `hidden` no template e são
+   revelados pelos scripts. O `!important` é preciso porque o
+   `.md-header__option` do tema traz `display: flex`, que vence o
+   `display: none` que o navegador dá a `[hidden]`. */
+.md-header [hidden] {
+  display: none !important;
+}
+
+/* O tema estiliza `.md-select__link` como `<a>`. Aqui a lista de fontes é de
+   `<button>`, porque escolher uma fonte não navega para lugar nenhum — e um
+   `<a href="#">` que não leva a lugar nenhum é exatamente o que confunde quem
+   usa leitor de tela. Estas regras devolvem a aparência de link ao botão. */
+.md-select__list .md-select__link {
+  display: block;
+  width: 100%;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+/* A opção em vigor precisa ser distinguível sem depender de cor (WCAG 1.4.1):
+   daí o peso do traço e a marca de seleção, além do realce. */
+.md-select__list .md-select__link[aria-current='true'] {
+  font-weight: 700;
+  color: var(--md-accent-fg-color);
+}
+
+.md-select__list .md-select__link[aria-current='true']::after {
+  content: ' ✓';
+}
+
+@media print {
+  .md-header {
+    display: none !important;
+  }
+}
