@@ -4,6 +4,20 @@ Documentação central do ecossistema **CaseHub** — a API `fast-casehub`
 e o SDK cliente `casehub` (repositório `casehub-connect`), descritos
 lado a lado.
 
+## O site
+
+**https://matheuslpolidoro.github.io/docs-casehub/** — em português e
+inglês, com seletor de idioma e de versão na barra superior.
+
+Ele é publicado em dois lugares a partir do mesmo `main`, e não é
+redundância por descuido: o interno é o que a rede fechada alcança e
+continua no ar sem internet.
+
+| Onde | URL | Quem publica |
+|---|---|---|
+| GitHub Pages (público) | https://matheuslpolidoro.github.io/docs-casehub/ | `.github/workflows/pages.yml` |
+| GitLab Pages (interno) | http://docs-casehub-0dafe0.pages.127.0.0.1.nip.io:8090 | job `pages` do `.gitlab-ci.yml` |
+
 ## Por que a documentação vive fora dos dois repositórios
 
 A API e o SDK são versionados e publicados de forma independente, mas o
@@ -198,10 +212,14 @@ outro projeto, que pode divergir do `requirements.txt` deste.
 
 ## Versionamento com `mike`
 
-O site é publicado **versionado**. O job `pages` roda o `mike`, que
-mantém cada versão numa pasta própria dentro da branch `gh-pages`, e só
-então extrai aquela árvore para `public/` — que é o que o GitLab Pages
-serve.
+O site é publicado **versionado**, nos dois destinos, pelo `mike`: ele
+mantém cada versão numa pasta própria dentro da branch `gh-pages`.
+
+O que difere entre os destinos é o passo final, e a diferença é do
+provedor. O **GitLab Pages** publica o conteúdo de um artefato, então o
+job precisa extrair a árvore da `gh-pages` para `public/`. O **GitHub
+Pages** publica a branch direto, então `mike --push` já basta — e o
+`GITHUB_TOKEN` cobre o push, dispensando o `MIKE_TOKEN` descrito adiante.
 
 ```
 gh-pages/
@@ -221,7 +239,7 @@ gh-pages/
 Do arquivo **`VERSION`** na raiz do repositório, lido pelo job com
 `cat`. É uma versão **própria do site**, deliberadamente não a da API
 nem a do SDK: o site documenta os dois, e eles têm números diferentes
-(hoje API 0.1.0 e SDK 0.2.0), então amarrar em um faria o seletor mentir
+(hoje API 0.1.0 e SDK 0.3.0), então amarrar em um faria o seletor mentir
 sobre o outro. O mapeamento entre eles está declarado na página de
 [instalação](docs/instalacao.md).
 
