@@ -5,10 +5,22 @@ Documentação central do ecossistema CaseHub (a API `fast-casehub` e o SDK
 versionada por `mike` — a versão do site é própria (`VERSION`, hoje `1.0.0`), **não** a
 da API nem a do SDK, porque ele documenta os dois com números diferentes.
 
-Publicada em `http://docs-casehub-0dafe0.pages.127.0.0.1.nip.io:8090`
-(projeto `id 9` no GitLab local; o sufixo do host é do GitLab, não escolhido).
-O remoto deste repositório se chama **`gitlab`**, não `origin` — `git push
-origin main` falha aqui. Branches `main` e `desenv`, promoção por merge
+**Publicada em dois lugares, a partir do mesmo `main`** (2026-08-21):
+
+| Onde | URL | Quem publica |
+|---|---|---|
+| GitHub Pages (público) | `https://matheuslpolidoro.github.io/docs-casehub/` | `.github/workflows/pages.yml` |
+| GitLab Pages (interno) | `http://docs-casehub-0dafe0.pages.127.0.0.1.nip.io:8090` | job `pages` do `.gitlab-ci.yml` |
+
+Não é redundância por descuido: o interno é o que a rede fechada alcança e
+continua no ar sem internet. A mecânica difere porque o provedor difere — o
+GitLab Pages publica um artefato (o job extrai a árvore da `gh-pages` para
+`public/`), o GitHub publica a branch direto (`mike --push` basta, e o
+`GITHUB_TOKEN` cobre o push, sem o `MIKE_TOKEN`).
+
+**Dois remotos, e o nome importa**: `gitlab` (interno, `id 9`) e `origin`
+(GitHub). `git push origin main` vai para o GitHub — o interno é
+`git push gitlab main`. Branches `main` e `desenv`, promoção por merge
 `--no-ff`.
 
 ### Bilinguismo — o que ele impõe
