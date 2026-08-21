@@ -105,12 +105,51 @@ theme:
 plugins:
   - search:
       separator: '[\s\-\.]+'
-  - gen-files:
-      scripts:
-        - docs/gen_tree.py
+  - i18n:
+      docs_structure: suffix
+      fallback_to_default: true
+      reconfigure_material: true
+      reconfigure_search: true
+      languages:
+        - locale: pt
+          name: Português (Brasil)
+          default: true
+          build: true
+          site_name: CaseHub
+        - locale: en
+          name: English
+          build: true
+          site_name: CaseHub
+          site_description: >-
+            Central documentation for the CaseHub ecosystem — the fast-casehub
+            API and the casehub client SDK.
+          theme:
+            language: en
+          nav_translations:
+            Docs: Docs
+            O que é o CaseHub: What CaseHub is
+            Arquitetura: Architecture
+            Primeiros passos: Getting started
+            Introdução: Introduction
+            Instalação: Installation
+            Autenticação: Authentication
+            Erros: Errors
+            Retenção: Retention
+            Cliente síncrono: Synchronous client
+            Cliente assíncrono: Asynchronous client
+            Operação: Operations
+            Observabilidade: Observability
+            O que mudou: What changed
+            Estrutura: Structure
 
 hooks:
   - hooks/downloads.py
+  # A página "Estrutura" é gerada aqui, e não pelo `mkdocs-gen-files`: o
+  # i18n classifica cada arquivo por estar dentro do `docs_dir`, e o
+  # gen-files cria a página num diretório temporário — de onde ela sai como
+  # "Unhandled file case" e reprova o `--strict`. O hook grava dentro do
+  # `docs_dir`, antes da coleta, nos dois idiomas. Ver o cabeçalho dele.
+  - hooks/estrutura.py
 
 extra:
   version:

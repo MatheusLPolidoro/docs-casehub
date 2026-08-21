@@ -34,16 +34,10 @@ mkdocs-material>=9.7.7
 # mike" - inclusive o `MIKE_TOKEN`, sem o qual a publicacao funciona mas
 # nao acumula versoes.
 mike>=2.1
-pymdown-extensions>=10.7
 
-# Pinado em 0.5.0 de propósito, não por conservadorismo: a partir de
-# 0.6.0 o pacote passou a declarar `properdocs` (um fork do MkDocs) como
-# dependência OBRIGATÓRIA, e o plugin chama
-# `properdocs.replacement_warning.setup()` no import - o que despeja um
-# bloco de propaganda do fork em toda execução.
-#
-# 0.5.0 depende só de `mkdocs` e a API que usamos
-# (`mkdocs_gen_files.open`) é a mesma - verificado: a página "Estrutura"
-# continua sendo gerada igual. Antes de subir a versão, confira se essa
-# dependência ainda está lá.
-mkdocs-gen-files==0.5.0
+# Bilinguismo por sufixo: `pagina.md` e o portugues, `pagina.en.md` o ingles.
+# O build em `pt` vai para a raiz e o `en` para `/en/`. Pinado na mesma versao
+# usada no `docs-param-manager`, que e o site de onde as diretrizes deste
+# vieram - conferido que ela funciona com o tema 9.7.7 daqui.
+mkdocs-static-i18n==1.3.1
+pymdown-extensions>=10.7
