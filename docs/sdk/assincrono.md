@@ -12,7 +12,7 @@ async with AsyncCaseHubClient(
     base_url='https://casehub.interno',
     client_id='minha-automacao',
     client_secret='...',
-    token_url='https://keycloak.interno/realms/x/protocol/openid-connect/token',
+    token_url='https://casehub.interno/v1/auth/token',
 ) as client:
     await client.upsert_cases_batch(
         environment='prod',

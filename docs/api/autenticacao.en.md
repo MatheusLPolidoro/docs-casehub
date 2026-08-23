@@ -40,6 +40,50 @@ flowchart LR
     B -->|ok| OK["Route runs"]
 ```
 
+## Where to request the token
+
+**Ask the CaseHub API itself**, at `POST /v1/auth/token`. An automation
+does not need to know about Keycloak: the realm address is the
+service's configuration, not something every consumer carries in every
+environment.
+
+=== "OAuth2 form (what the SDK sends)"
+
+    ```bash
+    curl -X POST https://casehub.internal/v1/auth/token \
+      -d grant_type=client_credentials \
+      -d client_id=my-automation -d client_secret=...
+    ```
+
+=== "JSON"
+
+    ```bash
+    curl -X POST https://casehub.internal/v1/auth/token \
+      -H 'Content-Type: application/json' \
+      -d '{"client_id": "my-automation", "client_secret": "..."}'
+    ```
+
+The response carries `access_token`, `expires_in` and — when the client
+has refresh issuance enabled — `refresh_token` and
+`refresh_expires_in`. Renewing is `POST /v1/auth/refresh`, or the same
+`/v1/auth/token` with `grant_type=refresh_token`.
+
+!!! info "The API does not sign the token"
+    It forwards to the identity provider and returns what comes back.
+    The `access_token` is the very one Keycloak would hand to a direct
+    caller, carrying the same automation claim — there is a single
+    issuer, and it is the one that controls the lifetimes.
+
+!!! warning "The `/v1/auth/*` routes require no authentication"
+    They are how you obtain it. Requiring a credential there would be
+    circular.
+
+Requesting straight from Keycloak
+(`/realms/<realm>/protocol/openid-connect/token`) still works and helps
+when debugging with the API down — but it spreads the realm address
+across every automation's configuration, which is exactly what
+`/v1/auth/token` removes.
+
 ## The token
 
 It has to belong to a Keycloak `client_credentials` client — an automation
@@ -112,7 +156,7 @@ To close it, in this order — inverting it knocks consumers out with 401s:
         base_url='https://casehub.interno',
         client_id='minha-automacao',
         client_secret='...',
-        token_url='https://keycloak.interno/realms/x/protocol/openid-connect/token',
+        token_url='https://casehub.interno/v1/auth/token',
     )
     ```
 
