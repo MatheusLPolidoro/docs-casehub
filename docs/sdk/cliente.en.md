@@ -10,7 +10,7 @@ with CaseHubClient(
     base_url='https://casehub.interno',
     client_id='minha-automacao',
     client_secret='...',
-    token_url='https://keycloak.interno/realms/x/protocol/openid-connect/token',
+    token_url='https://casehub.internal/v1/auth/token',
 ) as client:
     client.upsert_case(
         environment='prod',

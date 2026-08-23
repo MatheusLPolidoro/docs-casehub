@@ -85,7 +85,7 @@ def publicar(linhas: list[dict]) -> None:
         base_url='https://casehub.interno',
         client_id='minha-automacao',
         client_secret='...',
-        token_url='https://keycloak.interno/realms/x/protocol/openid-connect/token',
+        token_url='https://casehub.internal/v1/auth/token',
     ) as client:
         for inicio in range(0, len(itens), BLOCO):
             bloco = itens[inicio:inicio + BLOCO]
