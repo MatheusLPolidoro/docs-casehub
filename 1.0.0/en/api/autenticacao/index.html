@@ -699,6 +699,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#where-to-request-the-token" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where to request the token
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#the-token" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1192,6 +1203,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#where-to-request-the-token" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where to request the token
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#the-token" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1306,6 +1328,48 @@ environment that still depends on it has to declare
     A --&gt;|ok| B["Authorization&lt;br/&gt;&lt;small&gt;azp == automation&lt;/small&gt;"]
     B --&gt;|fails| E2["403 forbidden"]
     B --&gt;|ok| OK["Route runs"]</code></pre>
+<h2 id="where-to-request-the-token">Where to request the token<a class="headerlink" href="#where-to-request-the-token" title="Permanent link">&para;</a></h2>
+<p><strong>Ask the CaseHub API itself</strong>, at <code>POST /v1/auth/token</code>. An automation
+does not need to know about Keycloak: the realm address is the
+service's configuration, not something every consumer carries in every
+environment.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">OAuth2 form (what the SDK sends)</label><label for="__tabbed_1_2">JSON</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>https://casehub.internal/v1/auth/token<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="nv">grant_type</span><span class="o">=</span>client_credentials<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="nv">client_id</span><span class="o">=</span>my-automation<span class="w"> </span>-d<span class="w"> </span><span class="nv">client_secret</span><span class="o">=</span>...
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>https://casehub.internal/v1/auth/token<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s1">'Content-Type: application/json'</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{"client_id": "my-automation", "client_secret": "..."}'</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<p>The response carries <code>access_token</code>, <code>expires_in</code> and — when the client
+has refresh issuance enabled — <code>refresh_token</code> and
+<code>refresh_expires_in</code>. Renewing is <code>POST /v1/auth/refresh</code>, or the same
+<code>/v1/auth/token</code> with <code>grant_type=refresh_token</code>.</p>
+<div class="admonition info">
+<p class="admonition-title">The API does not sign the token</p>
+<p>It forwards to the identity provider and returns what comes back.
+The <code>access_token</code> is the very one Keycloak would hand to a direct
+caller, carrying the same automation claim — there is a single
+issuer, and it is the one that controls the lifetimes.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">The <code>/v1/auth/*</code> routes require no authentication</p>
+<p>They are how you obtain it. Requiring a credential there would be
+circular.</p>
+</div>
+<p>Requesting straight from Keycloak
+(<code>/realms/&lt;realm&gt;/protocol/openid-connect/token</code>) still works and helps
+when debugging with the API down — but it spreads the realm address
+across every automation's configuration, which is exactly what
+<code>/v1/auth/token</code> removes.</p>
 <h2 id="the-token">The token<a class="headerlink" href="#the-token" title="Permanent link">&para;</a></h2>
 <p>It has to belong to a Keycloak <code>client_credentials</code> client — an automation
 or a worker, never an interactive user.</p>
@@ -1359,7 +1423,7 @@ part of hardening an environment.</p>
    regress silently in a future deploy.</li>
 </ol>
 <h2 id="configuring-the-sdk">Configuring the SDK<a class="headerlink" href="#configuring-the-sdk" title="Permanent link">&para;</a></h2>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">OIDC (recommended)</label><label for="__tabbed_1_2">API key (legacy)</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">OIDC (recommended)</label><label for="__tabbed_2_2">API key (legacy)</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">casehub</span><span class="w"> </span><span class="kn">import</span> <span class="n">CaseHubClient</span>
@@ -1368,7 +1432,7 @@ part of hardening an environment.</p>
     <span class="n">base_url</span><span class="o">=</span><span class="s1">'https://casehub.interno'</span><span class="p">,</span>
     <span class="n">client_id</span><span class="o">=</span><span class="s1">'minha-automacao'</span><span class="p">,</span>
     <span class="n">client_secret</span><span class="o">=</span><span class="s1">'...'</span><span class="p">,</span>
-    <span class="n">token_url</span><span class="o">=</span><span class="s1">'https://keycloak.interno/realms/x/protocol/openid-connect/token'</span><span class="p">,</span>
+    <span class="n">token_url</span><span class="o">=</span><span class="s1">'https://casehub.interno/v1/auth/token'</span><span class="p">,</span>
 <span class="p">)</span>
 </code></pre></div>
 <p>The three fields come together or not at all — a partial configuration

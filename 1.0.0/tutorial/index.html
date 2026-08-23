@@ -1392,7 +1392,7 @@ não o resultado de despejar a linha sem olhar.</p>
         <span class="n">base_url</span><span class="o">=</span><span class="s1">'https://casehub.interno'</span><span class="p">,</span>
         <span class="n">client_id</span><span class="o">=</span><span class="s1">'minha-automacao'</span><span class="p">,</span>
         <span class="n">client_secret</span><span class="o">=</span><span class="s1">'...'</span><span class="p">,</span>
-        <span class="n">token_url</span><span class="o">=</span><span class="s1">'https://keycloak.interno/realms/x/protocol/openid-connect/token'</span><span class="p">,</span>
+        <span class="n">token_url</span><span class="o">=</span><span class="s1">'https://casehub.interno/v1/auth/token'</span><span class="p">,</span>
     <span class="p">)</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">inicio</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">itens</span><span class="p">),</span> <span class="n">BLOCO</span><span class="p">):</span>
             <span class="n">bloco</span> <span class="o">=</span> <span class="n">itens</span><span class="p">[</span><span class="n">inicio</span><span class="p">:</span><span class="n">inicio</span> <span class="o">+</span> <span class="n">BLOCO</span><span class="p">]</span>

@@ -40,6 +40,48 @@ flowchart LR
     B -->|ok| OK["Rota executa"]
 ```
 
+## Onde pedir o token
+
+**Peça à própria API do CaseHub**, em `POST /v1/auth/token`. Uma
+automação não precisa conhecer o Keycloak: o endereço do realm é
+configuração do serviço, não de cada consumidor em cada ambiente.
+
+=== "Formato OAuth2 (o que o SDK usa)"
+
+    ```bash
+    curl -X POST https://casehub.interno/v1/auth/token \
+      -d grant_type=client_credentials \
+      -d client_id=minha-automacao -d client_secret=...
+    ```
+
+=== "JSON"
+
+    ```bash
+    curl -X POST https://casehub.interno/v1/auth/token \
+      -H 'Content-Type: application/json' \
+      -d '{"client_id": "minha-automacao", "client_secret": "..."}'
+    ```
+
+A resposta traz `access_token`, `expires_in`, e — quando o client tem
+emissão de refresh habilitada — `refresh_token` e `refresh_expires_in`.
+Renovar é `POST /v1/auth/refresh`, ou o mesmo `/v1/auth/token` com
+`grant_type=refresh_token`.
+
+!!! info "A API não assina o token"
+    Ela repassa ao provedor de identidade e devolve o que vier. O
+    `access_token` é o mesmo que o Keycloak entregaria a quem pedisse
+    direto, com o mesmo claim de automação — existe um emissor só, e é
+    ele quem controla os prazos de validade.
+
+!!! warning "As rotas `/v1/auth/*` não exigem autenticação"
+    São o caminho para obtê-la. Exigir credencial nelas seria circular.
+
+Pedir direto ao Keycloak
+(`/realms/<realm>/protocol/openid-connect/token`) continua funcionando
+e é útil para depurar com a API fora do ar — mas espalha o endereço do
+realm por cada configuração de cada automação, que é justamente o que
+`/v1/auth/token` evita.
+
 ## O token
 
 Precisa ser de um client `client_credentials` do Keycloak — automação
@@ -113,7 +155,7 @@ Para fechar, nesta ordem — inverter derruba os consumidores com 401:
         base_url='https://casehub.interno',
         client_id='minha-automacao',
         client_secret='...',
-        token_url='https://keycloak.interno/realms/x/protocol/openid-connect/token',
+        token_url='https://casehub.interno/v1/auth/token',
     )
     ```
 
