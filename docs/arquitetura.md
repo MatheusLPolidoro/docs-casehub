@@ -39,38 +39,27 @@ dúvidas.
 
 ```mermaid
 flowchart TD
-    R["Requisição chega"] --> M{"CASEHUB_AUTH_MODE"}
+    R["Requisição chega"] --> B{"Tem Bearer?"}
 
-    M -->|oidc| B{"Tem Bearer?"}
-    M -->|dual| B
-    M -->|apikey| AK{"Tem X-API-Key<br/>não vazia?"}
-
-    B -->|não, e modo dual| AK
-    B -->|não, e modo oidc| E401["401 unauthorized"]
+    B -->|não| E401["401 unauthorized"]
     B -->|sim| V{"Token válido?<br/><small>assinatura, iss, exp</small>"}
 
     V -->|não| E401
-    V -->|sim| AUT["Autenticado como OIDC"]
+    V -->|sim| Z{"claim azp ==<br/>automation da chamada?"}
 
-    AK -->|não| E401
-    AK -->|sim| AUTK["Autenticado como apikey"]
-
-    AUT --> Z{"claim azp ==<br/>automation da chamada?"}
     Z -->|não| E403["403 forbidden"]
     Z -->|sim| OK["Segue para a rota"]
-
-    AUTK --> OK
 ```
 
-!!! danger "Bearer recusado é 401, nunca cai para `X-API-Key`"
-    No modo `dual`, um token inválido ou expirado enviado **junto** com
-    uma `X-API-Key` responde 401. Até 2026-08-20 esse caso caía para
-    `apikey` — e como a autorização por automação não se aplica a esse
-    método, o cliente perdia o escopo junto com o token e alcançava
-    qualquer automação. Quem envia **apenas** `X-API-Key` continua
-    aceito normalmente.
+!!! danger "Não existe segunda porta"
+    Até 2026-08-23 havia os modos `apikey` e `dual`, em que um header
+    `X-API-Key` com **qualquer string não vazia** autenticava — sem
+    validação contra segredo nenhum — e **não passava pela verificação
+    de automação**. Uma chave qualquer alcançava qualquer automação em
+    qualquer ambiente. Os dois modos foram removidos, e um serviço
+    configurado com eles não sobe.
 
-Detalhes de cada modo em [Autenticação](api/autenticacao.md).
+Detalhes em [Autenticação](api/autenticacao.md).
 
 ## Idempotência: o que acontece ao republicar
 
