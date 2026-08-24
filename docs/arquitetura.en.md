@@ -51,13 +51,10 @@ flowchart TD
     Z -->|yes| OK["Proceeds to the route"]
 ```
 
-!!! danger "There is no second door"
-    Until 2026-08-23 there were `apikey` and `dual` modes, where an
-    `X-API-Key` header holding **any non-empty string** authenticated —
-    never checked against any secret — and **skipped the automation
-    check entirely**. Any key reached any automation in any
-    environment. Both modes were removed, and a service configured with
-    them refuses to start.
+!!! info "There is no second door"
+    There is no alternative credential: without a valid Bearer the
+    answer is `401`, and no authentication path skips the automation
+    check.
 
 Details in [Authentication](api/autenticacao.md).
 

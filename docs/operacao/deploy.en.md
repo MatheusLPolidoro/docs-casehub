@@ -77,13 +77,14 @@ hand from the database.
 | | dev | homolog / prod |
 |---|---|---|
 | `CASEHUB_STORAGE` | `memory` or `postgres` | `postgres` |
-| `CASEHUB_AUTH_MODE` | `apikey` (local) | `oidc` |
+| `CASEHUB_AUTH_MODE` | `oidc` | `oidc` |
 | `CASEHUB_OIDC_*` | from the local Keycloak | from the corporate Keycloak |
 | `CASEHUB_RETENTION_ENABLED` | `false` | `true` |
 
-!!! danger "`apikey` never in a shared environment"
-    It accepts any string as a credential and applies no per-automation
-    authorization. See [Authentication](../api/autenticacao.md).
+!!! danger "Without issuer and JWKS, the service will not start"
+    Deliberate: a half-configured authentication fails at boot instead of
+    turning into an unexplained `401` later. See
+    [Authentication](../api/autenticacao.md).
 
 ## Pipeline
 

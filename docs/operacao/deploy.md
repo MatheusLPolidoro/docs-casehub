@@ -77,13 +77,14 @@ a revisão à mão a partir do banco.
 | | dev | homolog / prod |
 |---|---|---|
 | `CASEHUB_STORAGE` | `memory` ou `postgres` | `postgres` |
-| `CASEHUB_AUTH_MODE` | `apikey` (local) | `oidc` |
+| `CASEHUB_AUTH_MODE` | `oidc` | `oidc` |
 | `CASEHUB_OIDC_*` | do Keycloak local | do Keycloak corporativo |
 | `CASEHUB_RETENTION_ENABLED` | `false` | `true` |
 
-!!! danger "`apikey` nunca em ambiente compartilhado"
-    Ele aceita qualquer string como credencial e não aplica autorização
-    por automação. Ver [Autenticação](../api/autenticacao.md).
+!!! danger "Sem issuer e JWKS, o serviço não sobe"
+    É deliberado: uma configuração de autenticação pela metade falha no
+    arranque, em vez de virar `401` inexplicável depois. Ver
+    [Autenticação](../api/autenticacao.md).
 
 ## Pipeline
 

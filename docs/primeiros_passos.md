@@ -28,11 +28,11 @@ serve — ele implementa o mesmo contrato:
 </div>
 </div>
 
-!!! tip "Para experimentar, use `apikey`"
-    O default é `oidc`, que exige um Keycloak configurado. Para um teste
-    local rápido, suba com `CASEHUB_AUTH_MODE=apikey` — mas leia o aviso
-    em [Autenticação](api/autenticacao.md) antes de levar isso para
-    qualquer ambiente compartilhado.
+!!! tip "O mock exige credencial, como o serviço"
+    Configure `CASEHUB_OIDC_ISSUER`/`CASEHUB_OIDC_JWKS_URL` antes de
+    subir e use um token assinado. Para um teste local, servir o JWKS
+    por HTTP local e assinar um JWT resolve em poucas linhas — ver
+    [Autenticação](api/autenticacao.md).
 
 ## 3. Publique um caso
 
@@ -41,7 +41,9 @@ from casehub import CaseHubClient
 
 with CaseHubClient(
     base_url='http://127.0.0.1:8080',
-    api_key='chave-de-teste',
+    client_id='MINHA_AUTOMACAO',
+    client_secret='...',
+    token_url='http://127.0.0.1:8080/v1/auth/token',
 ) as client:
     resposta = client.upsert_case(
         environment='dev',
@@ -95,5 +97,5 @@ ciclo de vida de um caso sem carregar o payload inteiro a cada vez.
 ## Próximos passos
 
 - [Tutorial](tutorial.md) — um fluxo completo de importação em lote.
-- [Autenticação](api/autenticacao.md) — sair do `apikey` e usar OIDC.
+- [Autenticação](api/autenticacao.md) — como obter e usar o token.
 - [Endpoints](api/endpoints.md) — o contrato campo a campo.

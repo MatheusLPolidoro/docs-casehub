@@ -53,37 +53,23 @@ todas já em `main` no `fast-casehub`.
 
 ### :material-alert: Exigem atenção de quem integra
 
-=== "Autenticação padrão passou a ser OIDC"
+=== "Autenticação é exclusivamente OIDC"
 
-    **O que mudou.** O default de `CASEHUB_AUTH_MODE` era `apikey` e
-    passou a ser `oidc`.
+    **O que mudou.** `Authorization: Bearer <JWT>` passou a ser a única
+    credencial aceita, e `CASEHUB_AUTH_MODE` aceita um único valor,
+    `oidc`. Qualquer outro valor derruba a subida do serviço.
 
-    **Por quê.** O modo `apikey` aceita qualquer string não vazia como
-    credencial, sem comparar com segredo nenhum, e a autorização por
-    automação não se aplica a ele — uma chave qualquer alcançava
-    qualquer automação e qualquer ambiente.
+    **Por quê.** Um caminho de autenticação que não confere a
+    credencial contra segredo nenhum, e que não passa pela autorização
+    por automação, não é autenticação — é acesso irrestrito com
+    aparência de controle.
 
-    **O que fazer.** Nada, se você já usa OIDC. Um ambiente que ainda
-    dependa de `X-API-Key` precisa declarar `CASEHUB_AUTH_MODE=apikey`
-    explicitamente — e sair dessa configuração assim que possível.
+    **O que fazer.** Nada, se você já usa OIDC. Caso contrário,
+    provisione um client `client_credentials` por automação, com
+    `client_id` igual ao nome dela, e peça o token em
+    `POST /v1/auth/token`.
 
     Ver [Autenticação](api/autenticacao.md).
-
-=== "Modo dual não cai mais para X-API-Key"
-
-    **O que mudou.** No modo `dual`, um `Bearer` inválido ou expirado
-    enviado **junto** com uma `X-API-Key` responde 401. Antes, caía
-    para a chave.
-
-    **Por quê.** O fallback não era só de autenticação: o contexto
-    virava `apikey`, a autorização por automação deixava de se aplicar,
-    e o cliente **perdia o escopo junto com o token**. A condição que
-    disparava isso — as duas credenciais na mesma requisição — é
-    exatamente o cenário para o qual o modo `dual` existe.
-
-    **O que fazer.** Garanta que o token seja renovado antes de expirar.
-    Um cliente que dependia de "expirou, mas a chave me salva" agora
-    recebe 401. Quem envia **apenas** `X-API-Key` não é afetado.
 
 === "Lote passou a ter teto"
 

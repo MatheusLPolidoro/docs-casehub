@@ -5,16 +5,10 @@ validated against the issuer's JWKS. `CASEHUB_AUTH_MODE` takes a single
 value, `oidc`. `/health`, `/ready` and `/v1/auth/*` never require a
 credential.
 
-!!! danger "`apikey` and `dual` were removed on 2026-08-23"
-    The `X-API-Key` header authenticated with **any non-empty string** —
-    it was never compared against any secret — and **skipped
-    per-automation authorization**. Together: anyone who knew the header
-    name read and wrote cases of any automation in any environment.
-
-    A service configured with `CASEHUB_AUTH_MODE=apikey` or `dual`
-    **refuses to start**, and the message says what to do. Failing at
-    startup is deliberate — the alternative is staying up accepting any
-    string.
+!!! info "A single value"
+    `CASEHUB_AUTH_MODE` takes `oidc`, and any other value refuses to
+    start the service. A wrong configuration shows up at boot, not as an
+    unexplained `401` in production.
 
 ## Authentication × authorization
 
@@ -25,8 +19,8 @@ They are two steps, and the difference is worth insisting on:
 - **Authorization** answers *what you may touch* — the token's automation
   claim has to match the call's `automation`.
 
-No path escapes the second step. That is exactly what the removed
-`apikey` did: it authenticated with no scope at all.
+No path escapes the second step: authenticating with no scope is not a
+possibility.
 
 ```mermaid
 flowchart LR
@@ -99,16 +93,6 @@ Only `RS256` is accepted, by an explicit allowlist — the `alg` declared in
 the token header is never used to choose the algorithm, which closes off the
 algorithm-confusion class of attack.
 
-## The `X-API-Key` header authenticates nothing
-
-It existed until 2026-08-23 and was removed. If a running service still
-accepts it, that service is an older build — and in it **any string
-reaches any automation**.
-
-!!! warning "How to tell"
-    A call carrying only `X-API-Key`, with no `Authorization`, must
-    answer `401`. If it answers `200`, the API is old.
-
 ## Validating `aud`
 
 With `CASEHUB_OIDC_AUDIENCE` **empty** (the default), the API does not
@@ -150,7 +134,7 @@ To close it, in this order — inverting it knocks consumers out with 401s:
     The three fields come together or not at all — a partial configuration
     fails at construction, before touching the network.
 
-!!! tip "`api_key` in the SDK no longer works"
-    The parameter still exists in the library, but the API rejects the
-    key. A client configured with only `api_key` gets `401` on every
-    call.
+!!! tip "The three fields come together"
+    `client_id`, `client_secret` and `token_url` are configured as a
+    set — passing only some of them raises at client construction,
+    before any network call.

@@ -53,37 +53,23 @@ already on `main` in `fast-casehub`.
 
 ### :material-alert: Require attention from integrators
 
-=== "The default authentication became OIDC"
+=== "Authentication is OIDC only"
 
-    **What changed.** The default for `CASEHUB_AUTH_MODE` was `apikey` and
-    became `oidc`.
+    **What changed.** `Authorization: Bearer <JWT>` is the only accepted
+    credential, and `CASEHUB_AUTH_MODE` takes a single value, `oidc`.
+    Any other value refuses to start the service.
 
-    **Why.** The `apikey` mode accepts any non-empty string as a credential,
-    without comparing it to any secret, and per-automation authorization
-    does not apply to it — any key could reach any automation in any
-    environment.
+    **Why.** An authentication path that checks the credential against
+    no secret, and that skips per-automation authorization, is not
+    authentication — it is unrestricted access wearing the look of
+    control.
 
-    **What to do.** Nothing, if you already use OIDC. An environment that
-    still depends on `X-API-Key` has to declare `CASEHUB_AUTH_MODE=apikey`
-    explicitly — and move off that configuration as soon as possible.
+    **What to do.** Nothing, if you already use OIDC. Otherwise,
+    provision one `client_credentials` client per automation, with
+    `client_id` equal to its name, and request the token at
+    `POST /v1/auth/token`.
 
     See [Authentication](api/autenticacao.md).
-
-=== "Dual mode no longer falls back to X-API-Key"
-
-    **What changed.** In `dual` mode, an invalid or expired `Bearer` sent
-    **together** with an `X-API-Key` answers 401. It used to fall back to
-    the key.
-
-    **Why.** The fallback was not only about authentication: the context
-    became `apikey`, per-automation authorization stopped applying, and the
-    client **lost its scope along with the token**. The condition that
-    triggered it — both credentials in the same request — is exactly the
-    scenario `dual` mode exists for.
-
-    **What to do.** Make sure the token is renewed before it expires. A
-    client that relied on "it expired, but the key saves me" now gets a 401.
-    Whoever sends **only** `X-API-Key` is unaffected.
 
 === "Batches gained a ceiling"
 

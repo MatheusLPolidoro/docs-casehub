@@ -16,7 +16,7 @@ operation in the terminal — not for production automation (that is the
 
 !!! danger "The configuration file stores secrets in plain text"
     `~/.casehub.toml` is written with no permission restriction and may hold
-    an `api_key` or a `client_secret`. On a shared machine, prefer
+    a `client_secret`. On a shared machine, prefer
     environment variables and tighten the file permission by hand.
 
     Passing `--client-secret` straight on the command line also leaves the
