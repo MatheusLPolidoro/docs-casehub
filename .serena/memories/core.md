@@ -133,14 +133,21 @@ condição de exploração junto (`mudancas.md`); e, no `docs-param-manager`, qu
 duas viraram descrição de mecanismo — o aviso no log de subida como
 verificação, e a regra de rotacionar o que alcança o histórico.
 
-### Divergência conhecida com o código
+### Divergencia conhecida com o codigo (2026-08-24)
 
-O site foi corrigido para dizer que o SDK está na **0.3.0**, mas
-`docs/mudancas.md` **não tem seção para a 0.3.0**, que trouxe três mudanças
-quebradas para quem integra (lote inválido levanta `ValueError`; lote com item
-sem `case_id` não é reenviado após 401; `ConnectTimeout`/`WriteTimeout`/
-`PoolTimeout` viram `APITimeoutError`). O texto está no `CHANGELOG.md` do
-`casehub-connect`.
+O site descreve autenticacao so por OIDC, que e o que vale - a
+`api-key` foi expurgada de todas as paginas, nos dois idiomas, a
+pedido do dono do produto ("como se nunca tivesse existido"). O que
+sobrou de historico e uma entrada em `docs/mudancas.md`, deliberada:
+apagar tambem essa deixaria quem integra sem entender por que a
+credencial dele parou.
+
+**O site esta atras das versoes.** Ele fala do SDK na 0.3.0; o
+`casehub-connect` esta na **0.4.0** (removeu o parametro `api_key`, e a
+CLI parou de pedir credencial interativamente) e o `fast-casehub` na
+**0.2.0** (removeu o modo `apikey`, ganhou `/v1/auth/token` e
+`/v1/auth/refresh`). Falta secao em `docs/mudancas.md` para as duas.
+O texto pronto esta nos `CHANGELOG.md` de cada repo.
 
 ### Conferir o render, não só o build
 
