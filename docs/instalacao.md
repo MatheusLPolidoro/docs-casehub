@@ -106,7 +106,7 @@ mesmo contrato e serve para desenvolver contra a API sem infraestrutura.
 | Variável | Default | Para quê |
 |---|---|---|
 | `CASEHUB_STORAGE` | `memory` | `memory` ou `postgres`. |
-| `CASEHUB_AUTH_MODE` | `oidc` | Único valor aceito. `apikey`/`dual` removidos em 2026-08-23 e derrubam a subida. Ver [Autenticação](api/autenticacao.md). |
+| `CASEHUB_AUTH_MODE` | `oidc` | Único valor aceito; qualquer outro derruba a subida. Ver [Autenticação](api/autenticacao.md). |
 | `CASEHUB_OIDC_ISSUER` | — | Obrigatória em `oidc`/`dual`. |
 | `CASEHUB_OIDC_JWKS_URL` | — | Obrigatória em `oidc`/`dual`. |
 | `CASEHUB_OIDC_AUDIENCE` | vazio | Vazio = não valida `aud`. Ver o aviso em [Autenticação](api/autenticacao.md). |

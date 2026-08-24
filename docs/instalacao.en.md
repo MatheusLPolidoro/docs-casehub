@@ -107,7 +107,7 @@ infrastructure.
 | Variable | Default | For what |
 |---|---|---|
 | `CASEHUB_STORAGE` | `memory` | `memory` or `postgres`. |
-| `CASEHUB_AUTH_MODE` | `oidc` | The only accepted value. `apikey`/`dual` were removed on 2026-08-23 and refuse to start. See [Authentication](api/autenticacao.md). |
+| `CASEHUB_AUTH_MODE` | `oidc` | The only accepted value; anything else refuses to start. See [Authentication](api/autenticacao.md). |
 | `CASEHUB_OIDC_ISSUER` | — | Required in `oidc`/`dual`. |
 | `CASEHUB_OIDC_JWKS_URL` | — | Required in `oidc`/`dual`. |
 | `CASEHUB_OIDC_AUDIENCE` | empty | Empty = `aud` is not validated. See the warning in [Authentication](api/autenticacao.md). |

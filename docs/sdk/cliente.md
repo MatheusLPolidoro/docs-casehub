@@ -32,7 +32,6 @@ with CaseHubClient(
 ```python
 CaseHubClient(
     base_url,
-    api_key=None,
     *,
     client_id=None,
     client_secret=None,
@@ -44,12 +43,11 @@ CaseHubClient(
 | Parâmetro | Observação |
 |---|---|
 | `base_url` | Endereço da API. |
-| `api_key` | Modo legado (`X-API-Key`). |
 | `client_id` / `client_secret` / `token_url` | OIDC. **Os três juntos, ou nenhum** — configuração parcial levanta `ValueError` na construção. |
 | `timeout` | Segundos, default 30. |
 
-Com os dois mecanismos configurados, **OIDC tem precedência** em toda
-chamada. Não é preciso remover a `api_key` para migrar.
+O `token_url` aponta para a própria API (`/v1/auth/token`), que
+repassa ao provedor de identidade.
 
 ## Métodos
 
@@ -169,5 +167,4 @@ rotacionado no Keycloak antes do vencimento.
     É mais uma razão para sempre enviar `case_id` explícito: com ele, o
     reenvio é idempotente e o retry é inofensivo.
 
-O retry acontece apenas no caminho OIDC. Um 401 de `X-API-Key` nunca é
-mascarado por repetição.
+O retry acontece uma vez só: um `401` que persiste chega ao chamador.
