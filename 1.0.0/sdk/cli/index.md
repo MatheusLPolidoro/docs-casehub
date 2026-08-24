@@ -16,7 +16,7 @@ ad-hoc no terminal — não para automação em produção (isso é o
 
 !!! danger "O arquivo de configuração guarda segredo em texto puro"
     `~/.casehub.toml` é gravado sem restrição de permissão e pode conter
-    `api_key` ou `client_secret`. Em máquina compartilhada, prefira
+    `client_secret`. Em máquina compartilhada, prefira
     variáveis de ambiente e ajuste a permissão do arquivo à mão.
 
     Passar `--client-secret` direto na linha de comando também deixa o

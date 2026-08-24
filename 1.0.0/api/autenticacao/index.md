@@ -5,17 +5,10 @@ validado contra o JWKS do issuer. `CASEHUB_AUTH_MODE` aceita um único
 valor, `oidc`. `/health`, `/ready` e `/v1/auth/*` nunca exigem
 credencial.
 
-!!! danger "`apikey` e `dual` foram removidos em 2026-08-23"
-    O header `X-API-Key` autenticava com **qualquer string não vazia** —
-    nunca foi comparado com segredo nenhum — e **não passava pela
-    autorização por automação**. Somando as duas coisas: quem soubesse o
-    nome do header lia e escrevia casos de qualquer automação em
-    qualquer ambiente.
-
-    Um serviço configurado com `CASEHUB_AUTH_MODE=apikey` ou `dual`
-    **não sobe**, e a mensagem diz o que fazer. Falhar na subida é
-    deliberado — a alternativa é seguir no ar aceitando qualquer
-    string.
+!!! info "Um valor só"
+    `CASEHUB_AUTH_MODE` aceita `oidc`, e qualquer outro valor derruba a
+    subida do serviço. Uma configuração errada aparece no arranque, não
+    como `401` inexplicável em produção.
 
 ## Autenticação × autorização
 
@@ -26,8 +19,8 @@ São dois passos, e vale insistir na diferença:
 - **Autorização** responde *o que você pode tocar* — o claim de
   automação do token precisa bater com a `automation` da chamada.
 
-Nenhum caminho escapa do segundo passo. Era exatamente isso que o
-removido `apikey` fazia: autenticava sem escopo nenhum.
+Nenhum caminho escapa do segundo passo: autenticar sem escopo não é
+uma possibilidade.
 
 ```mermaid
 flowchart LR
@@ -100,16 +93,6 @@ Apenas `RS256` é aceito, por allowlist explícita — o `alg` declarado no
 header do token nunca é usado para escolher o algoritmo, o que fecha a
 classe de ataque de confusão de algoritmo.
 
-## O header `X-API-Key` não autentica nada
-
-Ele existiu até 2026-08-23 e foi removido. Se um serviço no ar ainda o
-aceitar, é uma versão anterior — e nela **qualquer string alcança
-qualquer automação**.
-
-!!! warning "Como reconhecer"
-    Uma chamada com apenas `X-API-Key`, sem `Authorization`, tem que
-    responder `401`. Se responder `200`, a API é antiga.
-
 ## Validação de `aud`
 
 Com `CASEHUB_OIDC_AUDIENCE` **vazio** (default), a API não valida o
@@ -151,6 +134,7 @@ Para fechar, nesta ordem — inverter derruba os consumidores com 401:
     Os três campos vêm juntos ou nenhum — configuração parcial falha na
     construção, antes de bater na rede.
 
-!!! tip "`api_key` no SDK não serve mais"
-    O parâmetro continua existindo na lib, mas a API recusa a chave. Um
-    cliente configurado só com `api_key` toma `401` em toda chamada.
+!!! tip "Os três campos vêm juntos"
+    `client_id`, `client_secret` e `token_url` são configurados juntos —
+    passar só parte deles levanta erro na construção do cliente, antes
+    de qualquer chamada de rede.

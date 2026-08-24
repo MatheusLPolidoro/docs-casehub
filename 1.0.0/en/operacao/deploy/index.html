@@ -1374,7 +1374,7 @@ hand from the database.</p>
 </tr>
 <tr>
 <td><code>CASEHUB_AUTH_MODE</code></td>
-<td><code>apikey</code> (local)</td>
+<td><code>oidc</code></td>
 <td><code>oidc</code></td>
 </tr>
 <tr>
@@ -1390,9 +1390,10 @@ hand from the database.</p>
 </tbody>
 </table>
 <div class="admonition danger">
-<p class="admonition-title"><code>apikey</code> never in a shared environment</p>
-<p>It accepts any string as a credential and applies no per-automation
-authorization. See <a href="../../api/autenticacao/">Authentication</a>.</p>
+<p class="admonition-title">Without issuer and JWKS, the service will not start</p>
+<p>Deliberate: a half-configured authentication fails at boot instead of
+turning into an unexplained <code>401</code> later. See
+<a href="../../api/autenticacao/">Authentication</a>.</p>
 </div>
 <h2 id="pipeline">Pipeline<a class="headerlink" href="#pipeline" title="Permanent link">&para;</a></h2>
 <table>

@@ -1300,18 +1300,20 @@ serve — ele implementa o mesmo contrato:</p>
 </div>
 
 <div class="admonition tip">
-<p class="admonition-title">Para experimentar, use <code>apikey</code></p>
-<p>O default é <code>oidc</code>, que exige um Keycloak configurado. Para um teste
-local rápido, suba com <code>CASEHUB_AUTH_MODE=apikey</code> — mas leia o aviso
-em <a href="../api/autenticacao/">Autenticação</a> antes de levar isso para
-qualquer ambiente compartilhado.</p>
+<p class="admonition-title">O mock exige credencial, como o serviço</p>
+<p>Configure <code>CASEHUB_OIDC_ISSUER</code>/<code>CASEHUB_OIDC_JWKS_URL</code> antes de
+subir e use um token assinado. Para um teste local, servir o JWKS
+por HTTP local e assinar um JWT resolve em poucas linhas — ver
+<a href="../api/autenticacao/">Autenticação</a>.</p>
 </div>
 <h2 id="3-publique-um-caso">3. Publique um caso<a class="headerlink" href="#3-publique-um-caso" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">casehub</span><span class="w"> </span><span class="kn">import</span> <span class="n">CaseHubClient</span>
 
 <span class="k">with</span> <span class="n">CaseHubClient</span><span class="p">(</span>
     <span class="n">base_url</span><span class="o">=</span><span class="s1">'http://127.0.0.1:8080'</span><span class="p">,</span>
-    <span class="n">api_key</span><span class="o">=</span><span class="s1">'chave-de-teste'</span><span class="p">,</span>
+    <span class="n">client_id</span><span class="o">=</span><span class="s1">'MINHA_AUTOMACAO'</span><span class="p">,</span>
+    <span class="n">client_secret</span><span class="o">=</span><span class="s1">'...'</span><span class="p">,</span>
+    <span class="n">token_url</span><span class="o">=</span><span class="s1">'http://127.0.0.1:8080/v1/auth/token'</span><span class="p">,</span>
 <span class="p">)</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
     <span class="n">resposta</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">upsert_case</span><span class="p">(</span>
         <span class="n">environment</span><span class="o">=</span><span class="s1">'dev'</span><span class="p">,</span>
@@ -1356,7 +1358,7 @@ ciclo de vida de um caso sem carregar o payload inteiro a cada vez.</p>
 <h2 id="proximos-passos">Próximos passos<a class="headerlink" href="#proximos-passos" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="../tutorial/">Tutorial</a> — um fluxo completo de importação em lote.</li>
-<li><a href="../api/autenticacao/">Autenticação</a> — sair do <code>apikey</code> e usar OIDC.</li>
+<li><a href="../api/autenticacao/">Autenticação</a> — como obter e usar o token.</li>
 <li><a href="../api/endpoints/">Endpoints</a> — o contrato campo a campo.</li>
 </ul>
 

@@ -721,17 +721,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#the-x-api-key-header-authenticates-nothing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The X-API-Key header authenticates nothing
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#validating-aud" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1225,17 +1214,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#the-x-api-key-header-authenticates-nothing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The X-API-Key header authenticates nothing
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#validating-aud" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1282,16 +1260,11 @@
 validated against the issuer's JWKS. <code>CASEHUB_AUTH_MODE</code> takes a single
 value, <code>oidc</code>. <code>/health</code>, <code>/ready</code> and <code>/v1/auth/*</code> never require a
 credential.</p>
-<div class="admonition danger">
-<p class="admonition-title"><code>apikey</code> and <code>dual</code> were removed on 2026-08-23</p>
-<p>The <code>X-API-Key</code> header authenticated with <strong>any non-empty string</strong> —
-it was never compared against any secret — and <strong>skipped
-per-automation authorization</strong>. Together: anyone who knew the header
-name read and wrote cases of any automation in any environment.</p>
-<p>A service configured with <code>CASEHUB_AUTH_MODE=apikey</code> or <code>dual</code>
-<strong>refuses to start</strong>, and the message says what to do. Failing at
-startup is deliberate — the alternative is staying up accepting any
-string.</p>
+<div class="admonition info">
+<p class="admonition-title">A single value</p>
+<p><code>CASEHUB_AUTH_MODE</code> takes <code>oidc</code>, and any other value refuses to
+start the service. A wrong configuration shows up at boot, not as an
+unexplained <code>401</code> in production.</p>
 </div>
 <h2 id="authentication-authorization">Authentication × authorization<a class="headerlink" href="#authentication-authorization" title="Permanent link">&para;</a></h2>
 <p>They are two steps, and the difference is worth insisting on:</p>
@@ -1301,8 +1274,8 @@ string.</p>
 <li><strong>Authorization</strong> answers <em>what you may touch</em> — the token's automation
   claim has to match the call's <code>automation</code>.</li>
 </ul>
-<p>No path escapes the second step. That is exactly what the removed
-<code>apikey</code> did: it authenticated with no scope at all.</p>
+<p>No path escapes the second step: authenticating with no scope is not a
+possibility.</p>
 <pre class="mermaid"><code>flowchart LR
     T["Token"] --&gt; A["Authentication&lt;br/&gt;&lt;small&gt;signature, iss, exp&lt;/small&gt;"]
     A --&gt;|fails| E1["401 unauthorized"]
@@ -1366,15 +1339,6 @@ Keycloak) is treated as <em>not permitted</em>. Fails closed, always.</p>
 <p>Only <code>RS256</code> is accepted, by an explicit allowlist — the <code>alg</code> declared in
 the token header is never used to choose the algorithm, which closes off the
 algorithm-confusion class of attack.</p>
-<h2 id="the-x-api-key-header-authenticates-nothing">The <code>X-API-Key</code> header authenticates nothing<a class="headerlink" href="#the-x-api-key-header-authenticates-nothing" title="Permanent link">&para;</a></h2>
-<p>It existed until 2026-08-23 and was removed. If a running service still
-accepts it, that service is an older build — and in it <strong>any string
-reaches any automation</strong>.</p>
-<div class="admonition warning">
-<p class="admonition-title">How to tell</p>
-<p>A call carrying only <code>X-API-Key</code>, with no <code>Authorization</code>, must
-answer <code>401</code>. If it answers <code>200</code>, the API is old.</p>
-</div>
 <h2 id="validating-aud">Validating <code>aud</code><a class="headerlink" href="#validating-aud" title="Permanent link">&para;</a></h2>
 <p>With <code>CASEHUB_OIDC_AUDIENCE</code> <strong>empty</strong> (the default), the API does not
 validate the <code>aud</code> claim: any valid token from the same issuer is accepted
@@ -1414,10 +1378,10 @@ fails at construction, before touching the network.</p>
 </div>
 </div>
 <div class="admonition tip">
-<p class="admonition-title"><code>api_key</code> in the SDK no longer works</p>
-<p>The parameter still exists in the library, but the API rejects the
-key. A client configured with only <code>api_key</code> gets <code>401</code> on every
-call.</p>
+<p class="admonition-title">The three fields come together</p>
+<p><code>client_id</code>, <code>client_secret</code> and <code>token_url</code> are configured as a
+set — passing only some of them raises at client construction,
+before any network call.</p>
 </div>
 
 

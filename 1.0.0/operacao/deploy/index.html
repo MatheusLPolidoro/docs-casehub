@@ -1374,7 +1374,7 @@ a revisão à mão a partir do banco.</p>
 </tr>
 <tr>
 <td><code>CASEHUB_AUTH_MODE</code></td>
-<td><code>apikey</code> (local)</td>
+<td><code>oidc</code></td>
 <td><code>oidc</code></td>
 </tr>
 <tr>
@@ -1390,9 +1390,10 @@ a revisão à mão a partir do banco.</p>
 </tbody>
 </table>
 <div class="admonition danger">
-<p class="admonition-title"><code>apikey</code> nunca em ambiente compartilhado</p>
-<p>Ele aceita qualquer string como credencial e não aplica autorização
-por automação. Ver <a href="../../api/autenticacao/">Autenticação</a>.</p>
+<p class="admonition-title">Sem issuer e JWKS, o serviço não sobe</p>
+<p>É deliberado: uma configuração de autenticação pela metade falha no
+arranque, em vez de virar <code>401</code> inexplicável depois. Ver
+<a href="../../api/autenticacao/">Autenticação</a>.</p>
 </div>
 <h2 id="pipeline">Pipeline<a class="headerlink" href="#pipeline" title="Permanent link">&para;</a></h2>
 <table>

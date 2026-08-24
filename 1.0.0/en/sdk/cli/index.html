@@ -1305,7 +1305,7 @@ operation in the terminal — not for production automation (that is the
 <div class="admonition danger">
 <p class="admonition-title">The configuration file stores secrets in plain text</p>
 <p><code>~/.casehub.toml</code> is written with no permission restriction and may hold
-an <code>api_key</code> or a <code>client_secret</code>. On a shared machine, prefer
+a <code>client_secret</code>. On a shared machine, prefer
 environment variables and tighten the file permission by hand.</p>
 <p>Passing <code>--client-secret</code> straight on the command line also leaves the
 secret in the shell history.</p>

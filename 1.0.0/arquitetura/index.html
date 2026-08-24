@@ -1297,14 +1297,11 @@ dúvidas.</p>
 
     Z --&gt;|não| E403["403 forbidden"]
     Z --&gt;|sim| OK["Segue para a rota"]</code></pre>
-<div class="admonition danger">
+<div class="admonition info">
 <p class="admonition-title">Não existe segunda porta</p>
-<p>Até 2026-08-23 havia os modos <code>apikey</code> e <code>dual</code>, em que um header
-<code>X-API-Key</code> com <strong>qualquer string não vazia</strong> autenticava — sem
-validação contra segredo nenhum — e <strong>não passava pela verificação
-de automação</strong>. Uma chave qualquer alcançava qualquer automação em
-qualquer ambiente. Os dois modos foram removidos, e um serviço
-configurado com eles não sobe.</p>
+<p>Não há credencial alternativa: sem um Bearer válido, a resposta é
+<code>401</code>, e nenhum caminho de autenticação pula a verificação de
+automação.</p>
 </div>
 <p>Detalhes em <a href="../api/autenticacao/">Autenticação</a>.</p>
 <h2 id="idempotencia-o-que-acontece-ao-republicar">Idempotência: o que acontece ao republicar<a class="headerlink" href="#idempotencia-o-que-acontece-ao-republicar" title="Permanent link">&para;</a></h2>

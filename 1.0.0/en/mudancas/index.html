@@ -1310,32 +1310,21 @@ synchronous one does not have to change anything. See
 <p>A review of the ecosystem's three repositories produced 11 fixes, all
 already on <code>main</code> in <code>fast-casehub</code>.</p>
 <h3 id="require-attention-from-integrators"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 14h-2V9h2m0 9h-2v-2h2M1 21h22L12 2z"/></svg></span> Require attention from integrators<a class="headerlink" href="#require-attention-from-integrators" title="Permanent link">&para;</a></h3>
-<div class="tabbed-set tabbed-alternate" data-tabs="2:3"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><input id="__tabbed_2_3" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">The default authentication became OIDC</label><label for="__tabbed_2_2">Dual mode no longer falls back to X-API-Key</label><label for="__tabbed_2_3">Batches gained a ceiling</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Authentication is OIDC only</label><label for="__tabbed_2_2">Batches gained a ceiling</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<p><strong>What changed.</strong> The default for <code>CASEHUB_AUTH_MODE</code> was <code>apikey</code> and
-became <code>oidc</code>.</p>
-<p><strong>Why.</strong> The <code>apikey</code> mode accepts any non-empty string as a credential,
-without comparing it to any secret, and per-automation authorization
-does not apply to it — any key could reach any automation in any
-environment.</p>
-<p><strong>What to do.</strong> Nothing, if you already use OIDC. An environment that
-still depends on <code>X-API-Key</code> has to declare <code>CASEHUB_AUTH_MODE=apikey</code>
-explicitly — and move off that configuration as soon as possible.</p>
+<p><strong>What changed.</strong> <code>Authorization: Bearer &lt;JWT&gt;</code> is the only accepted
+credential, and <code>CASEHUB_AUTH_MODE</code> takes a single value, <code>oidc</code>.
+Any other value refuses to start the service.</p>
+<p><strong>Why.</strong> An authentication path that checks the credential against
+no secret, and that skips per-automation authorization, is not
+authentication — it is unrestricted access wearing the look of
+control.</p>
+<p><strong>What to do.</strong> Nothing, if you already use OIDC. Otherwise,
+provision one <code>client_credentials</code> client per automation, with
+<code>client_id</code> equal to its name, and request the token at
+<code>POST /v1/auth/token</code>.</p>
 <p>See <a href="../api/autenticacao/">Authentication</a>.</p>
-</div>
-<div class="tabbed-block">
-<p><strong>What changed.</strong> In <code>dual</code> mode, an invalid or expired <code>Bearer</code> sent
-<strong>together</strong> with an <code>X-API-Key</code> answers 401. It used to fall back to
-the key.</p>
-<p><strong>Why.</strong> The fallback was not only about authentication: the context
-became <code>apikey</code>, per-automation authorization stopped applying, and the
-client <strong>lost its scope along with the token</strong>. The condition that
-triggered it — both credentials in the same request — is exactly the
-scenario <code>dual</code> mode exists for.</p>
-<p><strong>What to do.</strong> Make sure the token is renewed before it expires. A
-client that relied on "it expired, but the key saves me" now gets a 401.
-Whoever sends <strong>only</strong> <code>X-API-Key</code> is unaffected.</p>
 </div>
 <div class="tabbed-block">
 <p><strong>What changed.</strong> <code>POST /v1/cases/batch</code> rejects an empty batch or one

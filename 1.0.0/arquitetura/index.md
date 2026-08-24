@@ -51,13 +51,10 @@ flowchart TD
     Z -->|sim| OK["Segue para a rota"]
 ```
 
-!!! danger "Não existe segunda porta"
-    Até 2026-08-23 havia os modos `apikey` e `dual`, em que um header
-    `X-API-Key` com **qualquer string não vazia** autenticava — sem
-    validação contra segredo nenhum — e **não passava pela verificação
-    de automação**. Uma chave qualquer alcançava qualquer automação em
-    qualquer ambiente. Os dois modos foram removidos, e um serviço
-    configurado com eles não sobe.
+!!! info "Não existe segunda porta"
+    Não há credencial alternativa: sem um Bearer válido, a resposta é
+    `401`, e nenhum caminho de autenticação pula a verificação de
+    automação.
 
 Detalhes em [Autenticação](api/autenticacao.md).
 

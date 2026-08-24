@@ -1310,32 +1310,21 @@ nada. Ver <a href="../sdk/assincrono/">Cliente assíncrono</a>.</p>
 <p>Uma revisão dos três repositórios do ecossistema produziu 11 correções,
 todas já em <code>main</code> no <code>fast-casehub</code>.</p>
 <h3 id="exigem-atencao-de-quem-integra"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 14h-2V9h2m0 9h-2v-2h2M1 21h22L12 2z"/></svg></span> Exigem atenção de quem integra<a class="headerlink" href="#exigem-atencao-de-quem-integra" title="Permanent link">&para;</a></h3>
-<div class="tabbed-set tabbed-alternate" data-tabs="2:3"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><input id="__tabbed_2_3" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Autenticação padrão passou a ser OIDC</label><label for="__tabbed_2_2">Modo dual não cai mais para X-API-Key</label><label for="__tabbed_2_3">Lote passou a ter teto</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Autenticação é exclusivamente OIDC</label><label for="__tabbed_2_2">Lote passou a ter teto</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<p><strong>O que mudou.</strong> O default de <code>CASEHUB_AUTH_MODE</code> era <code>apikey</code> e
-passou a ser <code>oidc</code>.</p>
-<p><strong>Por quê.</strong> O modo <code>apikey</code> aceita qualquer string não vazia como
-credencial, sem comparar com segredo nenhum, e a autorização por
-automação não se aplica a ele — uma chave qualquer alcançava
-qualquer automação e qualquer ambiente.</p>
-<p><strong>O que fazer.</strong> Nada, se você já usa OIDC. Um ambiente que ainda
-dependa de <code>X-API-Key</code> precisa declarar <code>CASEHUB_AUTH_MODE=apikey</code>
-explicitamente — e sair dessa configuração assim que possível.</p>
+<p><strong>O que mudou.</strong> <code>Authorization: Bearer &lt;JWT&gt;</code> passou a ser a única
+credencial aceita, e <code>CASEHUB_AUTH_MODE</code> aceita um único valor,
+<code>oidc</code>. Qualquer outro valor derruba a subida do serviço.</p>
+<p><strong>Por quê.</strong> Um caminho de autenticação que não confere a
+credencial contra segredo nenhum, e que não passa pela autorização
+por automação, não é autenticação — é acesso irrestrito com
+aparência de controle.</p>
+<p><strong>O que fazer.</strong> Nada, se você já usa OIDC. Caso contrário,
+provisione um client <code>client_credentials</code> por automação, com
+<code>client_id</code> igual ao nome dela, e peça o token em
+<code>POST /v1/auth/token</code>.</p>
 <p>Ver <a href="../api/autenticacao/">Autenticação</a>.</p>
-</div>
-<div class="tabbed-block">
-<p><strong>O que mudou.</strong> No modo <code>dual</code>, um <code>Bearer</code> inválido ou expirado
-enviado <strong>junto</strong> com uma <code>X-API-Key</code> responde 401. Antes, caía
-para a chave.</p>
-<p><strong>Por quê.</strong> O fallback não era só de autenticação: o contexto
-virava <code>apikey</code>, a autorização por automação deixava de se aplicar,
-e o cliente <strong>perdia o escopo junto com o token</strong>. A condição que
-disparava isso — as duas credenciais na mesma requisição — é
-exatamente o cenário para o qual o modo <code>dual</code> existe.</p>
-<p><strong>O que fazer.</strong> Garanta que o token seja renovado antes de expirar.
-Um cliente que dependia de "expirou, mas a chave me salva" agora
-recebe 401. Quem envia <strong>apenas</strong> <code>X-API-Key</code> não é afetado.</p>
 </div>
 <div class="tabbed-block">
 <p><strong>O que mudou.</strong> <code>POST /v1/cases/batch</code> recusa lote vazio ou acima

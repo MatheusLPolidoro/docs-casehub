@@ -1318,7 +1318,6 @@ em cache. Sem fechar, a conexão vaza.</p>
 <h2 id="construcao">Construção<a class="headerlink" href="#construcao" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="n">CaseHubClient</span><span class="p">(</span>
     <span class="n">base_url</span><span class="p">,</span>
-    <span class="n">api_key</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">client_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">client_secret</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -1339,10 +1338,6 @@ em cache. Sem fechar, a conexão vaza.</p>
 <td>Endereço da API.</td>
 </tr>
 <tr>
-<td><code>api_key</code></td>
-<td>Modo legado (<code>X-API-Key</code>).</td>
-</tr>
-<tr>
 <td><code>client_id</code> / <code>client_secret</code> / <code>token_url</code></td>
 <td>OIDC. <strong>Os três juntos, ou nenhum</strong> — configuração parcial levanta <code>ValueError</code> na construção.</td>
 </tr>
@@ -1352,8 +1347,8 @@ em cache. Sem fechar, a conexão vaza.</p>
 </tr>
 </tbody>
 </table>
-<p>Com os dois mecanismos configurados, <strong>OIDC tem precedência</strong> em toda
-chamada. Não é preciso remover a <code>api_key</code> para migrar.</p>
+<p>O <code>token_url</code> aponta para a própria API (<code>/v1/auth/token</code>), que
+repassa ao provedor de identidade.</p>
 <h2 id="metodos">Métodos<a class="headerlink" href="#metodos" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -1509,8 +1504,7 @@ itens — e sem chave natural eles viram linhas novas.</p>
 <p>É mais uma razão para sempre enviar <code>case_id</code> explícito: com ele, o
 reenvio é idempotente e o retry é inofensivo.</p>
 </div>
-<p>O retry acontece apenas no caminho OIDC. Um 401 de <code>X-API-Key</code> nunca é
-mascarado por repetição.</p>
+<p>O retry acontece uma vez só: um <code>401</code> que persiste chega ao chamador.</p>
 
 
 

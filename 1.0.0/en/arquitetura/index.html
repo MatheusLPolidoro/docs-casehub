@@ -1297,14 +1297,11 @@ the confusion.</p>
 
     Z --&gt;|no| E403["403 forbidden"]
     Z --&gt;|yes| OK["Proceeds to the route"]</code></pre>
-<div class="admonition danger">
+<div class="admonition info">
 <p class="admonition-title">There is no second door</p>
-<p>Until 2026-08-23 there were <code>apikey</code> and <code>dual</code> modes, where an
-<code>X-API-Key</code> header holding <strong>any non-empty string</strong> authenticated —
-never checked against any secret — and <strong>skipped the automation
-check entirely</strong>. Any key reached any automation in any
-environment. Both modes were removed, and a service configured with
-them refuses to start.</p>
+<p>There is no alternative credential: without a valid Bearer the
+answer is <code>401</code>, and no authentication path skips the automation
+check.</p>
 </div>
 <p>Details in <a href="../api/autenticacao/">Authentication</a>.</p>
 <h2 id="idempotency-what-happens-when-you-republish">Idempotency: what happens when you republish<a class="headerlink" href="#idempotency-what-happens-when-you-republish" title="Permanent link">&para;</a></h2>

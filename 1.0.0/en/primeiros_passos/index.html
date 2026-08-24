@@ -1300,18 +1300,20 @@ do — it implements the same contract:</p>
 </div>
 
 <div class="admonition tip">
-<p class="admonition-title">For experimenting, use <code>apikey</code></p>
-<p>The default is <code>oidc</code>, which needs a configured Keycloak. For a quick
-local test, start it with <code>CASEHUB_AUTH_MODE=apikey</code> — but read the
-warning in <a href="../api/autenticacao/">Authentication</a> before taking that to
-any shared environment.</p>
+<p class="admonition-title">The mock requires a credential, like the service</p>
+<p>Set <code>CASEHUB_OIDC_ISSUER</code>/<code>CASEHUB_OIDC_JWKS_URL</code> before starting it
+and use a signed token. For a local test, serving the JWKS over local
+HTTP and signing a JWT takes only a few lines — see
+<a href="../api/autenticacao/">Authentication</a>.</p>
 </div>
 <h2 id="3-publish-a-case">3. Publish a case<a class="headerlink" href="#3-publish-a-case" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">casehub</span><span class="w"> </span><span class="kn">import</span> <span class="n">CaseHubClient</span>
 
 <span class="k">with</span> <span class="n">CaseHubClient</span><span class="p">(</span>
     <span class="n">base_url</span><span class="o">=</span><span class="s1">'http://127.0.0.1:8080'</span><span class="p">,</span>
-    <span class="n">api_key</span><span class="o">=</span><span class="s1">'chave-de-teste'</span><span class="p">,</span>
+    <span class="n">client_id</span><span class="o">=</span><span class="s1">'MY_AUTOMATION'</span><span class="p">,</span>
+    <span class="n">client_secret</span><span class="o">=</span><span class="s1">'...'</span><span class="p">,</span>
+    <span class="n">token_url</span><span class="o">=</span><span class="s1">'http://127.0.0.1:8080/v1/auth/token'</span><span class="p">,</span>
 <span class="p">)</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
     <span class="n">resposta</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">upsert_case</span><span class="p">(</span>
         <span class="n">environment</span><span class="o">=</span><span class="s1">'dev'</span><span class="p">,</span>
@@ -1356,7 +1358,7 @@ case's life cycle without carrying the whole payload every time.</p>
 <h2 id="next-steps">Next steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="../tutorial/">Tutorial</a> — a complete batch import flow.</li>
-<li><a href="../api/autenticacao/">Authentication</a> — moving off <code>apikey</code> and onto OIDC.</li>
+<li><a href="../api/autenticacao/">Authentication</a> — how to obtain and use the token.</li>
 <li><a href="../api/endpoints/">Endpoints</a> — the contract field by field.</li>
 </ul>
 

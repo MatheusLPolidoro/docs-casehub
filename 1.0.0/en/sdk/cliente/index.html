@@ -1318,7 +1318,6 @@ reused. Without closing it, the connection leaks.</p>
 <h2 id="construction">Construction<a class="headerlink" href="#construction" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="n">CaseHubClient</span><span class="p">(</span>
     <span class="n">base_url</span><span class="p">,</span>
-    <span class="n">api_key</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">client_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">client_secret</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -1339,10 +1338,6 @@ reused. Without closing it, the connection leaks.</p>
 <td>The API address.</td>
 </tr>
 <tr>
-<td><code>api_key</code></td>
-<td>Legacy mode (<code>X-API-Key</code>).</td>
-</tr>
-<tr>
 <td><code>client_id</code> / <code>client_secret</code> / <code>token_url</code></td>
 <td>OIDC. <strong>All three together, or none</strong> — a partial configuration raises <code>ValueError</code> at construction.</td>
 </tr>
@@ -1353,7 +1348,8 @@ reused. Without closing it, the connection leaks.</p>
 </tbody>
 </table>
 <p>With both mechanisms configured, <strong>OIDC takes precedence</strong> on every call.
-You do not have to remove the <code>api_key</code> to migrate.</p>
+The <code>token_url</code> points at the API itself (<code>/v1/auth/token</code>), which
+forwards to the identity provider.</p>
 <h2 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -1509,8 +1505,7 @@ items — and with no natural key they become new rows.</p>
 <p>It is one more reason to always send an explicit <code>case_id</code>: with it, the
 resend is idempotent and the retry is harmless.</p>
 </div>
-<p>The retry only happens on the OIDC path. A 401 from <code>X-API-Key</code> is never
-masked by a repeat.</p>
+<p>The retry happens once: a <code>401</code> that persists reaches the caller.</p>
 
 
 

@@ -721,17 +721,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#o-header-x-api-key-nao-autentica-nada" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        O header X-API-Key não autentica nada
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#validacao-de-aud" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1225,17 +1214,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#o-header-x-api-key-nao-autentica-nada" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        O header X-API-Key não autentica nada
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#validacao-de-aud" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1282,17 +1260,11 @@
 validado contra o JWKS do issuer. <code>CASEHUB_AUTH_MODE</code> aceita um único
 valor, <code>oidc</code>. <code>/health</code>, <code>/ready</code> e <code>/v1/auth/*</code> nunca exigem
 credencial.</p>
-<div class="admonition danger">
-<p class="admonition-title"><code>apikey</code> e <code>dual</code> foram removidos em 2026-08-23</p>
-<p>O header <code>X-API-Key</code> autenticava com <strong>qualquer string não vazia</strong> —
-nunca foi comparado com segredo nenhum — e <strong>não passava pela
-autorização por automação</strong>. Somando as duas coisas: quem soubesse o
-nome do header lia e escrevia casos de qualquer automação em
-qualquer ambiente.</p>
-<p>Um serviço configurado com <code>CASEHUB_AUTH_MODE=apikey</code> ou <code>dual</code>
-<strong>não sobe</strong>, e a mensagem diz o que fazer. Falhar na subida é
-deliberado — a alternativa é seguir no ar aceitando qualquer
-string.</p>
+<div class="admonition info">
+<p class="admonition-title">Um valor só</p>
+<p><code>CASEHUB_AUTH_MODE</code> aceita <code>oidc</code>, e qualquer outro valor derruba a
+subida do serviço. Uma configuração errada aparece no arranque, não
+como <code>401</code> inexplicável em produção.</p>
 </div>
 <h2 id="autenticacao-autorizacao">Autenticação × autorização<a class="headerlink" href="#autenticacao-autorizacao" title="Permanent link">&para;</a></h2>
 <p>São dois passos, e vale insistir na diferença:</p>
@@ -1302,8 +1274,8 @@ string.</p>
 <li><strong>Autorização</strong> responde <em>o que você pode tocar</em> — o claim de
   automação do token precisa bater com a <code>automation</code> da chamada.</li>
 </ul>
-<p>Nenhum caminho escapa do segundo passo. Era exatamente isso que o
-removido <code>apikey</code> fazia: autenticava sem escopo nenhum.</p>
+<p>Nenhum caminho escapa do segundo passo: autenticar sem escopo não é
+uma possibilidade.</p>
 <pre class="mermaid"><code>flowchart LR
     T["Token"] --&gt; A["Autenticação&lt;br/&gt;&lt;small&gt;assinatura, iss, exp&lt;/small&gt;"]
     A --&gt;|falha| E1["401 unauthorized"]
@@ -1367,15 +1339,6 @@ fechada, sempre.</p>
 <p>Apenas <code>RS256</code> é aceito, por allowlist explícita — o <code>alg</code> declarado no
 header do token nunca é usado para escolher o algoritmo, o que fecha a
 classe de ataque de confusão de algoritmo.</p>
-<h2 id="o-header-x-api-key-nao-autentica-nada">O header <code>X-API-Key</code> não autentica nada<a class="headerlink" href="#o-header-x-api-key-nao-autentica-nada" title="Permanent link">&para;</a></h2>
-<p>Ele existiu até 2026-08-23 e foi removido. Se um serviço no ar ainda o
-aceitar, é uma versão anterior — e nela <strong>qualquer string alcança
-qualquer automação</strong>.</p>
-<div class="admonition warning">
-<p class="admonition-title">Como reconhecer</p>
-<p>Uma chamada com apenas <code>X-API-Key</code>, sem <code>Authorization</code>, tem que
-responder <code>401</code>. Se responder <code>200</code>, a API é antiga.</p>
-</div>
 <h2 id="validacao-de-aud">Validação de <code>aud</code><a class="headerlink" href="#validacao-de-aud" title="Permanent link">&para;</a></h2>
 <p>Com <code>CASEHUB_OIDC_AUDIENCE</code> <strong>vazio</strong> (default), a API não valida o
 claim <code>aud</code>: qualquer token válido do mesmo issuer é aceito como
@@ -1415,9 +1378,10 @@ construção, antes de bater na rede.</p>
 </div>
 </div>
 <div class="admonition tip">
-<p class="admonition-title"><code>api_key</code> no SDK não serve mais</p>
-<p>O parâmetro continua existindo na lib, mas a API recusa a chave. Um
-cliente configurado só com <code>api_key</code> toma <code>401</code> em toda chamada.</p>
+<p class="admonition-title">Os três campos vêm juntos</p>
+<p><code>client_id</code>, <code>client_secret</code> e <code>token_url</code> são configurados juntos —
+passar só parte deles levanta erro na construção do cliente, antes
+de qualquer chamada de rede.</p>
 </div>
 
 
