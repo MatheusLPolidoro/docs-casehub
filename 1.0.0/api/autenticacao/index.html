@@ -721,10 +721,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#comportamento-do-modo-dual" class="md-nav__link">
+  <a href="#o-header-x-api-key-nao-autentica-nada" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Comportamento do modo dual
+        O header X-API-Key não autentica nada
       
     </span>
   </a>
@@ -1225,10 +1225,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#comportamento-do-modo-dual" class="md-nav__link">
+  <a href="#o-header-x-api-key-nao-autentica-nada" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Comportamento do modo dual
+        O header X-API-Key não autentica nada
       
     </span>
   </a>
@@ -1278,39 +1278,21 @@
 
 
 <h1 id="autenticacao">Autenticação<a class="headerlink" href="#autenticacao" title="Permanent link">&para;</a></h1>
-<p><code>CASEHUB_AUTH_MODE</code> decide o que a API aceita em todas as rotas de
-<code>/v1</code>. <code>/health</code> e <code>/ready</code> nunca exigem credencial.</p>
-<table>
-<thead>
-<tr>
-<th>Modo</th>
-<th>Aceita</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>oidc</code> <strong>(default)</strong></td>
-<td>Só <code>Authorization: Bearer &lt;JWT&gt;</code>, validado contra o JWKS do issuer.</td>
-</tr>
-<tr>
-<td><code>dual</code></td>
-<td>Os dois — para migrar um consumidor por vez.</td>
-</tr>
-<tr>
-<td><code>apikey</code> <em>(legado)</em></td>
-<td><code>X-API-Key</code> não vazia — <strong>qualquer valor, sem validação real</strong>.</td>
-</tr>
-</tbody>
-</table>
+<p><strong>Só existe uma forma de autenticar:</strong> <code>Authorization: Bearer &lt;JWT&gt;</code>,
+validado contra o JWKS do issuer. <code>CASEHUB_AUTH_MODE</code> aceita um único
+valor, <code>oidc</code>. <code>/health</code>, <code>/ready</code> e <code>/v1/auth/*</code> nunca exigem
+credencial.</p>
 <div class="admonition danger">
-<p class="admonition-title"><code>apikey</code> não é autenticação</p>
-<p>Qualquer string não vazia passa, e a autorização por automação <strong>não
-se aplica</strong> a esse método: uma chave qualquer lê e escreve casos de
-qualquer automação e qualquer ambiente. Só use atrás de rede
-fechada, nunca em produção.</p>
-<p>Foi o default até 2026-08-20, quando passou a <code>oidc</code>. Um ambiente
-que ainda dependa dele precisa declarar <code>CASEHUB_AUTH_MODE=apikey</code>
-explicitamente.</p>
+<p class="admonition-title"><code>apikey</code> e <code>dual</code> foram removidos em 2026-08-23</p>
+<p>O header <code>X-API-Key</code> autenticava com <strong>qualquer string não vazia</strong> —
+nunca foi comparado com segredo nenhum — e <strong>não passava pela
+autorização por automação</strong>. Somando as duas coisas: quem soubesse o
+nome do header lia e escrevia casos de qualquer automação em
+qualquer ambiente.</p>
+<p>Um serviço configurado com <code>CASEHUB_AUTH_MODE=apikey</code> ou <code>dual</code>
+<strong>não sobe</strong>, e a mensagem diz o que fazer. Falhar na subida é
+deliberado — a alternativa é seguir no ar aceitando qualquer
+string.</p>
 </div>
 <h2 id="autenticacao-autorizacao">Autenticação × autorização<a class="headerlink" href="#autenticacao-autorizacao" title="Permanent link">&para;</a></h2>
 <p>São dois passos, e vale insistir na diferença:</p>
@@ -1320,8 +1302,8 @@ explicitamente.</p>
 <li><strong>Autorização</strong> responde <em>o que você pode tocar</em> — o claim de
   automação do token precisa bater com a <code>automation</code> da chamada.</li>
 </ul>
-<p>O segundo passo <strong>só existe no método <code>oidc</code></strong>. É exatamente por isso
-que <code>apikey</code> não serve como default: ele autentica sem escopo nenhum.</p>
+<p>Nenhum caminho escapa do segundo passo. Era exatamente isso que o
+removido <code>apikey</code> fazia: autenticava sem escopo nenhum.</p>
 <pre class="mermaid"><code>flowchart LR
     T["Token"] --&gt; A["Autenticação&lt;br/&gt;&lt;small&gt;assinatura, iss, exp&lt;/small&gt;"]
     A --&gt;|falha| E1["401 unauthorized"]
@@ -1385,21 +1367,14 @@ fechada, sempre.</p>
 <p>Apenas <code>RS256</code> é aceito, por allowlist explícita — o <code>alg</code> declarado no
 header do token nunca é usado para escolher o algoritmo, o que fecha a
 classe de ataque de confusão de algoritmo.</p>
-<h2 id="comportamento-do-modo-dual">Comportamento do modo <code>dual</code><a class="headerlink" href="#comportamento-do-modo-dual" title="Permanent link">&para;</a></h2>
-<p>O modo existe para migrar consumidores um a um, e tem uma regra que
-costuma surpreender:</p>
-<div class="admonition danger">
-<p class="admonition-title">Bearer recusado é 401, mesmo com <code>X-API-Key</code> presente</p>
-<p>Um token inválido ou expirado enviado <strong>junto</strong> com uma chave
-responde 401 — não cai para <code>apikey</code>.</p>
-<p>Até 2026-08-20 caía, e a consequência não era só de autenticação: o
-contexto virava <code>apikey</code>, a autorização por automação deixava de se
-aplicar, e o cliente <strong>perdia o escopo junto com o token</strong>, passando
-a alcançar qualquer automação. Pior, a condição que disparava isso —
-as duas credenciais na mesma requisição — é exatamente o cenário
-para o qual o modo <code>dual</code> existe.</p>
-<p>Quem envia <strong>apenas</strong> <code>X-API-Key</code> continua aceito normalmente. O que
-mudou é que credencial ruim deixou de ser convite para tentar outra.</p>
+<h2 id="o-header-x-api-key-nao-autentica-nada">O header <code>X-API-Key</code> não autentica nada<a class="headerlink" href="#o-header-x-api-key-nao-autentica-nada" title="Permanent link">&para;</a></h2>
+<p>Ele existiu até 2026-08-23 e foi removido. Se um serviço no ar ainda o
+aceitar, é uma versão anterior — e nela <strong>qualquer string alcança
+qualquer automação</strong>.</p>
+<div class="admonition warning">
+<p class="admonition-title">Como reconhecer</p>
+<p>Uma chamada com apenas <code>X-API-Key</code>, sem <code>Authorization</code>, tem que
+responder <code>401</code>. Se responder <code>200</code>, a API é antiga.</p>
 </div>
 <h2 id="validacao-de-aud">Validação de <code>aud</code><a class="headerlink" href="#validacao-de-aud" title="Permanent link">&para;</a></h2>
 <p>Com <code>CASEHUB_OIDC_AUDIENCE</code> <strong>vazio</strong> (default), a API não valida o
@@ -1422,7 +1397,7 @@ variável estiver vazia. Preenchê-la é parte de fechar um ambiente.</p>
    regredir em silêncio num deploy futuro.</li>
 </ol>
 <h2 id="configurando-o-sdk">Configurando o SDK<a class="headerlink" href="#configurando-o-sdk" title="Permanent link">&para;</a></h2>
-<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">OIDC (recomendado)</label><label for="__tabbed_2_2">API key (legado)</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:1"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">OIDC</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">casehub</span><span class="w"> </span><span class="kn">import</span> <span class="n">CaseHubClient</span>
@@ -1437,21 +1412,12 @@ variável estiver vazia. Preenchê-la é parte de fechar um ambiente.</p>
 <p>Os três campos vêm juntos ou nenhum — configuração parcial falha na
 construção, antes de bater na rede.</p>
 </div>
-<div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">casehub</span><span class="w"> </span><span class="kn">import</span> <span class="n">CaseHubClient</span>
-
-<span class="n">client</span> <span class="o">=</span> <span class="n">CaseHubClient</span><span class="p">(</span>
-    <span class="n">base_url</span><span class="o">=</span><span class="s1">'https://casehub.interno'</span><span class="p">,</span>
-    <span class="n">api_key</span><span class="o">=</span><span class="s1">'...'</span><span class="p">,</span>
-<span class="p">)</span>
-</code></pre></div>
-</div>
 </div>
 </div>
 <div class="admonition tip">
-<p class="admonition-title">OIDC tem precedência</p>
-<p>Com os dois configurados, o SDK usa OIDC em toda chamada. Não é
-preciso apagar a <code>api_key</code> para migrar.</p>
+<p class="admonition-title"><code>api_key</code> no SDK não serve mais</p>
+<p>O parâmetro continua existindo na lib, mas a API recusa a chave. Um
+cliente configurado só com <code>api_key</code> toma <code>401</code> em toda chamada.</p>
 </div>
 
 

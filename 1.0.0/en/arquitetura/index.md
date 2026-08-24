@@ -39,38 +39,27 @@ the confusion.
 
 ```mermaid
 flowchart TD
-    R["Request arrives"] --> M{"CASEHUB_AUTH_MODE"}
+    R["Request arrives"] --> B{"Bearer present?"}
 
-    M -->|oidc| B{"Has a Bearer?"}
-    M -->|dual| B
-    M -->|apikey| AK{"Has a non-empty<br/>X-API-Key?"}
-
-    B -->|no, and mode is dual| AK
-    B -->|no, and mode is oidc| E401["401 unauthorized"]
-    B -->|yes| V{"Valid token?<br/><small>signature, iss, exp</small>"}
+    B -->|no| E401["401 unauthorized"]
+    B -->|yes| V{"Token valid?<br/><small>signature, iss, exp</small>"}
 
     V -->|no| E401
-    V -->|yes| AUT["Authenticated as OIDC"]
+    V -->|yes| Z{"azp claim ==<br/>call's automation?"}
 
-    AK -->|no| E401
-    AK -->|yes| AUTK["Authenticated as apikey"]
-
-    AUT --> Z{"azp claim ==<br/>the call's automation?"}
     Z -->|no| E403["403 forbidden"]
     Z -->|yes| OK["Proceeds to the route"]
-
-    AUTK --> OK
 ```
 
-!!! danger "A rejected Bearer is a 401, it never falls back to `X-API-Key`"
-    In `dual` mode, an invalid or expired token sent **together** with an
-    `X-API-Key` answers 401. Until 2026-08-20 that case fell back to
-    `apikey` — and since per-automation authorization does not apply to that
-    method, the client lost its scope along with the token and could reach
-    any automation. Whoever sends **only** `X-API-Key` is still accepted
-    normally.
+!!! danger "There is no second door"
+    Until 2026-08-23 there were `apikey` and `dual` modes, where an
+    `X-API-Key` header holding **any non-empty string** authenticated —
+    never checked against any secret — and **skipped the automation
+    check entirely**. Any key reached any automation in any
+    environment. Both modes were removed, and a service configured with
+    them refuses to start.
 
-Details on each mode in [Authentication](api/autenticacao.md).
+Details in [Authentication](api/autenticacao.md).
 
 ## Idempotency: what happens when you republish
 

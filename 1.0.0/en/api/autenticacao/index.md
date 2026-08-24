@@ -1,23 +1,20 @@
 # Authentication
 
-`CASEHUB_AUTH_MODE` decides what the API accepts on every `/v1` route.
-`/health` and `/ready` never require a credential.
+**Only one way to authenticate:** `Authorization: Bearer <JWT>`,
+validated against the issuer's JWKS. `CASEHUB_AUTH_MODE` takes a single
+value, `oidc`. `/health`, `/ready` and `/v1/auth/*` never require a
+credential.
 
-| Mode | Accepts |
-|---|---|
-| `oidc` **(default)** | Only `Authorization: Bearer <JWT>`, validated against the issuer's JWKS. |
-| `dual` | Both — to migrate one consumer at a time. |
-| `apikey` *(legacy)* | A non-empty `X-API-Key` — **any value, with no real validation**. |
+!!! danger "`apikey` and `dual` were removed on 2026-08-23"
+    The `X-API-Key` header authenticated with **any non-empty string** —
+    it was never compared against any secret — and **skipped
+    per-automation authorization**. Together: anyone who knew the header
+    name read and wrote cases of any automation in any environment.
 
-!!! danger "`apikey` is not authentication"
-    Any non-empty string gets through, and per-automation authorization
-    **does not apply** to that method: any key reads and writes cases of any
-    automation in any environment. Only use it behind a closed network,
-    never in production.
-
-    It was the default until 2026-08-20, when it became `oidc`. An
-    environment that still depends on it has to declare
-    `CASEHUB_AUTH_MODE=apikey` explicitly.
+    A service configured with `CASEHUB_AUTH_MODE=apikey` or `dual`
+    **refuses to start**, and the message says what to do. Failing at
+    startup is deliberate — the alternative is staying up accepting any
+    string.
 
 ## Authentication × authorization
 
@@ -28,8 +25,8 @@ They are two steps, and the difference is worth insisting on:
 - **Authorization** answers *what you may touch* — the token's automation
   claim has to match the call's `automation`.
 
-The second step **only exists in the `oidc` method**. That is exactly why
-`apikey` does not work as a default: it authenticates with no scope at all.
+No path escapes the second step. That is exactly what the removed
+`apikey` did: it authenticated with no scope at all.
 
 ```mermaid
 flowchart LR
@@ -102,25 +99,15 @@ Only `RS256` is accepted, by an explicit allowlist — the `alg` declared in
 the token header is never used to choose the algorithm, which closes off the
 algorithm-confusion class of attack.
 
-## How `dual` mode behaves
+## The `X-API-Key` header authenticates nothing
 
-The mode exists to migrate consumers one by one, and it has a rule that
-tends to surprise:
+It existed until 2026-08-23 and was removed. If a running service still
+accepts it, that service is an older build — and in it **any string
+reaches any automation**.
 
-!!! danger "A rejected Bearer is a 401, even with `X-API-Key` present"
-    An invalid or expired token sent **together** with a key answers 401 —
-    it does not fall back to `apikey`.
-
-    Until 2026-08-20 it did, and the consequence was not only about
-    authentication: the context became `apikey`, per-automation
-    authorization stopped applying, and the client **lost its scope along
-    with the token**, reaching any automation. Worse, the condition that
-    triggered it — both credentials in the same request — is exactly the
-    scenario `dual` mode exists for.
-
-    Whoever sends **only** `X-API-Key` is still accepted normally. What
-    changed is that a bad credential stopped being an invitation to try
-    another.
+!!! warning "How to tell"
+    A call carrying only `X-API-Key`, with no `Authorization`, must
+    answer `401`. If it answers `200`, the API is old.
 
 ## Validating `aud`
 
@@ -147,7 +134,7 @@ To close it, in this order — inverting it knocks consumers out with 401s:
 
 ## Configuring the SDK
 
-=== "OIDC (recommended)"
+=== "OIDC"
 
     ```python
     from casehub import CaseHubClient
@@ -163,17 +150,7 @@ To close it, in this order — inverting it knocks consumers out with 401s:
     The three fields come together or not at all — a partial configuration
     fails at construction, before touching the network.
 
-=== "API key (legacy)"
-
-    ```python
-    from casehub import CaseHubClient
-
-    client = CaseHubClient(
-        base_url='https://casehub.interno',
-        api_key='...',
-    )
-    ```
-
-!!! tip "OIDC takes precedence"
-    With both configured, the SDK uses OIDC on every call. You do not have
-    to delete the `api_key` to migrate.
+!!! tip "`api_key` in the SDK no longer works"
+    The parameter still exists in the library, but the API rejects the
+    key. A client configured with only `api_key` gets `401` on every
+    call.

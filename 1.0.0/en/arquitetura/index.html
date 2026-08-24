@@ -1287,37 +1287,26 @@ stored normally. The status is still 200 — the caller has to <strong>read
 <p>They are two distinct steps, and conflating them is the source of most of
 the confusion.</p>
 <pre class="mermaid"><code>flowchart TD
-    R["Request arrives"] --&gt; M{"CASEHUB_AUTH_MODE"}
+    R["Request arrives"] --&gt; B{"Bearer present?"}
 
-    M --&gt;|oidc| B{"Has a Bearer?"}
-    M --&gt;|dual| B
-    M --&gt;|apikey| AK{"Has a non-empty&lt;br/&gt;X-API-Key?"}
-
-    B --&gt;|no, and mode is dual| AK
-    B --&gt;|no, and mode is oidc| E401["401 unauthorized"]
-    B --&gt;|yes| V{"Valid token?&lt;br/&gt;&lt;small&gt;signature, iss, exp&lt;/small&gt;"}
+    B --&gt;|no| E401["401 unauthorized"]
+    B --&gt;|yes| V{"Token valid?&lt;br/&gt;&lt;small&gt;signature, iss, exp&lt;/small&gt;"}
 
     V --&gt;|no| E401
-    V --&gt;|yes| AUT["Authenticated as OIDC"]
+    V --&gt;|yes| Z{"azp claim ==&lt;br/&gt;call's automation?"}
 
-    AK --&gt;|no| E401
-    AK --&gt;|yes| AUTK["Authenticated as apikey"]
-
-    AUT --&gt; Z{"azp claim ==&lt;br/&gt;the call's automation?"}
     Z --&gt;|no| E403["403 forbidden"]
-    Z --&gt;|yes| OK["Proceeds to the route"]
-
-    AUTK --&gt; OK</code></pre>
+    Z --&gt;|yes| OK["Proceeds to the route"]</code></pre>
 <div class="admonition danger">
-<p class="admonition-title">A rejected Bearer is a 401, it never falls back to <code>X-API-Key</code></p>
-<p>In <code>dual</code> mode, an invalid or expired token sent <strong>together</strong> with an
-<code>X-API-Key</code> answers 401. Until 2026-08-20 that case fell back to
-<code>apikey</code> — and since per-automation authorization does not apply to that
-method, the client lost its scope along with the token and could reach
-any automation. Whoever sends <strong>only</strong> <code>X-API-Key</code> is still accepted
-normally.</p>
+<p class="admonition-title">There is no second door</p>
+<p>Until 2026-08-23 there were <code>apikey</code> and <code>dual</code> modes, where an
+<code>X-API-Key</code> header holding <strong>any non-empty string</strong> authenticated —
+never checked against any secret — and <strong>skipped the automation
+check entirely</strong>. Any key reached any automation in any
+environment. Both modes were removed, and a service configured with
+them refuses to start.</p>
 </div>
-<p>Details on each mode in <a href="../api/autenticacao/">Authentication</a>.</p>
+<p>Details in <a href="../api/autenticacao/">Authentication</a>.</p>
 <h2 id="idempotency-what-happens-when-you-republish">Idempotency: what happens when you republish<a class="headerlink" href="#idempotency-what-happens-when-you-republish" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>flowchart TD
     P["Publication arrives with&lt;br/&gt;(environment, automation, case_id)"] --&gt; Q{"Does that key&lt;br/&gt;already exist?"}

@@ -1287,37 +1287,26 @@ gravados normalmente. O status continua 200 — o chamador precisa
 <p>São dois passos distintos, e confundi-los é a origem da maioria das
 dúvidas.</p>
 <pre class="mermaid"><code>flowchart TD
-    R["Requisição chega"] --&gt; M{"CASEHUB_AUTH_MODE"}
+    R["Requisição chega"] --&gt; B{"Tem Bearer?"}
 
-    M --&gt;|oidc| B{"Tem Bearer?"}
-    M --&gt;|dual| B
-    M --&gt;|apikey| AK{"Tem X-API-Key&lt;br/&gt;não vazia?"}
-
-    B --&gt;|não, e modo dual| AK
-    B --&gt;|não, e modo oidc| E401["401 unauthorized"]
+    B --&gt;|não| E401["401 unauthorized"]
     B --&gt;|sim| V{"Token válido?&lt;br/&gt;&lt;small&gt;assinatura, iss, exp&lt;/small&gt;"}
 
     V --&gt;|não| E401
-    V --&gt;|sim| AUT["Autenticado como OIDC"]
+    V --&gt;|sim| Z{"claim azp ==&lt;br/&gt;automation da chamada?"}
 
-    AK --&gt;|não| E401
-    AK --&gt;|sim| AUTK["Autenticado como apikey"]
-
-    AUT --&gt; Z{"claim azp ==&lt;br/&gt;automation da chamada?"}
     Z --&gt;|não| E403["403 forbidden"]
-    Z --&gt;|sim| OK["Segue para a rota"]
-
-    AUTK --&gt; OK</code></pre>
+    Z --&gt;|sim| OK["Segue para a rota"]</code></pre>
 <div class="admonition danger">
-<p class="admonition-title">Bearer recusado é 401, nunca cai para <code>X-API-Key</code></p>
-<p>No modo <code>dual</code>, um token inválido ou expirado enviado <strong>junto</strong> com
-uma <code>X-API-Key</code> responde 401. Até 2026-08-20 esse caso caía para
-<code>apikey</code> — e como a autorização por automação não se aplica a esse
-método, o cliente perdia o escopo junto com o token e alcançava
-qualquer automação. Quem envia <strong>apenas</strong> <code>X-API-Key</code> continua
-aceito normalmente.</p>
+<p class="admonition-title">Não existe segunda porta</p>
+<p>Até 2026-08-23 havia os modos <code>apikey</code> e <code>dual</code>, em que um header
+<code>X-API-Key</code> com <strong>qualquer string não vazia</strong> autenticava — sem
+validação contra segredo nenhum — e <strong>não passava pela verificação
+de automação</strong>. Uma chave qualquer alcançava qualquer automação em
+qualquer ambiente. Os dois modos foram removidos, e um serviço
+configurado com eles não sobe.</p>
 </div>
-<p>Detalhes de cada modo em <a href="../api/autenticacao/">Autenticação</a>.</p>
+<p>Detalhes em <a href="../api/autenticacao/">Autenticação</a>.</p>
 <h2 id="idempotencia-o-que-acontece-ao-republicar">Idempotência: o que acontece ao republicar<a class="headerlink" href="#idempotencia-o-que-acontece-ao-republicar" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>flowchart TD
     P["Publicação chega com&lt;br/&gt;(environment, automation, case_id)"] --&gt; Q{"Já existe&lt;br/&gt;essa chave?"}
