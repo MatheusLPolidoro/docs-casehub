@@ -100,7 +100,6 @@ infrastructure.
 |---|---|
 | `CASEHUB_BASE_URL` | The API address. |
 | `CASEHUB_CLIENT_ID` / `CASEHUB_CLIENT_SECRET` / `CASEHUB_TOKEN_URL` | OIDC credentials. **All three together, or none.** |
-| `CASEHUB_API_KEY` | Legacy mode. Only where the API still accepts it. |
 
 ### For the API
 

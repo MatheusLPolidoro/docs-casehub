@@ -99,7 +99,6 @@ mesmo contrato e serve para desenvolver contra a API sem infraestrutura.
 |---|---|
 | `CASEHUB_BASE_URL` | Endereço da API. |
 | `CASEHUB_CLIENT_ID` / `CASEHUB_CLIENT_SECRET` / `CASEHUB_TOKEN_URL` | Credenciais OIDC. **Os três juntos, ou nenhum.** |
-| `CASEHUB_API_KEY` | Modo legado. Só onde a API ainda aceita. |
 
 ### Da API
 
