@@ -17,18 +17,19 @@ Requires **Python 3.11+**. The runtime dependencies are `httpx`, `typer`,
 `toml` and `rich`.
 
 !!! warning "Pin the version"
-    The current SDK version is **0.3.0**, and the API is at **0.1.0**.
-    Prefer `pip install "casehub==0.3.0"` over installing with no floor, so
+    The current SDK version is **0.4.0**, and the API is at **0.2.0**.
+    Prefer `pip install "casehub==0.4.0"` over installing with no floor, so
     that an environment does not wake up on an incompatible version.
 
-    Two versions changed behaviour. **0.2.0** renamed `worker_id` to
+    Three SDK versions changed behaviour. **0.2.0** renamed `worker_id` to
     `case_id` across the client and the CLI, so an SDK older than that
     **does not speak** the contract the API serves today. **0.3.0** changed
     three things a consumer notices: an invalid batch raises `ValueError`
     before spending a request; a batch with an item lacking `case_id` is no
     longer retried automatically after a 401, and the error surfaces as
     `APIHTTPError`; and `ConnectTimeout`/`WriteTimeout`/`PoolTimeout` now
-    become `APITimeoutError`. See [What changed](mudancas.md).
+    become `APITimeoutError`. **0.4.0** made OIDC the only way to
+    authenticate. See [What changed](mudancas.md).
 
 !!! info "Internal registry"
     The package is published to the internal registry, not to public PyPI.

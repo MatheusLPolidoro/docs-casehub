@@ -17,18 +17,20 @@ Requer **Python 3.11+**. As dependências de runtime são `httpx`,
 `typer`, `toml` e `rich`.
 
 !!! warning "Fixe a versão"
-    A versão atual do SDK é a **0.3.0**, e a da API é a **0.1.0**.
-    Prefira `pip install "casehub==0.3.0"` a instalar sem piso, para que
+    A versão atual do SDK é a **0.4.0**, e a da API é a **0.2.0**.
+    Prefira `pip install "casehub==0.4.0"` a instalar sem piso, para que
     um ambiente não acorde numa versão incompatível.
 
-    Duas versões mudaram comportamento. A **0.2.0** renomeou `worker_id`
-    para `case_id` em todo o client e na CLI, então um SDK anterior a ela
-    **não fala** o contrato que a API atende hoje. A **0.3.0** mudou três
-    coisas que quem consome percebe: lote inválido levanta `ValueError`
-    antes de gastar requisição; um lote com item sem `case_id` deixa de
-    ser reenviado automaticamente depois de um 401, e o erro sobe como
-    `APIHTTPError`; e `ConnectTimeout`/`WriteTimeout`/`PoolTimeout`
-    passaram a virar `APITimeoutError`. Ver [O que mudou](mudancas.md).
+    Três versões do SDK mudaram comportamento. A **0.2.0** renomeou
+    `worker_id` para `case_id` em todo o client e na CLI, então um SDK
+    anterior a ela **não fala** o contrato que a API atende hoje. A
+    **0.3.0** mudou três coisas que quem consome percebe: lote inválido
+    levanta `ValueError` antes de gastar requisição; um lote com item
+    sem `case_id` deixa de ser reenviado automaticamente depois de um
+    401, e o erro sobe como `APIHTTPError`; e
+    `ConnectTimeout`/`WriteTimeout`/`PoolTimeout` passaram a virar
+    `APITimeoutError`. A **0.4.0** deixou o OIDC como única forma de
+    autenticar. Ver [O que mudou](mudancas.md).
 
 !!! info "Registry interno"
     O pacote é publicado no registry interno, não no PyPI público. Se o
