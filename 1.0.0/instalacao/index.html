@@ -1395,17 +1395,19 @@ CLI.</p>
 <code>typer</code>, <code>toml</code> e <code>rich</code>.</p>
 <div class="admonition warning">
 <p class="admonition-title">Fixe a versão</p>
-<p>A versão atual do SDK é a <strong>0.3.0</strong>, e a da API é a <strong>0.1.0</strong>.
-Prefira <code>pip install "casehub==0.3.0"</code> a instalar sem piso, para que
+<p>A versão atual do SDK é a <strong>0.4.0</strong>, e a da API é a <strong>0.2.0</strong>.
+Prefira <code>pip install "casehub==0.4.0"</code> a instalar sem piso, para que
 um ambiente não acorde numa versão incompatível.</p>
-<p>Duas versões mudaram comportamento. A <strong>0.2.0</strong> renomeou <code>worker_id</code>
-para <code>case_id</code> em todo o client e na CLI, então um SDK anterior a ela
-<strong>não fala</strong> o contrato que a API atende hoje. A <strong>0.3.0</strong> mudou três
-coisas que quem consome percebe: lote inválido levanta <code>ValueError</code>
-antes de gastar requisição; um lote com item sem <code>case_id</code> deixa de
-ser reenviado automaticamente depois de um 401, e o erro sobe como
-<code>APIHTTPError</code>; e <code>ConnectTimeout</code>/<code>WriteTimeout</code>/<code>PoolTimeout</code>
-passaram a virar <code>APITimeoutError</code>. Ver <a href="../mudancas/">O que mudou</a>.</p>
+<p>Três versões do SDK mudaram comportamento. A <strong>0.2.0</strong> renomeou
+<code>worker_id</code> para <code>case_id</code> em todo o client e na CLI, então um SDK
+anterior a ela <strong>não fala</strong> o contrato que a API atende hoje. A
+<strong>0.3.0</strong> mudou três coisas que quem consome percebe: lote inválido
+levanta <code>ValueError</code> antes de gastar requisição; um lote com item
+sem <code>case_id</code> deixa de ser reenviado automaticamente depois de um
+401, e o erro sobe como <code>APIHTTPError</code>; e
+<code>ConnectTimeout</code>/<code>WriteTimeout</code>/<code>PoolTimeout</code> passaram a virar
+<code>APITimeoutError</code>. A <strong>0.4.0</strong> deixou o OIDC como única forma de
+autenticar. Ver <a href="../mudancas/">O que mudou</a>.</p>
 </div>
 <div class="admonition info">
 <p class="admonition-title">Registry interno</p>

@@ -27,8 +27,8 @@
      repository — inventing one would be worse than having no badge. The
      versions come from each project's `pyproject.toml` and the Python floor
      from the `requires-python` of both; change those, change these. -->
-![SDK casehub](https://img.shields.io/badge/SDK%20casehub-0.3.0-1565c0)
-![API fast-casehub](https://img.shields.io/badge/API%20fast--casehub-0.1.0-1565c0)
+![SDK casehub](https://img.shields.io/badge/SDK%20casehub-0.4.0-1565c0)
+![API fast-casehub](https://img.shields.io/badge/API%20fast--casehub-0.2.0-1565c0)
 ![Python](https://img.shields.io/badge/python-3.11%2B-34D058?logo=python&logoColor=white)
 ![Contract](https://img.shields.io/badge/contract-v1-6a1b9a)
 </div>

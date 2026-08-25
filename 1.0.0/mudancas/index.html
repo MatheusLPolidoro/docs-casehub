@@ -1074,6 +1074,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#token-pela-propria-api-api-020-e-sdk-040" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Token pela própria API — API 0.2.0 e SDK 0.4.0
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#auditoria-de-seguranca-agosto-de-2026" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1196,6 +1207,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#token-pela-propria-api-api-020-e-sdk-040" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Token pela própria API — API 0.2.0 e SDK 0.4.0
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#auditoria-de-seguranca-agosto-de-2026" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1306,20 +1328,62 @@ sintoma é um 400 de campo desconhecido, porque o contrato é estrito
 <code>AsyncCaseHubClient</code>, com a mesma API pública e o mesmo comportamento de
 autenticação do cliente síncrono. Quem usa o síncrono não precisa mudar
 nada. Ver <a href="../sdk/assincrono/">Cliente assíncrono</a>.</p>
+<h2 id="token-pela-propria-api-api-020-e-sdk-040">Token pela própria API — API 0.2.0 e SDK 0.4.0<a class="headerlink" href="#token-pela-propria-api-api-020-e-sdk-040" title="Permanent link">&para;</a></h2>
+<p>Quem integra deixa de precisar conhecer o endereço do provedor de
+identidade: o token se pede à própria API do CaseHub.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Peça o token em <code>/v1/auth/token</code></label><label for="__tabbed_2_2">SDK 0.4.0: <code>api_key</code> saiu</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p><strong>O que mudou.</strong> A API expõe <code>POST /v1/auth/token</code> e
+<code>POST /v1/auth/refresh</code>. As duas aceitam o formato OAuth2
+(<code>application/x-www-form-urlencoded</code>) e também JSON, e nenhuma
+exige credencial — são o caminho para obtê-la.</p>
+<p><strong>Por quê.</strong> O endereço do realm passa a ser configuração do
+serviço, e não algo que cada automação carregue em cada ambiente.</p>
+<p><strong>O que fazer.</strong> Aponte o <code>token_url</code> do SDK para
+<code>&lt;base_url&gt;/v1/auth/token</code>. Nada mais muda: a API repassa ao
+provedor de identidade, que continua sendo quem assina o token.</p>
+<div class="highlight"><pre><span></span><code><span class="n">client</span> <span class="o">=</span> <span class="n">CaseHubClient</span><span class="p">(</span>
+    <span class="n">base_url</span><span class="o">=</span><span class="s1">'https://casehub.interno'</span><span class="p">,</span>
+    <span class="n">client_id</span><span class="o">=</span><span class="s1">'minha-automacao'</span><span class="p">,</span>
+    <span class="n">client_secret</span><span class="o">=</span><span class="s1">'...'</span><span class="p">,</span>
+    <span class="n">token_url</span><span class="o">=</span><span class="s1">'https://casehub.interno/v1/auth/token'</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>Pedir direto ao provedor continua funcionando — é o caminho para
+depurar com a API fora do ar.</p>
+<p>Ver <a href="../api/autenticacao/">Autenticação</a>.</p>
+</div>
+<div class="tabbed-block">
+<p><strong>O que mudou.</strong> O parâmetro <code>api_key</code> foi removido de
+<code>CaseHubClient</code>/<code>AsyncCaseHubClient</code>, junto da flag <code>--api-key</code> da
+CLI. Passá-lo levanta <code>TypeError</code> na construção.</p>
+<p>A CLI <strong>parou de pedir credencial interativamente</strong>: antes, sete
+comandos perguntavam por uma chave antes de qualquer outra coisa.
+<code>casehub health</code> agora responde direto.</p>
+<p><strong>Por quê.</strong> A API aceita <code>Authorization: Bearer &lt;JWT&gt;</code> e nada
+mais, então o parâmetro só levava a <code>401</code> — e, por ser
+configurável, dava a impressão de uma alternativa que não existe.</p>
+<p><strong>O que fazer.</strong> Configure <code>client_id</code>, <code>client_secret</code> e
+<code>token_url</code> (os três juntos; parcial falha na construção). Um
+cliente que só tinha <code>api_key</code> precisa de um client
+<code>client_credentials</code> provisionado no provedor de identidade.</p>
+</div>
+</div>
+</div>
 <h2 id="auditoria-de-seguranca-agosto-de-2026">Auditoria de segurança — agosto de 2026<a class="headerlink" href="#auditoria-de-seguranca-agosto-de-2026" title="Permanent link">&para;</a></h2>
 <p>Uma revisão dos três repositórios do ecossistema produziu 11 correções,
 todas já em <code>main</code> no <code>fast-casehub</code>.</p>
 <h3 id="exigem-atencao-de-quem-integra"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 14h-2V9h2m0 9h-2v-2h2M1 21h22L12 2z"/></svg></span> Exigem atenção de quem integra<a class="headerlink" href="#exigem-atencao-de-quem-integra" title="Permanent link">&para;</a></h3>
-<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Autenticação é exclusivamente OIDC</label><label for="__tabbed_2_2">Lote passou a ter teto</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="3:2"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">Autenticação é exclusivamente OIDC</label><label for="__tabbed_3_2">Lote passou a ter teto</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <p><strong>O que mudou.</strong> <code>Authorization: Bearer &lt;JWT&gt;</code> passou a ser a única
 credencial aceita, e <code>CASEHUB_AUTH_MODE</code> aceita um único valor,
 <code>oidc</code>. Qualquer outro valor derruba a subida do serviço.</p>
-<p><strong>Por quê.</strong> Um caminho de autenticação que não confere a
-credencial contra segredo nenhum, e que não passa pela autorização
-por automação, não é autenticação — é acesso irrestrito com
-aparência de controle.</p>
+<p><strong>Por quê.</strong> Autenticação e autorização por automação passam a
+valer para todo acesso, sem exceção — não há mais um segundo
+caminho com garantias diferentes.</p>
 <p><strong>O que fazer.</strong> Nada, se você já usa OIDC. Caso contrário,
 provisione um client <code>client_credentials</code> por automação, com
 <code>client_id</code> igual ao nome dela, e peça o token em

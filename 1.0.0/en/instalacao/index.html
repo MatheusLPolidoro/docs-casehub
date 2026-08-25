@@ -1395,17 +1395,18 @@ asynchronous one and the CLI.</p>
 <code>toml</code> and <code>rich</code>.</p>
 <div class="admonition warning">
 <p class="admonition-title">Pin the version</p>
-<p>The current SDK version is <strong>0.3.0</strong>, and the API is at <strong>0.1.0</strong>.
-Prefer <code>pip install "casehub==0.3.0"</code> over installing with no floor, so
+<p>The current SDK version is <strong>0.4.0</strong>, and the API is at <strong>0.2.0</strong>.
+Prefer <code>pip install "casehub==0.4.0"</code> over installing with no floor, so
 that an environment does not wake up on an incompatible version.</p>
-<p>Two versions changed behaviour. <strong>0.2.0</strong> renamed <code>worker_id</code> to
+<p>Three SDK versions changed behaviour. <strong>0.2.0</strong> renamed <code>worker_id</code> to
 <code>case_id</code> across the client and the CLI, so an SDK older than that
 <strong>does not speak</strong> the contract the API serves today. <strong>0.3.0</strong> changed
 three things a consumer notices: an invalid batch raises <code>ValueError</code>
 before spending a request; a batch with an item lacking <code>case_id</code> is no
 longer retried automatically after a 401, and the error surfaces as
 <code>APIHTTPError</code>; and <code>ConnectTimeout</code>/<code>WriteTimeout</code>/<code>PoolTimeout</code> now
-become <code>APITimeoutError</code>. See <a href="../mudancas/">What changed</a>.</p>
+become <code>APITimeoutError</code>. <strong>0.4.0</strong> made OIDC the only way to
+authenticate. See <a href="../mudancas/">What changed</a>.</p>
 </div>
 <div class="admonition info">
 <p class="admonition-title">Internal registry</p>

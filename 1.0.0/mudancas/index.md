@@ -46,6 +46,58 @@ uma versão anterior precisa agir nas duas.
 autenticação do cliente síncrono. Quem usa o síncrono não precisa mudar
 nada. Ver [Cliente assíncrono](sdk/assincrono.md).
 
+## Token pela própria API — API 0.2.0 e SDK 0.4.0
+
+Quem integra deixa de precisar conhecer o endereço do provedor de
+identidade: o token se pede à própria API do CaseHub.
+
+=== "Peça o token em `/v1/auth/token`"
+
+    **O que mudou.** A API expõe `POST /v1/auth/token` e
+    `POST /v1/auth/refresh`. As duas aceitam o formato OAuth2
+    (`application/x-www-form-urlencoded`) e também JSON, e nenhuma
+    exige credencial — são o caminho para obtê-la.
+
+    **Por quê.** O endereço do realm passa a ser configuração do
+    serviço, e não algo que cada automação carregue em cada ambiente.
+
+    **O que fazer.** Aponte o `token_url` do SDK para
+    `<base_url>/v1/auth/token`. Nada mais muda: a API repassa ao
+    provedor de identidade, que continua sendo quem assina o token.
+
+    ```python
+    client = CaseHubClient(
+        base_url='https://casehub.interno',
+        client_id='minha-automacao',
+        client_secret='...',
+        token_url='https://casehub.interno/v1/auth/token',
+    )
+    ```
+
+    Pedir direto ao provedor continua funcionando — é o caminho para
+    depurar com a API fora do ar.
+
+    Ver [Autenticação](api/autenticacao.md).
+
+=== "SDK 0.4.0: `api_key` saiu"
+
+    **O que mudou.** O parâmetro `api_key` foi removido de
+    `CaseHubClient`/`AsyncCaseHubClient`, junto da flag `--api-key` da
+    CLI. Passá-lo levanta `TypeError` na construção.
+
+    A CLI **parou de pedir credencial interativamente**: antes, sete
+    comandos perguntavam por uma chave antes de qualquer outra coisa.
+    `casehub health` agora responde direto.
+
+    **Por quê.** A API aceita `Authorization: Bearer <JWT>` e nada
+    mais, então o parâmetro só levava a `401` — e, por ser
+    configurável, dava a impressão de uma alternativa que não existe.
+
+    **O que fazer.** Configure `client_id`, `client_secret` e
+    `token_url` (os três juntos; parcial falha na construção). Um
+    cliente que só tinha `api_key` precisa de um client
+    `client_credentials` provisionado no provedor de identidade.
+
 ## Auditoria de segurança — agosto de 2026
 
 Uma revisão dos três repositórios do ecossistema produziu 11 correções,
@@ -59,10 +111,9 @@ todas já em `main` no `fast-casehub`.
     credencial aceita, e `CASEHUB_AUTH_MODE` aceita um único valor,
     `oidc`. Qualquer outro valor derruba a subida do serviço.
 
-    **Por quê.** Um caminho de autenticação que não confere a
-    credencial contra segredo nenhum, e que não passa pela autorização
-    por automação, não é autenticação — é acesso irrestrito com
-    aparência de controle.
+    **Por quê.** Autenticação e autorização por automação passam a
+    valer para todo acesso, sem exceção — não há mais um segundo
+    caminho com garantias diferentes.
 
     **O que fazer.** Nada, se você já usa OIDC. Caso contrário,
     provisione um client `client_credentials` por automação, com
