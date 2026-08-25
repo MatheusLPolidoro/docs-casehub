@@ -46,6 +46,59 @@ authentication behaviour as the synchronous client. Whoever uses the
 synchronous one does not have to change anything. See
 [Asynchronous client](sdk/assincrono.md).
 
+## Token from the API itself — API 0.2.0 and SDK 0.4.0
+
+Consumers no longer need to know the identity provider's address: the
+token is requested from the CaseHub API itself.
+
+=== "Request the token at `/v1/auth/token`"
+
+    **What changed.** The API exposes `POST /v1/auth/token` and
+    `POST /v1/auth/refresh`. Both accept the OAuth2 form
+    (`application/x-www-form-urlencoded`) as well as JSON, and neither
+    requires a credential — they are how you obtain one.
+
+    **Why.** The realm address becomes the service's configuration,
+    rather than something every automation carries in every
+    environment.
+
+    **What to do.** Point the SDK's `token_url` at
+    `<base_url>/v1/auth/token`. Nothing else changes: the API forwards
+    to the identity provider, which is still what signs the token.
+
+    ```python
+    client = CaseHubClient(
+        base_url='https://casehub.internal',
+        client_id='my-automation',
+        client_secret='...',
+        token_url='https://casehub.internal/v1/auth/token',
+    )
+    ```
+
+    Requesting straight from the provider still works — it is the way
+    to debug with the API down.
+
+    See [Authentication](api/autenticacao.md).
+
+=== "SDK 0.4.0: `api_key` is gone"
+
+    **What changed.** The `api_key` parameter was removed from
+    `CaseHubClient`/`AsyncCaseHubClient`, along with the CLI's
+    `--api-key` flag. Passing it raises `TypeError` at construction.
+
+    The CLI **stopped asking for a credential interactively**: seven
+    commands used to prompt for a key before anything else.
+    `casehub health` now answers straight away.
+
+    **Why.** The API accepts `Authorization: Bearer <JWT>` and nothing
+    else, so the parameter only led to `401` — and, being
+    configurable, suggested an alternative that does not exist.
+
+    **What to do.** Configure `client_id`, `client_secret` and
+    `token_url` (all three together; partial configuration fails at
+    construction). A client that only had `api_key` needs a
+    `client_credentials` client provisioned in the identity provider.
+
 ## Security audit — August 2026
 
 A review of the ecosystem's three repositories produced 11 fixes, all
@@ -59,10 +112,9 @@ already on `main` in `fast-casehub`.
     credential, and `CASEHUB_AUTH_MODE` takes a single value, `oidc`.
     Any other value refuses to start the service.
 
-    **Why.** An authentication path that checks the credential against
-    no secret, and that skips per-automation authorization, is not
-    authentication — it is unrestricted access wearing the look of
-    control.
+    **Why.** Authentication and per-automation authorization now apply
+    to every access, with no exception — there is no second path with
+    different guarantees.
 
     **What to do.** Nothing, if you already use OIDC. Otherwise,
     provision one `client_credentials` client per automation, with
