@@ -115,7 +115,8 @@ pagina = client.list_cases(
 print(pagina['total'], len(pagina['items']))
 ```
 
-`source_filters` vira os parâmetros `f.<caminho>` da query string.
+`source_filters` vira um `filter=<caminho>=<valor>` por item na
+query string.
 Sem `include='source_record'`, os itens vêm sem o JSON.
 
 ## Tratamento de erro

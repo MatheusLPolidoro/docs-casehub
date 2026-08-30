@@ -116,7 +116,8 @@ pagina = client.list_cases(
 print(pagina['total'], len(pagina['items']))
 ```
 
-`source_filters` becomes the `f.<path>` parameters of the query string.
+`source_filters` becomes one `filter=<path>=<value>` per item in the
+query string.
 Without `include='source_record'`, the items come without the JSON.
 
 ## Error handling

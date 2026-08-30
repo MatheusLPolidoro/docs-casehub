@@ -123,27 +123,34 @@ GET /v1/cases
 | `environment` | |
 | `automation` | Em OIDC, o token já restringe — ver abaixo. |
 | `status` | |
+| `filter` | Filtro sobre `source_record` — ver abaixo. |
 | `batch_ref` | |
 | `source_schema` | |
 | `started_from` / `started_to` | Janela sobre `started_at`. |
 | `page` | Default 1. |
 | `page_size` | Default 50, máximo 500. |
-| `include` | `include=source_record` para trazer o JSON. |
+| `include` | Vazio ou `source_record`, para trazer o JSON. |
 
-**Filtros dinâmicos sobre `source_record`**
+**Filtros sobre `source_record`**
 
-Qualquer parâmetro prefixado com `f.` vira um filtro sobre o caminho
-correspondente dentro do JSON:
+O parâmetro `filter` recebe `chave=valor` e é repetido uma vez por
+filtro:
 
 ```
-GET /v1/cases?f.referencia=REF-12345&f.uf=SP
+GET /v1/cases?filter=referencia=REF-12345&filter=uf=SP
 ```
 
-A comparação é **em texto**, então `f.valor=10` casa com o JSON tendo
-número ou string — sem ambiguidade de tipo na query string.
+Caminho aninhado usa ponto: `filter=origem.id=42`.
+
+Só o **primeiro** `=` separa a chave do valor, então um valor que
+contenha `=` atravessa inteiro — `filter=expr=a=b` filtra `expr` pelo
+valor `a=b`.
+
+A comparação é **em texto**, então `filter=valor=10` casa com o JSON
+tendo número ou string — sem ambiguidade de tipo na query string.
 
 !!! note "Teto de filtros"
-    Cada `f.` vira um predicado no `WHERE`. Acima de
+    Cada filtro vira um predicado no `WHERE`. Acima de
     `CASEHUB_MAX_SOURCE_FILTERS` (default 20) a resposta é 400 — melhor
     que uma consulta arbitrariamente cara sem explicação.
 
