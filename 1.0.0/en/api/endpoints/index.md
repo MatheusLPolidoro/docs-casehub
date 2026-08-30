@@ -122,27 +122,35 @@ GET /v1/cases
 | `environment` | |
 | `automation` | Under OIDC the token already restricts it — see below. |
 | `status` | |
+| `filter` | Filter over `source_record` — see below. |
 | `batch_ref` | |
 | `source_schema` | |
 | `started_from` / `started_to` | Window over `started_at`. |
 | `page` | Default 1. |
 | `page_size` | Default 50, maximum 500. |
-| `include` | `include=source_record` to bring the JSON. |
+| `include` | Empty or `source_record`, to bring the JSON. |
 
-**Dynamic filters over `source_record`**
+**Filters over `source_record`**
 
-Any parameter prefixed with `f.` becomes a filter over the corresponding
-path inside the JSON:
+The `filter` parameter takes `key=value` and is repeated once per
+filter:
 
 ```
-GET /v1/cases?f.referencia=REF-12345&f.uf=SP
+GET /v1/cases?filter=referencia=REF-12345&filter=uf=SP
 ```
 
-The comparison is **textual**, so `f.valor=10` matches the JSON holding
-either a number or a string — no type ambiguity in the query string.
+Nested paths use a dot: `filter=origem.id=42`.
+
+Only the **first** `=` separates key from value, so a value containing
+`=` goes through whole — `filter=expr=a=b` filters `expr` by the value
+`a=b`.
+
+The comparison is **textual**, so `filter=valor=10` matches the JSON
+holding either a number or a string — no type ambiguity in the query
+string.
 
 !!! note "Filter ceiling"
-    Each `f.` becomes a predicate in the `WHERE`. Above
+    Each filter becomes a predicate in the `WHERE`. Above
     `CASEHUB_MAX_SOURCE_FILTERS` (default 20) the answer is 400 — better
     than an arbitrarily expensive query with no explanation.
 

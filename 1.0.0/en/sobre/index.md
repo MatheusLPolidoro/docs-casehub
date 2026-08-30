@@ -69,7 +69,7 @@ here.* In exchange, the case carries `temporal_workflow_id` and
 schedule, does not notify. It is a queryable record.
 
 **It does not interpret `source_record`.** Neither to validate nor to index
-field by field — querying by content exists (`f.<path>`), but it is generic
+field by field — querying by content exists (`filter`), but it is generic
 over the JSON, with no declared schema.
 
 ## Ecosystem

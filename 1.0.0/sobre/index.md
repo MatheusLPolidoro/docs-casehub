@@ -71,7 +71,7 @@ correlação, sem chave estrangeira.
 notifica. É um registro consultável.
 
 **Não interpreta `source_record`.** Nem para validar, nem para indexar
-campo por campo — a consulta por conteúdo existe (`f.<caminho>`), mas
+campo por campo — a consulta por conteúdo existe (`filter`), mas
 é genérica sobre o JSON, sem schema declarado.
 
 ## Ecossistema

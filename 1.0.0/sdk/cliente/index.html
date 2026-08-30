@@ -1437,7 +1437,8 @@ natural estável a partir da fonte e envie sempre.</p>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">pagina</span><span class="p">[</span><span class="s1">'total'</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="n">pagina</span><span class="p">[</span><span class="s1">'items'</span><span class="p">]))</span>
 </code></pre></div>
-<p><code>source_filters</code> vira os parâmetros <code>f.&lt;caminho&gt;</code> da query string.
+<p><code>source_filters</code> vira um <code>filter=&lt;caminho&gt;=&lt;valor&gt;</code> por item na
+query string.
 Sem <code>include='source_record'</code>, os itens vêm sem o JSON.</p>
 <h2 id="tratamento-de-erro">Tratamento de erro<a class="headerlink" href="#tratamento-de-erro" title="Permanent link">&para;</a></h2>
 <p>O SDK normaliza as falhas em cinco exceções:</p>

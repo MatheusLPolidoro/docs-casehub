@@ -1438,7 +1438,8 @@ natural key from the source and always send it.</p>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">pagina</span><span class="p">[</span><span class="s1">'total'</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="n">pagina</span><span class="p">[</span><span class="s1">'items'</span><span class="p">]))</span>
 </code></pre></div>
-<p><code>source_filters</code> becomes the <code>f.&lt;path&gt;</code> parameters of the query string.
+<p><code>source_filters</code> becomes one <code>filter=&lt;path&gt;=&lt;value&gt;</code> per item in the
+query string.
 Without <code>include='source_record'</code>, the items come without the JSON.</p>
 <h2 id="error-handling">Error handling<a class="headerlink" href="#error-handling" title="Permanent link">&para;</a></h2>
 <p>The SDK normalizes failures into five exceptions:</p>

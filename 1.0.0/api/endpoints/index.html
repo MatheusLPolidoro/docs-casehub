@@ -1481,6 +1481,10 @@ efetivo do ambiente — que é configurável, então não vale assumir
 <td></td>
 </tr>
 <tr>
+<td><code>filter</code></td>
+<td>Filtro sobre <code>source_record</code> — ver abaixo.</td>
+</tr>
+<tr>
 <td><code>batch_ref</code></td>
 <td></td>
 </tr>
@@ -1502,20 +1506,24 @@ efetivo do ambiente — que é configurável, então não vale assumir
 </tr>
 <tr>
 <td><code>include</code></td>
-<td><code>include=source_record</code> para trazer o JSON.</td>
+<td>Vazio ou <code>source_record</code>, para trazer o JSON.</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Filtros dinâmicos sobre <code>source_record</code></strong></p>
-<p>Qualquer parâmetro prefixado com <code>f.</code> vira um filtro sobre o caminho
-correspondente dentro do JSON:</p>
-<div class="highlight"><pre><span></span><code>GET /v1/cases?f.referencia=REF-12345&amp;f.uf=SP
+<p><strong>Filtros sobre <code>source_record</code></strong></p>
+<p>O parâmetro <code>filter</code> recebe <code>chave=valor</code> e é repetido uma vez por
+filtro:</p>
+<div class="highlight"><pre><span></span><code>GET /v1/cases?filter=referencia=REF-12345&amp;filter=uf=SP
 </code></pre></div>
-<p>A comparação é <strong>em texto</strong>, então <code>f.valor=10</code> casa com o JSON tendo
-número ou string — sem ambiguidade de tipo na query string.</p>
+<p>Caminho aninhado usa ponto: <code>filter=origem.id=42</code>.</p>
+<p>Só o <strong>primeiro</strong> <code>=</code> separa a chave do valor, então um valor que
+contenha <code>=</code> atravessa inteiro — <code>filter=expr=a=b</code> filtra <code>expr</code> pelo
+valor <code>a=b</code>.</p>
+<p>A comparação é <strong>em texto</strong>, então <code>filter=valor=10</code> casa com o JSON
+tendo número ou string — sem ambiguidade de tipo na query string.</p>
 <div class="admonition note">
 <p class="admonition-title">Teto de filtros</p>
-<p>Cada <code>f.</code> vira um predicado no <code>WHERE</code>. Acima de
+<p>Cada filtro vira um predicado no <code>WHERE</code>. Acima de
 <code>CASEHUB_MAX_SOURCE_FILTERS</code> (default 20) a resposta é 400 — melhor
 que uma consulta arbitrariamente cara sem explicação.</p>
 </div>
