@@ -7,6 +7,7 @@ never do.
 | Method | Route | What it does |
 |---|---|---|
 | `PUT` | `/v1/cases/{environment}/{automation}/{case_id}` | Creates or updates a case. |
+| `PATCH` | `/v1/cases/{environment}/{automation}/{case_id}` | Changes only a case's status. |
 | `POST` | `/v1/cases/batch` | Creates or updates several cases. |
 | `GET` | `/v1/cases/{environment}/{automation}/{case_id}` | Fetches one case. |
 | `GET` | `/v1/cases` | Lists and counts cases. |
@@ -27,7 +28,7 @@ Idempotent: repeating the same payload leaves the same state.
 
 | Field | Type | Required | Note |
 |---|---|:---:|---|
-| `status` | enum | ✅ | `aberto`, `em_andamento`, `concluido`, `falhou`, `pausado`. |
+| `status` | enum | ✅ | `aberto`, `em_andamento`, `concluido`, `falhou`, `pausado`, `cancelado`. |
 | `started_at` | datetime | ✅ | **Needs a timezone.** |
 | `finished_at` | datetime | — | |
 | `batch_ref` | string | — | Free reference to the source batch. |
@@ -48,6 +49,43 @@ afterwards.
     Omitting `source_record` keeps what was already stored. Sending
     `source_record: {}` clears it. The same holds for `source_schema` and
     for the `temporal_*` fields.
+
+---
+
+## `PATCH` — change only the status
+
+```
+PATCH /v1/cases/{environment}/{automation}/{case_id}
+```
+
+Changes `status` and nothing else. It exists because `PUT` and the batch
+both require `status` **and** `started_at`: to correct just the state you
+would have to read the case first and rewrite the rest identically — two
+calls, with a window between them.
+
+**Body**
+
+| Field | Type | Required | Note |
+|---|---|:---:|---|
+| `status` | enum | ✅ | The new state. |
+| `expected_status` | enum | — | The state you believe the case is in right now. |
+
+**Response** `200` — the updated case, without `source_record`.
+
+!!! tip "`expected_status` is what makes it safe to decide from a read"
+    When set, the change only happens if the current state matches; if it
+    does not, the API answers `409` and **writes nothing**. Between your
+    read and your write another process may have touched the case —
+    without this check you would erase its decision without knowing.
+
+    Omitted, the change is unconditional. That suits manual correction,
+    where the caller already knows what they are doing.
+
+| Situation | Response |
+|---|---|
+| Changed | `200` with the case |
+| `expected_status` does not match | `409`, code `status_conflict` |
+| Case does not exist | `404`, code `case_not_found` |
 
 ---
 
