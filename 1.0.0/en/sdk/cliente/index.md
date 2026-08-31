@@ -95,6 +95,33 @@ if resultado['errors']:
     raise in that case, because from the HTTP point of view the request
     worked. Ignoring `errors[]` means losing cases in silence.
 
+#### Not overwriting what already exists
+
+`on_conflict='skip'` leaves a case whose `case_id` already exists
+untouched — the API writes **nothing** to it. That is what a
+periodically re-read source needs: without it, every re-read rewrites
+the whole case and undoes whatever another process added to it
+afterwards, with no error and no log.
+
+```python
+resultado = client.upsert_cases_batch(
+    environment='prod',
+    automation='minha-automacao',
+    cases=casos,
+    on_conflict='skip',
+)
+
+# `created` carries the case_ids created IN THIS CALL — it is what
+# lets you act only on what is new without a prior query.
+for case_id in resultado['created']:
+    disparar_enriquecimento(case_id)
+```
+
+Omit it and the field is not sent, leaving the default to the server
+(`update`, the long-standing behaviour). With `skip`, expect `upserted`
+to fall to `0` and `skipped` to run high in steady state: that is
+success, not failure. See [Endpoints](../api/endpoints.en.md).
+
 !!! warning "Always send an explicit `case_id`"
     The API accepts items without `case_id` and generates an `auto-<hex>`,
     but that gives up idempotency: reprocessing duplicates. Compute a stable

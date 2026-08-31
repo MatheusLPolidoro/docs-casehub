@@ -1063,6 +1063,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#lote-sabe-pular-o-que-ja-existe-api-020-e-sdk-050" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lote sabe pular o que já existe — API 0.2.0 e SDK 0.5.0
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#contrato-v1-os-tratamentos-sairam" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1196,6 +1207,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#lote-sabe-pular-o-que-ja-existe-api-020-e-sdk-050" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lote sabe pular o que já existe — API 0.2.0 e SDK 0.5.0
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#contrato-v1-os-tratamentos-sairam" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1291,10 +1313,44 @@
 <p>Registro das mudanças de comportamento que afetam quem integra. Não
 substitui o <code>CHANGELOG.md</code> de cada repositório — aqui ficam apenas as
 que mudam o <strong>contrato</strong> ou exigem ação de quem consome.</p>
+<h2 id="lote-sabe-pular-o-que-ja-existe-api-020-e-sdk-050">Lote sabe pular o que já existe — API 0.2.0 e SDK 0.5.0<a class="headerlink" href="#lote-sabe-pular-o-que-ja-existe-api-020-e-sdk-050" title="Permanent link">&para;</a></h2>
+<p>Nada a fazer para continuar como está: o default não mudou e as chaves
+novas na resposta são aditivas. É opt-in.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1"><code>on_conflict</code> no lote</label><label for="__tabbed_1_2"><code>created</code> e <code>skipped</code> na resposta</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p><strong>O que mudou.</strong> <code>POST /v1/cases/batch</code> aceita <code>on_conflict</code>, com
+<code>update</code> (default, idêntico ao de antes) ou <code>skip</code>. No SDK,
+<code>upsert_cases_batch</code> ganhou o parâmetro homônimo nos dois clientes,
+síncrono e assíncrono; omitido, nada é enviado e quem decide é o
+servidor.</p>
+<p><strong>Por quê.</strong> O upsert substitui os campos enviados, <strong>sem merge</strong>.
+Quem republica a mesma fonte a cada ciclo regrava o caso inteiro
+toda vez e apaga o que outro processo tenha acrescentado depois —
+sem erro e sem log. <code>skip</code> não escreve nada no caso que já existe.</p>
+<p><strong>O que fazer.</strong> Se a sua fonte é relida periodicamente, passe
+<code>on_conflict='skip'</code> e fixe <code>casehub&gt;=0.5.0</code>. Espere <code>upserted</code> cair
+a <code>0</code> em regime estacionário — isso é sucesso, e é o <code>skipped</code> ao
+lado que diz por quê. Ver <a href="../api/endpoints/">Endpoints</a>.</p>
+</div>
+<div class="tabbed-block">
+<p><strong>O que mudou.</strong> A resposta do lote traz <code>created</code> (os <code>case_id</code>
+criados naquela chamada) e <code>skipped</code> (quantos já existiam e foram
+deixados como estavam), além do <code>upserted</code> de sempre.</p>
+<p><strong>Por quê.</strong> A informação já existia do lado do servidor e era
+descartada. Sem ela, quem publica não tem como agir só sobre o que é
+novo — disparar um enriquecimento, por exemplo — sem uma consulta a
+mais.</p>
+<p><strong>O que fazer.</strong> Nada é obrigatório. <code>upserted</code> mantém o sentido de
+"linhas gravadas", então o que foi pulado não entra nele. O SDK
+repassa o corpo como veio.</p>
+</div>
+</div>
+</div>
 <h2 id="contrato-v1-os-tratamentos-sairam">Contrato v1 — os tratamentos saíram<a class="headerlink" href="#contrato-v1-os-tratamentos-sairam" title="Permanent link">&para;</a></h2>
 <p>Duas quebras do mesmo ciclo, uma de cada lado. Quem integra a partir de
 uma versão anterior precisa agir nas duas.</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Tratamentos removidos do contrato</label><label for="__tabbed_1_2"><code>worker_id</code> virou <code>case_id</code></label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Tratamentos removidos do contrato</label><label for="__tabbed_2_2"><code>worker_id</code> virou <code>case_id</code></label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <p><strong>O que mudou.</strong> Os endpoints de tratamento saíram do v1, junto com
@@ -1331,7 +1387,7 @@ nada. Ver <a href="../sdk/assincrono/">Cliente assíncrono</a>.</p>
 <h2 id="token-pela-propria-api-api-020-e-sdk-040">Token pela própria API — API 0.2.0 e SDK 0.4.0<a class="headerlink" href="#token-pela-propria-api-api-020-e-sdk-040" title="Permanent link">&para;</a></h2>
 <p>Quem integra deixa de precisar conhecer o endereço do provedor de
 identidade: o token se pede à própria API do CaseHub.</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Peça o token em <code>/v1/auth/token</code></label><label for="__tabbed_2_2">SDK 0.4.0: <code>api_key</code> saiu</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="3:2"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">Peça o token em <code>/v1/auth/token</code></label><label for="__tabbed_3_2">SDK 0.4.0: <code>api_key</code> saiu</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <p><strong>O que mudou.</strong> A API expõe <code>POST /v1/auth/token</code> e
@@ -1375,7 +1431,7 @@ cliente que só tinha <code>api_key</code> precisa de um client
 <p>Uma revisão dos três repositórios do ecossistema produziu 11 correções,
 todas já em <code>main</code> no <code>fast-casehub</code>.</p>
 <h3 id="exigem-atencao-de-quem-integra"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 14h-2V9h2m0 9h-2v-2h2M1 21h22L12 2z"/></svg></span> Exigem atenção de quem integra<a class="headerlink" href="#exigem-atencao-de-quem-integra" title="Permanent link">&para;</a></h3>
-<div class="tabbed-set tabbed-alternate" data-tabs="3:2"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">Autenticação é exclusivamente OIDC</label><label for="__tabbed_3_2">Lote passou a ter teto</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="4:2"><input checked="checked" id="__tabbed_4_1" name="__tabbed_4" type="radio" /><input id="__tabbed_4_2" name="__tabbed_4" type="radio" /><div class="tabbed-labels"><label for="__tabbed_4_1">Autenticação é exclusivamente OIDC</label><label for="__tabbed_4_2">Lote passou a ter teto</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <p><strong>O que mudou.</strong> <code>Authorization: Bearer &lt;JWT&gt;</code> passou a ser a única

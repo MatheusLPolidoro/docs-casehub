@@ -1414,6 +1414,12 @@ for the <code>temporal_*</code> fields.</p>
 <td>Batch default; each item may override it.</td>
 </tr>
 <tr>
+<td><code>on_conflict</code></td>
+<td>enum</td>
+<td style="text-align: center;">—</td>
+<td><code>update</code> (default) or <code>skip</code>. What to do with a <code>case_id</code> that already exists.</td>
+</tr>
+<tr>
 <td><code>cases</code></td>
 <td>list</td>
 <td style="text-align: center;">✅</td>
@@ -1426,11 +1432,50 @@ is <strong>optional</strong>.</p>
 <p><strong>Response</strong> <code>200</code></p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
 <span class="w">  </span><span class="nt">"upserted"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"created"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"a"</span><span class="p">],</span>
+<span class="w">  </span><span class="nt">"skipped"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">"errors"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span><span class="nt">"case_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"b"</span><span class="p">,</span><span class="w"> </span><span class="nt">"code"</span><span class="p">:</span><span class="w"> </span><span class="s2">"invalid_request"</span><span class="p">}</span>
 <span class="w">  </span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>upserted</code></td>
+<td>Items actually <strong>written</strong> — created plus updated. What was skipped does not count: nothing was written.</td>
+</tr>
+<tr>
+<td><code>created</code></td>
+<td>The <code>case_id</code>s created <strong>in this call</strong>. It is what lets a publisher act only on what is new — kicking off an enrichment, say — without a prior query. It is a list, not a count, because a count does not say <em>which</em>.</td>
+</tr>
+<tr>
+<td><code>skipped</code></td>
+<td>How many already existed and were left as they were. Always <code>0</code> with <code>on_conflict=update</code>.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition tip">
+<p class="admonition-title"><code>on_conflict=skip</code> for periodically re-read sources</p>
+<p>The upsert replaces the fields you send, <strong>without merging</strong>. A
+publisher that republishes the same source every cycle — an
+inventory screen re-read every ten minutes, say — rewrites the
+whole case each time and wipes whatever another process added to
+it afterwards, with no error and no log.</p>
+<p><code>skip</code> writes <strong>nothing</strong> to a case that already exists: not
+<code>status</code>, not <code>started_at</code>, not <code>source_record</code>. It still creates
+what does not exist yet — it is about the conflict, not about the
+insert.</p>
+<p>Expect this consequence: in steady state <code>upserted</code> drops to <code>0</code>
+and <code>skipped</code> runs high. That is success, not failure — which is
+precisely why the two numbers are reported separately.</p>
+</div>
 <div class="admonition danger">
 <p class="admonition-title">200 does not mean everything was stored</p>
 <p>The batch is all-or-nothing <strong>per item</strong>: an invalid item lands in

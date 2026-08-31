@@ -890,6 +890,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Publicando em lote">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nao-sobrescrever-o-que-ja-existe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Não sobrescrever o que já existe
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -1229,6 +1246,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Publicando em lote">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nao-sobrescrever-o-que-ja-existe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Não sobrescrever o que já existe
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -1412,6 +1446,27 @@ repassa ao provedor de identidade.</p>
 <span class="k">if</span> <span class="n">resultado</span><span class="p">[</span><span class="s1">'errors'</span><span class="p">]:</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">'itens recusados: </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="n">resultado</span><span class="p">[</span><span class="s1">'errors'</span><span class="p">])</span>
 </code></pre></div>
+<h4 id="nao-sobrescrever-o-que-ja-existe">Não sobrescrever o que já existe<a class="headerlink" href="#nao-sobrescrever-o-que-ja-existe" title="Permanent link">&para;</a></h4>
+<p><code>on_conflict='skip'</code> deixa intacto o caso cujo <code>case_id</code> já existe — a
+API não escreve <strong>nada</strong> nele. É o que uma fonte relida periodicamente
+precisa: sem isso, cada releitura regrava o caso inteiro e desfaz o que
+outro processo tenha acrescentado depois, sem erro e sem log.</p>
+<div class="highlight"><pre><span></span><code><span class="n">resultado</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">upsert_cases_batch</span><span class="p">(</span>
+    <span class="n">environment</span><span class="o">=</span><span class="s1">'prod'</span><span class="p">,</span>
+    <span class="n">automation</span><span class="o">=</span><span class="s1">'minha-automacao'</span><span class="p">,</span>
+    <span class="n">cases</span><span class="o">=</span><span class="n">casos</span><span class="p">,</span>
+    <span class="n">on_conflict</span><span class="o">=</span><span class="s1">'skip'</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># `created` traz os case_id criados NESTA chamada — é o que permite</span>
+<span class="c1"># agir só sobre o que é novo sem uma consulta antes.</span>
+<span class="k">for</span> <span class="n">case_id</span> <span class="ow">in</span> <span class="n">resultado</span><span class="p">[</span><span class="s1">'created'</span><span class="p">]:</span>
+    <span class="n">disparar_enriquecimento</span><span class="p">(</span><span class="n">case_id</span><span class="p">)</span>
+</code></pre></div>
+<p>Omitido, o campo não é enviado e quem decide o default é o servidor
+(<code>update</code>, o comportamento de sempre). Com <code>skip</code>, espere <code>upserted</code>
+cair a <code>0</code> e <code>skipped</code> subir em regime estacionário: é sucesso, não
+falha. Ver <a href="../../api/endpoints/">Endpoints</a>.</p>
 <div class="admonition danger">
 <p class="admonition-title">Sempre inspecione <code>errors[]</code></p>
 <p>O lote responde 200 mesmo com itens recusados — o SDK <strong>não</strong>

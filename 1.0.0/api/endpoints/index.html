@@ -1415,6 +1415,12 @@ campos <code>temporal_*</code>.</p>
 <td>Default do lote; cada item pode sobrescrever.</td>
 </tr>
 <tr>
+<td><code>on_conflict</code></td>
+<td>enum</td>
+<td style="text-align: center;">—</td>
+<td><code>update</code> (default) ou <code>skip</code>. O que fazer com um <code>case_id</code> que já existe.</td>
+</tr>
+<tr>
 <td><code>cases</code></td>
 <td>lista</td>
 <td style="text-align: center;">✅</td>
@@ -1427,11 +1433,49 @@ campos <code>temporal_*</code>.</p>
 <p><strong>Resposta</strong> <code>200</code></p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
 <span class="w">  </span><span class="nt">"upserted"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"created"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"a"</span><span class="p">],</span>
+<span class="w">  </span><span class="nt">"skipped"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">"errors"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span><span class="nt">"case_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"b"</span><span class="p">,</span><span class="w"> </span><span class="nt">"code"</span><span class="p">:</span><span class="w"> </span><span class="s2">"invalid_request"</span><span class="p">}</span>
 <span class="w">  </span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Significado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>upserted</code></td>
+<td>Itens efetivamente <strong>gravados</strong> — criados mais atualizados. O que foi pulado não entra: nada foi escrito.</td>
+</tr>
+<tr>
+<td><code>created</code></td>
+<td>Os <code>case_id</code> criados <strong>nesta chamada</strong>. É o que permite agir só sobre o que é novo — disparar um enriquecimento, por exemplo — sem uma consulta antes. Vem como lista, não contagem, porque a contagem não diz <em>quais</em>.</td>
+</tr>
+<tr>
+<td><code>skipped</code></td>
+<td>Quantos já existiam e foram deixados como estavam. Sempre <code>0</code> com <code>on_conflict=update</code>.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition tip">
+<p class="admonition-title"><code>on_conflict=skip</code> para fontes relidas periodicamente</p>
+<p>O upsert substitui os campos enviados, <strong>sem merge</strong>. Quem
+republica a mesma fonte a cada ciclo — uma tela de estoque relida
+de dez em dez minutos, por exemplo — regrava o caso inteiro toda
+vez e apaga o que outro processo tenha acrescentado depois, sem
+erro e sem log.</p>
+<p><code>skip</code> não escreve <strong>nada</strong> no caso que já existe: nem <code>status</code>,
+nem <code>started_at</code>, nem <code>source_record</code>. Ele continua criando o que
+ainda não existe — é sobre conflito, não sobre inserção.</p>
+<p>Consequência a esperar: em regime estacionário <code>upserted</code> vai a
+<code>0</code> e <code>skipped</code> fica alto. Isso é sucesso, não falha — é por isso
+que os dois números vêm separados.</p>
+</div>
 <div class="admonition danger">
 <p class="admonition-title">200 não significa que tudo foi gravado</p>
 <p>O lote é tudo-ou-nada <strong>por item</strong>: um item inválido entra em

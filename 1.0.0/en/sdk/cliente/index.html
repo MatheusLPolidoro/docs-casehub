@@ -890,6 +890,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Publishing in a batch">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#not-overwriting-what-already-exists" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Not overwriting what already exists
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -1229,6 +1246,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Publishing in a batch">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#not-overwriting-what-already-exists" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Not overwriting what already exists
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -1419,6 +1453,28 @@ forwards to the identity provider.</p>
 raise in that case, because from the HTTP point of view the request
 worked. Ignoring <code>errors[]</code> means losing cases in silence.</p>
 </div>
+<h4 id="not-overwriting-what-already-exists">Not overwriting what already exists<a class="headerlink" href="#not-overwriting-what-already-exists" title="Permanent link">&para;</a></h4>
+<p><code>on_conflict='skip'</code> leaves a case whose <code>case_id</code> already exists
+untouched — the API writes <strong>nothing</strong> to it. That is what a
+periodically re-read source needs: without it, every re-read rewrites
+the whole case and undoes whatever another process added to it
+afterwards, with no error and no log.</p>
+<div class="highlight"><pre><span></span><code><span class="n">resultado</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">upsert_cases_batch</span><span class="p">(</span>
+    <span class="n">environment</span><span class="o">=</span><span class="s1">'prod'</span><span class="p">,</span>
+    <span class="n">automation</span><span class="o">=</span><span class="s1">'minha-automacao'</span><span class="p">,</span>
+    <span class="n">cases</span><span class="o">=</span><span class="n">casos</span><span class="p">,</span>
+    <span class="n">on_conflict</span><span class="o">=</span><span class="s1">'skip'</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># `created` carries the case_ids created IN THIS CALL — it is what</span>
+<span class="c1"># lets you act only on what is new without a prior query.</span>
+<span class="k">for</span> <span class="n">case_id</span> <span class="ow">in</span> <span class="n">resultado</span><span class="p">[</span><span class="s1">'created'</span><span class="p">]:</span>
+    <span class="n">disparar_enriquecimento</span><span class="p">(</span><span class="n">case_id</span><span class="p">)</span>
+</code></pre></div>
+<p>Omit it and the field is not sent, leaving the default to the server
+(<code>update</code>, the long-standing behaviour). With <code>skip</code>, expect <code>upserted</code>
+to fall to <code>0</code> and <code>skipped</code> to run high in steady state: that is
+success, not failure. See <a href="../../api/endpoints/">Endpoints</a>.</p>
 <div class="admonition warning">
 <p class="admonition-title">Always send an explicit <code>case_id</code></p>
 <p>The API accepts items without <code>case_id</code> and generates an <code>auto-&lt;hex&gt;</code>,

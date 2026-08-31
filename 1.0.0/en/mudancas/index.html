@@ -1063,6 +1063,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#the-batch-can-skip-what-already-exists-api-020-and-sdk-050" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The batch can skip what already exists — API 0.2.0 and SDK 0.5.0
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#contract-v1-treatments-are-gone" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1196,6 +1207,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#the-batch-can-skip-what-already-exists-api-020-and-sdk-050" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The batch can skip what already exists — API 0.2.0 and SDK 0.5.0
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#contract-v1-treatments-are-gone" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1291,10 +1313,44 @@
 <p>A record of the behaviour changes that affect whoever integrates. It does
 not replace each repository's <code>CHANGELOG.md</code> — only the ones that change the
 <strong>contract</strong> or demand action from consumers live here.</p>
+<h2 id="the-batch-can-skip-what-already-exists-api-020-and-sdk-050">The batch can skip what already exists — API 0.2.0 and SDK 0.5.0<a class="headerlink" href="#the-batch-can-skip-what-already-exists-api-020-and-sdk-050" title="Permanent link">&para;</a></h2>
+<p>Nothing to do to stay as you are: the default did not change and the new
+response keys are additive. This is opt-in.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1"><code>on_conflict</code> in the batch</label><label for="__tabbed_1_2"><code>created</code> and <code>skipped</code> in the response</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p><strong>What changed.</strong> <code>POST /v1/cases/batch</code> accepts <code>on_conflict</code>,
+either <code>update</code> (default, identical to before) or <code>skip</code>. In the SDK,
+<code>upsert_cases_batch</code> gained the parameter of the same name in both
+clients, sync and async; omit it and nothing is sent, leaving the
+decision to the server.</p>
+<p><strong>Why.</strong> The upsert replaces the fields you send, <strong>without
+merging</strong>. A publisher that republishes the same source every cycle
+rewrites the whole case each time and wipes whatever another process
+added to it afterwards — with no error and no log. <code>skip</code> writes
+nothing to a case that already exists.</p>
+<p><strong>What to do.</strong> If your source is re-read periodically, pass
+<code>on_conflict='skip'</code> and pin <code>casehub&gt;=0.5.0</code>. Expect <code>upserted</code> to
+fall to <code>0</code> in steady state — that is success, and the <code>skipped</code>
+beside it is what says why. See <a href="../api/endpoints/">Endpoints</a>.</p>
+</div>
+<div class="tabbed-block">
+<p><strong>What changed.</strong> The batch response carries <code>created</code> (the
+<code>case_id</code>s created in that call) and <code>skipped</code> (how many already
+existed and were left as they were), alongside the usual <code>upserted</code>.</p>
+<p><strong>Why.</strong> The server already had this information and threw it away.
+Without it, a publisher cannot act only on what is new — kicking off
+an enrichment, say — without an extra query.</p>
+<p><strong>What to do.</strong> Nothing is required. <code>upserted</code> keeps meaning "rows
+written", so what was skipped does not count towards it. The SDK
+passes the body through as it came.</p>
+</div>
+</div>
+</div>
 <h2 id="contract-v1-treatments-are-gone">Contract v1 — treatments are gone<a class="headerlink" href="#contract-v1-treatments-are-gone" title="Permanent link">&para;</a></h2>
 <p>Two breaks from the same cycle, one on each side. Anyone integrating from an
 earlier version has to act on both.</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Treatments removed from the contract</label><label for="__tabbed_1_2"><code>worker_id</code> became <code>case_id</code></label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Treatments removed from the contract</label><label for="__tabbed_2_2"><code>worker_id</code> became <code>case_id</code></label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <p><strong>What changed.</strong> The treatment endpoints left v1, along with <code>sub_id</code>,
@@ -1331,7 +1387,7 @@ synchronous one does not have to change anything. See
 <h2 id="token-from-the-api-itself-api-020-and-sdk-040">Token from the API itself — API 0.2.0 and SDK 0.4.0<a class="headerlink" href="#token-from-the-api-itself-api-020-and-sdk-040" title="Permanent link">&para;</a></h2>
 <p>Consumers no longer need to know the identity provider's address: the
 token is requested from the CaseHub API itself.</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Request the token at <code>/v1/auth/token</code></label><label for="__tabbed_2_2">SDK 0.4.0: <code>api_key</code> is gone</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="3:2"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">Request the token at <code>/v1/auth/token</code></label><label for="__tabbed_3_2">SDK 0.4.0: <code>api_key</code> is gone</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <p><strong>What changed.</strong> The API exposes <code>POST /v1/auth/token</code> and
@@ -1376,7 +1432,7 @@ construction). A client that only had <code>api_key</code> needs a
 <p>A review of the ecosystem's three repositories produced 11 fixes, all
 already on <code>main</code> in <code>fast-casehub</code>.</p>
 <h3 id="require-attention-from-integrators"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 14h-2V9h2m0 9h-2v-2h2M1 21h22L12 2z"/></svg></span> Require attention from integrators<a class="headerlink" href="#require-attention-from-integrators" title="Permanent link">&para;</a></h3>
-<div class="tabbed-set tabbed-alternate" data-tabs="3:2"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">Authentication is OIDC only</label><label for="__tabbed_3_2">Batches gained a ceiling</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="4:2"><input checked="checked" id="__tabbed_4_1" name="__tabbed_4" type="radio" /><input id="__tabbed_4_2" name="__tabbed_4" type="radio" /><div class="tabbed-labels"><label for="__tabbed_4_1">Authentication is OIDC only</label><label for="__tabbed_4_2">Batches gained a ceiling</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <p><strong>What changed.</strong> <code>Authorization: Bearer &lt;JWT&gt;</code> is the only accepted
