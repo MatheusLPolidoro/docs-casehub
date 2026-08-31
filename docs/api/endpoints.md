@@ -7,6 +7,7 @@ rotas de negócio vivem sob `/v1` e exigem autenticação; `/health` e
 | Método | Rota | O que faz |
 |---|---|---|
 | `PUT` | `/v1/cases/{environment}/{automation}/{case_id}` | Cria ou atualiza um caso. |
+| `PATCH` | `/v1/cases/{environment}/{automation}/{case_id}` | Troca só o status de um caso. |
 | `POST` | `/v1/cases/batch` | Cria ou atualiza vários casos. |
 | `GET` | `/v1/cases/{environment}/{automation}/{case_id}` | Consulta um caso. |
 | `GET` | `/v1/cases` | Lista e conta casos. |
@@ -27,7 +28,7 @@ Idempotente: repetir o mesmo payload deixa o mesmo estado.
 
 | Campo | Tipo | Obrigatório | Observação |
 |---|---|:---:|---|
-| `status` | enum | ✅ | `aberto`, `em_andamento`, `concluido`, `falhou`, `pausado`. |
+| `status` | enum | ✅ | `aberto`, `em_andamento`, `concluido`, `falhou`, `pausado`, `cancelado`. |
 | `started_at` | datetime | ✅ | **Precisa de timezone.** |
 | `finished_at` | datetime | — | |
 | `batch_ref` | string | — | Referência livre do lote de origem. |
@@ -49,6 +50,43 @@ seguintes.
     Omitir `source_record` mantém o que já estava gravado. Enviar
     `source_record: {}` limpa. Vale igual para `source_schema` e para os
     campos `temporal_*`.
+
+---
+
+## `PATCH` — trocar só o status
+
+```
+PATCH /v1/cases/{environment}/{automation}/{case_id}
+```
+
+Muda o `status` e mais nada. Existe porque o `PUT` e o lote exigem
+`status` **e** `started_at`: quem só quer corrigir o estado teria que
+ler o caso antes para reescrever o resto igual — duas chamadas, e uma
+janela entre elas.
+
+**Corpo**
+
+| Campo | Tipo | Obrigatório | Observação |
+|---|---|:---:|---|
+| `status` | enum | ✅ | O novo estado. |
+| `expected_status` | enum | — | Estado que você acredita que o caso tem agora. |
+
+**Resposta** `200` — o caso já atualizado, sem `source_record`.
+
+!!! tip "`expected_status` é o que torna seguro decidir a partir de uma leitura"
+    Preenchido, a troca só acontece se o estado atual bater; se não
+    bater, responde `409` e **não escreve nada**. Entre você ler o caso
+    e mandar a mudança, outro processo pode ter mexido nele — sem essa
+    checagem, você apagaria a decisão dele sem saber.
+
+    Omitido, a troca é incondicional. Serve para correção manual, em que
+    quem chama já sabe o que está fazendo.
+
+| Situação | Resposta |
+|---|---|
+| Trocou | `200` com o caso |
+| `expected_status` não bate | `409`, código `status_conflict` |
+| Caso não existe | `404`, código `case_not_found` |
 
 ---
 
