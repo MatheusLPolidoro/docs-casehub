@@ -727,6 +727,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#patch-change-only-the-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PATCH — change only the status
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#post-batch-upsert" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1192,6 +1203,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#patch-change-only-the-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PATCH — change only the status
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#post-batch-upsert" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1274,6 +1296,11 @@ never do.</p>
 <td>Creates or updates a case.</td>
 </tr>
 <tr>
+<td><code>PATCH</code></td>
+<td><code>/v1/cases/{environment}/{automation}/{case_id}</code></td>
+<td>Changes only a case's status.</td>
+</tr>
+<tr>
 <td><code>POST</code></td>
 <td><code>/v1/cases/batch</code></td>
 <td>Creates or updates several cases.</td>
@@ -1320,7 +1347,7 @@ never do.</p>
 <td><code>status</code></td>
 <td>enum</td>
 <td style="text-align: center;">✅</td>
-<td><code>aberto</code>, <code>em_andamento</code>, <code>concluido</code>, <code>falhou</code>, <code>pausado</code>.</td>
+<td><code>aberto</code>, <code>em_andamento</code>, <code>concluido</code>, <code>falhou</code>, <code>pausado</code>, <code>cancelado</code>.</td>
 </tr>
 <tr>
 <td><code>started_at</code></td>
@@ -1380,6 +1407,71 @@ integration mistake into an immediate, explicit failure.</p>
 <code>source_record: {}</code> clears it. The same holds for <code>source_schema</code> and
 for the <code>temporal_*</code> fields.</p>
 </div>
+<hr />
+<h2 id="patch-change-only-the-status"><code>PATCH</code> — change only the status<a class="headerlink" href="#patch-change-only-the-status" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>PATCH /v1/cases/{environment}/{automation}/{case_id}
+</code></pre></div>
+<p>Changes <code>status</code> and nothing else. It exists because <code>PUT</code> and the batch
+both require <code>status</code> <strong>and</strong> <code>started_at</code>: to correct just the state you
+would have to read the case first and rewrite the rest identically — two
+calls, with a window between them.</p>
+<p><strong>Body</strong></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th style="text-align: center;">Required</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>status</code></td>
+<td>enum</td>
+<td style="text-align: center;">✅</td>
+<td>The new state.</td>
+</tr>
+<tr>
+<td><code>expected_status</code></td>
+<td>enum</td>
+<td style="text-align: center;">—</td>
+<td>The state you believe the case is in right now.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Response</strong> <code>200</code> — the updated case, without <code>source_record</code>.</p>
+<div class="admonition tip">
+<p class="admonition-title"><code>expected_status</code> is what makes it safe to decide from a read</p>
+<p>When set, the change only happens if the current state matches; if it
+does not, the API answers <code>409</code> and <strong>writes nothing</strong>. Between your
+read and your write another process may have touched the case —
+without this check you would erase its decision without knowing.</p>
+<p>Omitted, the change is unconditional. That suits manual correction,
+where the caller already knows what they are doing.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Situation</th>
+<th>Response</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Changed</td>
+<td><code>200</code> with the case</td>
+</tr>
+<tr>
+<td><code>expected_status</code> does not match</td>
+<td><code>409</code>, code <code>status_conflict</code></td>
+</tr>
+<tr>
+<td>Case does not exist</td>
+<td><code>404</code>, code <code>case_not_found</code></td>
+</tr>
+</tbody>
+</table>
 <hr />
 <h2 id="post-batch-upsert"><code>POST</code> — batch upsert<a class="headerlink" href="#post-batch-upsert" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>POST /v1/cases/batch

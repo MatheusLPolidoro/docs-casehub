@@ -727,6 +727,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#patch-trocar-so-o-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PATCH — trocar só o status
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#post-upsert-em-lote" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1192,6 +1203,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#patch-trocar-so-o-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PATCH — trocar só o status
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#post-upsert-em-lote" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1274,6 +1296,11 @@ rotas de negócio vivem sob <code>/v1</code> e exigem autenticação; <code>/hea
 <td>Cria ou atualiza um caso.</td>
 </tr>
 <tr>
+<td><code>PATCH</code></td>
+<td><code>/v1/cases/{environment}/{automation}/{case_id}</code></td>
+<td>Troca só o status de um caso.</td>
+</tr>
+<tr>
 <td><code>POST</code></td>
 <td><code>/v1/cases/batch</code></td>
 <td>Cria ou atualiza vários casos.</td>
@@ -1320,7 +1347,7 @@ rotas de negócio vivem sob <code>/v1</code> e exigem autenticação; <code>/hea
 <td><code>status</code></td>
 <td>enum</td>
 <td style="text-align: center;">✅</td>
-<td><code>aberto</code>, <code>em_andamento</code>, <code>concluido</code>, <code>falhou</code>, <code>pausado</code>.</td>
+<td><code>aberto</code>, <code>em_andamento</code>, <code>concluido</code>, <code>falhou</code>, <code>pausado</code>, <code>cancelado</code>.</td>
 </tr>
 <tr>
 <td><code>started_at</code></td>
@@ -1381,6 +1408,71 @@ imediata e explícita.</p>
 <code>source_record: {}</code> limpa. Vale igual para <code>source_schema</code> e para os
 campos <code>temporal_*</code>.</p>
 </div>
+<hr />
+<h2 id="patch-trocar-so-o-status"><code>PATCH</code> — trocar só o status<a class="headerlink" href="#patch-trocar-so-o-status" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>PATCH /v1/cases/{environment}/{automation}/{case_id}
+</code></pre></div>
+<p>Muda o <code>status</code> e mais nada. Existe porque o <code>PUT</code> e o lote exigem
+<code>status</code> <strong>e</strong> <code>started_at</code>: quem só quer corrigir o estado teria que
+ler o caso antes para reescrever o resto igual — duas chamadas, e uma
+janela entre elas.</p>
+<p><strong>Corpo</strong></p>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Tipo</th>
+<th style="text-align: center;">Obrigatório</th>
+<th>Observação</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>status</code></td>
+<td>enum</td>
+<td style="text-align: center;">✅</td>
+<td>O novo estado.</td>
+</tr>
+<tr>
+<td><code>expected_status</code></td>
+<td>enum</td>
+<td style="text-align: center;">—</td>
+<td>Estado que você acredita que o caso tem agora.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Resposta</strong> <code>200</code> — o caso já atualizado, sem <code>source_record</code>.</p>
+<div class="admonition tip">
+<p class="admonition-title"><code>expected_status</code> é o que torna seguro decidir a partir de uma leitura</p>
+<p>Preenchido, a troca só acontece se o estado atual bater; se não
+bater, responde <code>409</code> e <strong>não escreve nada</strong>. Entre você ler o caso
+e mandar a mudança, outro processo pode ter mexido nele — sem essa
+checagem, você apagaria a decisão dele sem saber.</p>
+<p>Omitido, a troca é incondicional. Serve para correção manual, em que
+quem chama já sabe o que está fazendo.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Situação</th>
+<th>Resposta</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Trocou</td>
+<td><code>200</code> com o caso</td>
+</tr>
+<tr>
+<td><code>expected_status</code> não bate</td>
+<td><code>409</code>, código <code>status_conflict</code></td>
+</tr>
+<tr>
+<td>Caso não existe</td>
+<td><code>404</code>, código <code>case_not_found</code></td>
+</tr>
+</tbody>
+</table>
 <hr />
 <h2 id="post-upsert-em-lote"><code>POST</code> — upsert em lote<a class="headerlink" href="#post-upsert-em-lote" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>POST /v1/cases/batch
