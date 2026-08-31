@@ -4,6 +4,44 @@ A record of the behaviour changes that affect whoever integrates. It does
 not replace each repository's `CHANGELOG.md` — only the ones that change the
 **contract** or demand action from consumers live here.
 
+## The batch can skip what already exists — API 0.2.0 and SDK 0.5.0
+
+Nothing to do to stay as you are: the default did not change and the new
+response keys are additive. This is opt-in.
+
+=== "`on_conflict` in the batch"
+
+    **What changed.** `POST /v1/cases/batch` accepts `on_conflict`,
+    either `update` (default, identical to before) or `skip`. In the SDK,
+    `upsert_cases_batch` gained the parameter of the same name in both
+    clients, sync and async; omit it and nothing is sent, leaving the
+    decision to the server.
+
+    **Why.** The upsert replaces the fields you send, **without
+    merging**. A publisher that republishes the same source every cycle
+    rewrites the whole case each time and wipes whatever another process
+    added to it afterwards — with no error and no log. `skip` writes
+    nothing to a case that already exists.
+
+    **What to do.** If your source is re-read periodically, pass
+    `on_conflict='skip'` and pin `casehub>=0.5.0`. Expect `upserted` to
+    fall to `0` in steady state — that is success, and the `skipped`
+    beside it is what says why. See [Endpoints](api/endpoints.en.md).
+
+=== "`created` and `skipped` in the response"
+
+    **What changed.** The batch response carries `created` (the
+    `case_id`s created in that call) and `skipped` (how many already
+    existed and were left as they were), alongside the usual `upserted`.
+
+    **Why.** The server already had this information and threw it away.
+    Without it, a publisher cannot act only on what is new — kicking off
+    an enrichment, say — without an extra query.
+
+    **What to do.** Nothing is required. `upserted` keeps meaning "rows
+    written", so what was skipped does not count towards it. The SDK
+    passes the body through as it came.
+
 ## Contract v1 — treatments are gone
 
 Two breaks from the same cycle, one on each side. Anyone integrating from an

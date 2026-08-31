@@ -64,6 +64,7 @@ POST /v1/cases/batch
 | `environment` | enum | ✅ | Applies to every item. |
 | `automation` | string | ✅ | Applies to every item. |
 | `source_schema` | string | — | Batch default; each item may override it. |
+| `on_conflict` | enum | — | `update` (default) or `skip`. What to do with a `case_id` that already exists. |
 | `cases` | list | ✅ | 1 to `CASEHUB_MAX_BATCH_ITEMS` items (default 1000). |
 
 Each item accepts the same fields as the `PUT`, plus `case_id` — which here
@@ -74,11 +75,35 @@ is **optional**.
 ```json
 {
   "upserted": 2,
+  "created": ["a"],
+  "skipped": 0,
   "errors": [
     {"case_id": "b", "code": "invalid_request"}
   ]
 }
 ```
+
+| Field | Meaning |
+|---|---|
+| `upserted` | Items actually **written** — created plus updated. What was skipped does not count: nothing was written. |
+| `created` | The `case_id`s created **in this call**. It is what lets a publisher act only on what is new — kicking off an enrichment, say — without a prior query. It is a list, not a count, because a count does not say *which*. |
+| `skipped` | How many already existed and were left as they were. Always `0` with `on_conflict=update`. |
+
+!!! tip "`on_conflict=skip` for periodically re-read sources"
+    The upsert replaces the fields you send, **without merging**. A
+    publisher that republishes the same source every cycle — an
+    inventory screen re-read every ten minutes, say — rewrites the
+    whole case each time and wipes whatever another process added to
+    it afterwards, with no error and no log.
+
+    `skip` writes **nothing** to a case that already exists: not
+    `status`, not `started_at`, not `source_record`. It still creates
+    what does not exist yet — it is about the conflict, not about the
+    insert.
+
+    Expect this consequence: in steady state `upserted` drops to `0`
+    and `skipped` runs high. That is success, not failure — which is
+    precisely why the two numbers are reported separately.
 
 !!! danger "200 does not mean everything was stored"
     The batch is all-or-nothing **per item**: an invalid item lands in

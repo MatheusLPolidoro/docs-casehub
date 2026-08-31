@@ -89,6 +89,32 @@ if resultado['errors']:
     logger.error('itens recusados: %s', resultado['errors'])
 ```
 
+#### Não sobrescrever o que já existe
+
+`on_conflict='skip'` deixa intacto o caso cujo `case_id` já existe — a
+API não escreve **nada** nele. É o que uma fonte relida periodicamente
+precisa: sem isso, cada releitura regrava o caso inteiro e desfaz o que
+outro processo tenha acrescentado depois, sem erro e sem log.
+
+```python
+resultado = client.upsert_cases_batch(
+    environment='prod',
+    automation='minha-automacao',
+    cases=casos,
+    on_conflict='skip',
+)
+
+# `created` traz os case_id criados NESTA chamada — é o que permite
+# agir só sobre o que é novo sem uma consulta antes.
+for case_id in resultado['created']:
+    disparar_enriquecimento(case_id)
+```
+
+Omitido, o campo não é enviado e quem decide o default é o servidor
+(`update`, o comportamento de sempre). Com `skip`, espere `upserted`
+cair a `0` e `skipped` subir em regime estacionário: é sucesso, não
+falha. Ver [Endpoints](../api/endpoints.md).
+
 !!! danger "Sempre inspecione `errors[]`"
     O lote responde 200 mesmo com itens recusados — o SDK **não**
     levanta exceção nesse caso, porque do ponto de vista HTTP a
