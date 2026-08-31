@@ -65,6 +65,7 @@ POST /v1/cases/batch
 | `environment` | enum | ✅ | Vale para todos os itens. |
 | `automation` | string | ✅ | Vale para todos os itens. |
 | `source_schema` | string | — | Default do lote; cada item pode sobrescrever. |
+| `on_conflict` | enum | — | `update` (default) ou `skip`. O que fazer com um `case_id` que já existe. |
 | `cases` | lista | ✅ | 1 a `CASEHUB_MAX_BATCH_ITEMS` itens (default 1000). |
 
 Cada item aceita os mesmos campos do `PUT`, mais `case_id` — que aqui é
@@ -75,11 +76,34 @@ Cada item aceita os mesmos campos do `PUT`, mais `case_id` — que aqui é
 ```json
 {
   "upserted": 2,
+  "created": ["a"],
+  "skipped": 0,
   "errors": [
     {"case_id": "b", "code": "invalid_request"}
   ]
 }
 ```
+
+| Campo | Significado |
+|---|---|
+| `upserted` | Itens efetivamente **gravados** — criados mais atualizados. O que foi pulado não entra: nada foi escrito. |
+| `created` | Os `case_id` criados **nesta chamada**. É o que permite agir só sobre o que é novo — disparar um enriquecimento, por exemplo — sem uma consulta antes. Vem como lista, não contagem, porque a contagem não diz *quais*. |
+| `skipped` | Quantos já existiam e foram deixados como estavam. Sempre `0` com `on_conflict=update`. |
+
+!!! tip "`on_conflict=skip` para fontes relidas periodicamente"
+    O upsert substitui os campos enviados, **sem merge**. Quem
+    republica a mesma fonte a cada ciclo — uma tela de estoque relida
+    de dez em dez minutos, por exemplo — regrava o caso inteiro toda
+    vez e apaga o que outro processo tenha acrescentado depois, sem
+    erro e sem log.
+
+    `skip` não escreve **nada** no caso que já existe: nem `status`,
+    nem `started_at`, nem `source_record`. Ele continua criando o que
+    ainda não existe — é sobre conflito, não sobre inserção.
+
+    Consequência a esperar: em regime estacionário `upserted` vai a
+    `0` e `skipped` fica alto. Isso é sucesso, não falha — é por isso
+    que os dois números vêm separados.
 
 !!! danger "200 não significa que tudo foi gravado"
     O lote é tudo-ou-nada **por item**: um item inválido entra em

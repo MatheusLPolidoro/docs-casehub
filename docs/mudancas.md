@@ -4,6 +4,44 @@ Registro das mudanças de comportamento que afetam quem integra. Não
 substitui o `CHANGELOG.md` de cada repositório — aqui ficam apenas as
 que mudam o **contrato** ou exigem ação de quem consome.
 
+## Lote sabe pular o que já existe — API 0.2.0 e SDK 0.5.0
+
+Nada a fazer para continuar como está: o default não mudou e as chaves
+novas na resposta são aditivas. É opt-in.
+
+=== "`on_conflict` no lote"
+
+    **O que mudou.** `POST /v1/cases/batch` aceita `on_conflict`, com
+    `update` (default, idêntico ao de antes) ou `skip`. No SDK,
+    `upsert_cases_batch` ganhou o parâmetro homônimo nos dois clientes,
+    síncrono e assíncrono; omitido, nada é enviado e quem decide é o
+    servidor.
+
+    **Por quê.** O upsert substitui os campos enviados, **sem merge**.
+    Quem republica a mesma fonte a cada ciclo regrava o caso inteiro
+    toda vez e apaga o que outro processo tenha acrescentado depois —
+    sem erro e sem log. `skip` não escreve nada no caso que já existe.
+
+    **O que fazer.** Se a sua fonte é relida periodicamente, passe
+    `on_conflict='skip'` e fixe `casehub>=0.5.0`. Espere `upserted` cair
+    a `0` em regime estacionário — isso é sucesso, e é o `skipped` ao
+    lado que diz por quê. Ver [Endpoints](api/endpoints.md).
+
+=== "`created` e `skipped` na resposta"
+
+    **O que mudou.** A resposta do lote traz `created` (os `case_id`
+    criados naquela chamada) e `skipped` (quantos já existiam e foram
+    deixados como estavam), além do `upserted` de sempre.
+
+    **Por quê.** A informação já existia do lado do servidor e era
+    descartada. Sem ela, quem publica não tem como agir só sobre o que é
+    novo — disparar um enriquecimento, por exemplo — sem uma consulta a
+    mais.
+
+    **O que fazer.** Nada é obrigatório. `upserted` mantém o sentido de
+    "linhas gravadas", então o que foi pulado não entra nele. O SDK
+    repassa o corpo como veio.
+
 ## Contrato v1 — os tratamentos saíram
 
 Duas quebras do mesmo ciclo, uma de cada lado. Quem integra a partir de
