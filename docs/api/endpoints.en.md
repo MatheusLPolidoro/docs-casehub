@@ -188,10 +188,37 @@ GET /v1/cases
 | `filter` | Filter over `source_record` — see below. |
 | `batch_ref` | |
 | `source_schema` | |
-| `started_from` / `started_to` | Window over `started_at`. |
+| `started_from` / `started_to` | Window over `started_at` — the record's date **at the source**. |
+| `created_since` / `updated_since` | Incremental cursor: only what was created / changed from that instant on. |
 | `page` | Default 1. |
 | `page_size` | Default 50, maximum 500. |
 | `include` | Empty or `source_record`, to bring the JSON. |
+
+!!! tip "Incremental consumption: use the cursor, don't page everything"
+    `created_since` and `updated_since` answer *"what changed since I
+    last looked"*. Keep the highest `created_at` (or `updated_at`) you
+    received and send it on the next call.
+
+    Do not confuse it with `started_from`: that one filters the
+    record's date **at the source**, which may be years old on a case
+    created today.
+
+    The two answer different questions — `created_since` brings only
+    new cases; `updated_since` also brings state changes.
+
+    When either is used, the listing orders by the cursor's field.
+    Without them, the order stays `started_at`.
+
+!!! danger "Re-read a window of a few seconds"
+    A row stamped earlier may be **written** later: the transaction
+    that created it can take a while to commit, and it would show up
+    behind a cursor you already passed. If you advance the cursor to
+    the last instant you received, that row is never returned again —
+    no error, no log.
+
+    That is why the filters are `>=`: repeating the instant returns the
+    boundary row again. Key your cases by `case_id` and the repetition
+    costs nothing; the loss cannot be undone.
 
 **Filters over `source_record`**
 
