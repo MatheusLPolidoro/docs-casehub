@@ -1630,7 +1630,11 @@ a fixed 1000.</p>
 </tr>
 <tr>
 <td><code>started_from</code> / <code>started_to</code></td>
-<td>Window over <code>started_at</code>.</td>
+<td>Window over <code>started_at</code> — the record's date <strong>at the source</strong>.</td>
+</tr>
+<tr>
+<td><code>created_since</code> / <code>updated_since</code></td>
+<td>Incremental cursor: only what was created / changed from that instant on.</td>
 </tr>
 <tr>
 <td><code>page</code></td>
@@ -1646,6 +1650,30 @@ a fixed 1000.</p>
 </tr>
 </tbody>
 </table>
+<div class="admonition tip">
+<p class="admonition-title">Incremental consumption: use the cursor, don't page everything</p>
+<p><code>created_since</code> and <code>updated_since</code> answer <em>"what changed since I
+last looked"</em>. Keep the highest <code>created_at</code> (or <code>updated_at</code>) you
+received and send it on the next call.</p>
+<p>Do not confuse it with <code>started_from</code>: that one filters the
+record's date <strong>at the source</strong>, which may be years old on a case
+created today.</p>
+<p>The two answer different questions — <code>created_since</code> brings only
+new cases; <code>updated_since</code> also brings state changes.</p>
+<p>When either is used, the listing orders by the cursor's field.
+Without them, the order stays <code>started_at</code>.</p>
+</div>
+<div class="admonition danger">
+<p class="admonition-title">Re-read a window of a few seconds</p>
+<p>A row stamped earlier may be <strong>written</strong> later: the transaction
+that created it can take a while to commit, and it would show up
+behind a cursor you already passed. If you advance the cursor to
+the last instant you received, that row is never returned again —
+no error, no log.</p>
+<p>That is why the filters are <code>&gt;=</code>: repeating the instant returns the
+boundary row again. Key your cases by <code>case_id</code> and the repetition
+costs nothing; the loss cannot be undone.</p>
+</div>
 <p><strong>Filters over <code>source_record</code></strong></p>
 <p>The <code>filter</code> parameter takes <code>key=value</code> and is repeated once per
 filter:</p>

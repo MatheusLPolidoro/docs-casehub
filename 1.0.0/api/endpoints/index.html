@@ -1630,7 +1630,11 @@ efetivo do ambiente — que é configurável, então não vale assumir
 </tr>
 <tr>
 <td><code>started_from</code> / <code>started_to</code></td>
-<td>Janela sobre <code>started_at</code>.</td>
+<td>Janela sobre <code>started_at</code> — a data do registro <strong>na origem</strong>.</td>
+</tr>
+<tr>
+<td><code>created_since</code> / <code>updated_since</code></td>
+<td>Cursor incremental: só o que foi criado / alterado a partir do instante.</td>
 </tr>
 <tr>
 <td><code>page</code></td>
@@ -1646,6 +1650,29 @@ efetivo do ambiente — que é configurável, então não vale assumir
 </tr>
 </tbody>
 </table>
+<div class="admonition tip">
+<p class="admonition-title">Consumo incremental: use o cursor, não pagine tudo</p>
+<p><code>created_since</code> e <code>updated_since</code> respondem <em>"o que mudou desde a
+última vez que olhei"</em>. Guarde o maior <code>created_at</code> (ou
+<code>updated_at</code>) que recebeu e mande-o na chamada seguinte.</p>
+<p>Não confunda com <code>started_from</code>: aquele filtra a data do registro
+<strong>na origem</strong>, que pode ser de anos atrás num caso criado hoje.</p>
+<p>Os dois respondem perguntas diferentes — <code>created_since</code> traz só
+caso novo; <code>updated_since</code> traz também mudança de estado.</p>
+<p>Quando um deles é usado, a listagem passa a ordenar pelo campo do
+cursor. Sem eles, a ordem continua sendo por <code>started_at</code>.</p>
+</div>
+<div class="admonition danger">
+<p class="admonition-title">Releia uma janela de alguns segundos para trás</p>
+<p>Uma linha carimbada antes pode ser <strong>gravada</strong> depois: a transação
+que a criou pode demorar a concluir, e ela apareceria atrás de um
+cursor que você já passou. Se você avançar o cursor até o último
+instante recebido, essa linha nunca mais é devolvida — sem erro e
+sem log.</p>
+<p>Por isso os filtros são <code>&gt;=</code>: repetir o instante devolve a linha do
+limite de novo. Trate os casos por <code>case_id</code> e a repetição sai de
+graça; a perda, não tem conserto.</p>
+</div>
 <p><strong>Filtros sobre <code>source_record</code></strong></p>
 <p>O parâmetro <code>filter</code> recebe <code>chave=valor</code> e é repetido uma vez por
 filtro:</p>

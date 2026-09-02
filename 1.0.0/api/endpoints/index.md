@@ -188,10 +188,36 @@ GET /v1/cases
 | `filter` | Filtro sobre `source_record` — ver abaixo. |
 | `batch_ref` | |
 | `source_schema` | |
-| `started_from` / `started_to` | Janela sobre `started_at`. |
+| `started_from` / `started_to` | Janela sobre `started_at` — a data do registro **na origem**. |
+| `created_since` / `updated_since` | Cursor incremental: só o que foi criado / alterado a partir do instante. |
 | `page` | Default 1. |
 | `page_size` | Default 50, máximo 500. |
 | `include` | Vazio ou `source_record`, para trazer o JSON. |
+
+!!! tip "Consumo incremental: use o cursor, não pagine tudo"
+    `created_since` e `updated_since` respondem *"o que mudou desde a
+    última vez que olhei"*. Guarde o maior `created_at` (ou
+    `updated_at`) que recebeu e mande-o na chamada seguinte.
+
+    Não confunda com `started_from`: aquele filtra a data do registro
+    **na origem**, que pode ser de anos atrás num caso criado hoje.
+
+    Os dois respondem perguntas diferentes — `created_since` traz só
+    caso novo; `updated_since` traz também mudança de estado.
+
+    Quando um deles é usado, a listagem passa a ordenar pelo campo do
+    cursor. Sem eles, a ordem continua sendo por `started_at`.
+
+!!! danger "Releia uma janela de alguns segundos para trás"
+    Uma linha carimbada antes pode ser **gravada** depois: a transação
+    que a criou pode demorar a concluir, e ela apareceria atrás de um
+    cursor que você já passou. Se você avançar o cursor até o último
+    instante recebido, essa linha nunca mais é devolvida — sem erro e
+    sem log.
+
+    Por isso os filtros são `>=`: repetir o instante devolve a linha do
+    limite de novo. Trate os casos por `case_id` e a repetição sai de
+    graça; a perda, não tem conserto.
 
 **Filtros sobre `source_record`**
 
