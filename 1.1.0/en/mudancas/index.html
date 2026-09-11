@@ -1,0 +1,1762 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Central documentation for the CaseHub ecosystem — the fast-casehub API and the casehub client SDK.">
+      
+      
+      
+      
+        <link rel="prev" href="../operacao/observabilidade/">
+      
+      
+        <link rel="next" href="../estrutura/">
+      
+      
+        
+          <link rel="alternate" href="../../mudancas/" hreflang="pt">
+        
+          <link rel="alternate" href="./" hreflang="en">
+        
+      
+      
+      <link rel="icon" href="../../assets/logo.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>What changed - CaseHub</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/css/marca.css">
+    
+      <link rel="stylesheet" href="../../assets/css/tipografia.css">
+    
+      <link rel="stylesheet" href="../../assets/css/termynal.css">
+    
+      <link rel="stylesheet" href="../../assets/css/extra.css">
+    
+      <link rel="stylesheet" href="../../assets/css/a11y.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#what-changed" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+  
+  
+
+
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../" title="CaseHub" class="md-header__button md-logo" aria-label="CaseHub" data-md-component="logo">
+      
+  <img src="../../assets/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            CaseHub
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              What changed
+            
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="md-header__option" data-pm-fonte hidden>
+      <div class="md-select">
+        <button class="md-header__button md-icon" aria-label="Text font" title="Text font">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 8h3v12h1v1h-4v-1h1v-3h-4l-1.5 3H14v1h-4v-1h1zm1 1-3.5 7H18zM5 3h5c1.11 0 2 .89 2 2v11H9v-5H6v5H3V5c0-1.11.89-2 2-2m1 2v4h3V5z"/></svg>
+        </button>
+        <div class="md-select__inner">
+          <ul class="md-select__list" data-pm-fonte-lista></ul>
+        </div>
+      </div>
+    </div>
+
+    
+      <a
+        class="md-header__button md-icon"
+        href="index.md"
+        download="mudancas.en.md"
+        title="Download the Markdown source of this page"
+        aria-label="Download the Markdown source of this page"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5 20h14v-2H5m14-9h-4V3H9v6H5l7 7z"/></svg>
+      </a>
+    
+
+    <button
+      type="button"
+      class="md-header__button md-icon"
+      data-doc-print
+      hidden
+      title="Save this page as PDF"
+      aria-label="Save this page as PDF"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 3H6v4h12m1 5a1 1 0 0 1-1-1 1 1 0 0 1 1-1 1 1 0 0 1 1 1 1 1 0 0 1-1 1m-3 7H8v-5h8m3-6H5a3 3 0 0 0-3 3v6h4v4h12v-4h4v-6a3 3 0 0 0-3-3"/></svg>
+    </button>
+
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="blue" data-md-color-accent="teal"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      
+<div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          
+          
+            
+          
+          <li class="md-select__item">
+            <a href="../../mudancas/" hreflang="pt" class="md-select__link">
+              Português (Brasil)
+            </a>
+          </li>
+        
+          
+          
+            
+          
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/MatheusLPolidoro/docs-casehub" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    MatheusLPolidoro/docs-casehub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../" title="CaseHub" class="md-nav__button md-logo" aria-label="CaseHub" data-md-component="logo">
+      
+  <img src="../../assets/logo.svg" alt="logo">
+
+    </a>
+    CaseHub
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/MatheusLPolidoro/docs-casehub" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    MatheusLPolidoro/docs-casehub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sobre/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    What CaseHub is
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../arquitetura/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../primeiros_passos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../instalacao/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorial
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API (fast-casehub)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API (fast-casehub)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/autenticacao/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/endpoints/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Endpoints
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/webhooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Webhooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/erros/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Errors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/retencao/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Retention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SDK (casehub)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    SDK (casehub)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sdk/cliente/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Synchronous client
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sdk/assincrono/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Asynchronous client
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sdk/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operations
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Operations
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../operacao/deploy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deploy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../operacao/observabilidade/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Observability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    What changed
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    What changed
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#webhooks-api-040" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Webhooks — API 0.4.0
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Webhooks — API 0.4.0">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#finer-delivery-rules-and-re-evaluation-api-040-and-041" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finer delivery rules, and re-evaluation — API 0.4.0 and 0.4.1
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#incremental-cursor-and-three-new-filters-api-040" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Incremental cursor and three new filters — API 0.4.0
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#changing-only-the-status-api-040-and-sdk-060" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changing only the status — API 0.4.0 and SDK 0.6.0
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-batch-can-skip-what-already-exists-api-030-and-sdk-050" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The batch can skip what already exists — API 0.3.0 and SDK 0.5.0
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#token-from-the-api-itself-api-020-and-sdk-040" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Token from the API itself — API 0.2.0 and SDK 0.4.0
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sdk-versions-to-avoid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SDK versions to avoid
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#contract-robustness-api-040" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contract robustness — API 0.4.0
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../estrutura/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#webhooks-api-040" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Webhooks — API 0.4.0
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Webhooks — API 0.4.0">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#finer-delivery-rules-and-re-evaluation-api-040-and-041" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finer delivery rules, and re-evaluation — API 0.4.0 and 0.4.1
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#incremental-cursor-and-three-new-filters-api-040" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Incremental cursor and three new filters — API 0.4.0
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#changing-only-the-status-api-040-and-sdk-060" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changing only the status — API 0.4.0 and SDK 0.6.0
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-batch-can-skip-what-already-exists-api-030-and-sdk-050" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The batch can skip what already exists — API 0.3.0 and SDK 0.5.0
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#token-from-the-api-itself-api-020-and-sdk-040" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Token from the API itself — API 0.2.0 and SDK 0.4.0
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sdk-versions-to-avoid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SDK versions to avoid
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#contract-robustness-api-040" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contract robustness — API 0.4.0
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="what-changed">What changed<a class="headerlink" href="#what-changed" title="Permanent link">&para;</a></h1>
+<p>A record of the behaviour changes that affect whoever integrates. It does
+not replace each repository's <code>CHANGELOG.md</code> — only the ones that change
+the <strong>contract</strong> or require action from a consumer live here.</p>
+<p>Current versions: <strong>API 0.4.2</strong> and <strong>SDK 0.7.2</strong>.</p>
+<hr />
+<h2 id="webhooks-api-040">Webhooks — API 0.4.0<a class="headerlink" href="#webhooks-api-040" title="Permanent link">&para;</a></h2>
+<p>A consumer can now register a URL of its own and <strong>receive</strong> the cases it
+cares about, instead of only polling <code>GET /v1/cases</code> in a loop.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">What changed</label><label for="__tabbed_1_2">What to do</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p>Seven new routes under <code>/v1/webhooks</code>: create, list, read, update,
+delete, the delivery log and the resend of a failed delivery.</p>
+<p>Each subscription's rules are <strong>the same filters the listing already
+accepts</strong> — no new query vocabulary. The subscription belongs to the
+automation of the OIDC client that created it, like everything else
+in the service.</p>
+<p>Every delivery is signed with HMAC-SHA256 in the
+<code>X-Casehub-Signature</code> header, over <code>&lt;t&gt;.&lt;body&gt;</code>. The secret is
+returned <strong>exactly once</strong>, at creation.</p>
+</div>
+<div class="tabbed-block">
+<p>Nothing is mandatory: whoever consumes through <code>GET /v1/cases</code> keeps
+consuming the same way. The incremental cursor remains the long-term
+recovery path — the delivery log has a 30-day deadline.</p>
+<p>If you are going to register one, read first the rule that decides
+whether the subscription will work at all: <strong>a content rule requires
+<code>cursor_field: updated</code></strong>. With <code>created</code>, the case is evaluated only
+at the instant it is born, and whatever the automation writes later
+is never reconsidered — the subscription goes silent, with no error.</p>
+<p>See <a href="../api/webhooks/">Webhooks</a>.</p>
+</div>
+</div>
+</div>
+<div class="admonition info">
+<p class="admonition-title">The SDK does not cover these routes</p>
+<p><code>casehub</code> covers the case routes. The webhook ones are called over
+plain HTTP, with the same <code>Bearer</code>. Registering is a configuration
+operation, done once — not a flow one.</p>
+</div>
+<h3 id="finer-delivery-rules-and-re-evaluation-api-040-and-041">Finer delivery rules, and re-evaluation — API 0.4.0 and 0.4.1<a class="headerlink" href="#finer-delivery-rules-and-re-evaluation-api-040-and-041" title="Permanent link">&para;</a></h3>
+<p><code>source_conditions</code> (<code>exists</code>, <code>not_exists</code>, <code>eq</code>, <code>ne</code> over
+<code>source_record</code>) and <code>events</code> (<code>case.created</code>, <code>case.updated</code>) together
+answer <em>"only send it to me once the automation has finished assembling
+the case"</em>.</p>
+<p>The rule is <strong>re-evaluated at delivery time</strong>, and since 0.4.1 that
+covers <strong>every</strong> rule of the subscription — <code>status</code>, <code>batch_ref</code>,
+<code>source_schema</code>, <code>source_filters</code> and the event type. Tightening a rule
+with a <code>PATCH</code> makes whatever was already queued and stopped matching end
+up <code>abandoned</code>, with the reason in the log, without going out to the
+partner URL.</p>
+<div class="admonition warning">
+<p class="admonition-title">Boolean conditions were inverted before 0.4.1</p>
+<p><code>{"op": "eq", "value": true}</code> was stored as <code>"True"</code> while the
+database compares <code>"true"</code>: the condition never matched, and the
+equivalent <code>ne</code> always did — with no error anywhere. If you
+registered a condition with a boolean value before 0.4.1,
+<strong>register it again</strong>.</p>
+</div>
+<hr />
+<h2 id="incremental-cursor-and-three-new-filters-api-040">Incremental cursor and three new filters — API 0.4.0<a class="headerlink" href="#incremental-cursor-and-three-new-filters-api-040" title="Permanent link">&para;</a></h2>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1"><code>created_since</code> / <code>updated_since</code></label><label for="__tabbed_2_2"><code>exists</code>, <code>not_exists</code> and <code>ne</code></label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p><strong>What changed.</strong> <code>GET /v1/cases</code> now accepts both cursor parameters.
+Until now there was no way to ask "what changed since I last looked":
+<code>started_from</code> filters the record's date <strong>at the source</strong>, which may
+be years old on a case created today.</p>
+<p>When either is used, the listing orders by the cursor field; without
+them, it keeps ordering by <code>started_at</code>.</p>
+<p><strong>What to do.</strong> If you were paging the whole list to find news,
+switch to the cursor — and <strong>re-read a window of a few seconds
+backwards</strong>. A row stamped earlier may be written later, and would
+appear behind a cursor you already passed. The filters are <code>&gt;=</code>, so
+repeating the instant returns the boundary row again: key by
+<code>case_id</code> and the repetition costs nothing. The loss cannot be
+undone.</p>
+</div>
+<div class="tabbed-block">
+<p><strong>What changed.</strong> Three new operators over <code>source_record</code>, adding to
+the <code>filter</code> that already existed. All repeatable, combined with
+<code>AND</code>.</p>
+<p><strong>What to do.</strong> Nothing — they are additive. But know that
+<strong><code>not_exists</code> is not <code>ne</code></strong>: comparing a value requires a value to
+exist, so a missing path matches neither <code>ne</code> nor <code>filter</code>. And
+<code>exists</code> asks about the <strong>key</strong>, not the value: it matches even when
+the value is <code>null</code>, an object or a list.</p>
+<p>All four operators count towards the <strong>same</strong> ceiling
+(<code>CASEHUB_MAX_SOURCE_FILTERS</code>), now added up — splitting the query
+between them no longer doubles the limit.</p>
+<p>See <a href="../api/endpoints/#get-list-and-count">Endpoints</a>.</p>
+</div>
+</div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">The SDK does not declare these parameters</p>
+<p><code>ListCasesParams</code> includes neither the cursor nor the three
+operators. They go through anyway, but a type checker complains, and
+the CLI does not expose them. See
+<a href="../sdk/cliente/">Synchronous client</a>.</p>
+</div>
+<hr />
+<h2 id="changing-only-the-status-api-040-and-sdk-060">Changing only the status — API 0.4.0 and SDK 0.6.0<a class="headerlink" href="#changing-only-the-status-api-040-and-sdk-060" title="Permanent link">&para;</a></h2>
+<div class="tabbed-set tabbed-alternate" data-tabs="3:3"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><input id="__tabbed_3_3" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">Case <code>PATCH</code> and the <code>cancelado</code> status</label><label for="__tabbed_3_2">SDK: <code>patch_case_status</code></label><label for="__tabbed_3_3">SDK 0.6.1: <code>status_code</code> became an attribute</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p><strong>What changed.</strong> A new route
+<code>PATCH /v1/cases/{environment}/{automation}/{case_id}</code>, which changes
+<strong>only the status</strong>. And a new status, <code>cancelado</code> — for a case that
+ceased to exist at the source before being handled, distinct from
+<code>concluido</code> (handled and finished) and <code>falhou</code> (tried and failed).</p>
+<p><strong>Why.</strong> <code>PUT</code> and the batch require <code>status</code> <strong>and</strong> <code>started_at</code>,
+so fixing only the state forced a read of the case first, to rewrite
+the rest unchanged — two calls, and a window between them.</p>
+<p><strong>What to do.</strong> Adding a value to the enum is additive: nothing that
+was accepted before stopped being accepted. If your code validates
+<code>status</code> against a list of its own, add <code>cancelado</code> to it.</p>
+</div>
+<div class="tabbed-block">
+<p><strong>What changed.</strong> The method exists on both clients, synchronous and
+asynchronous. <code>expected_status</code> is optional: filled in, the change
+only happens if the current state matches, and the API answers 409
+without writing anything when it does not.</p>
+<p><strong>What to do.</strong> Pin <code>casehub&gt;=0.6.0</code> and the API from 0.4.0 on.</p>
+<div class="highlight"><pre><span></span><code><span class="n">client</span><span class="o">.</span><span class="n">patch_case_status</span><span class="p">(</span>
+    <span class="n">environment</span><span class="o">=</span><span class="s1">'prod'</span><span class="p">,</span>
+    <span class="n">automation</span><span class="o">=</span><span class="s1">'minha-automacao'</span><span class="p">,</span>
+    <span class="n">case_id</span><span class="o">=</span><span class="s1">'a1b2c3'</span><span class="p">,</span>
+    <span class="n">status</span><span class="o">=</span><span class="s1">'cancelado'</span><span class="p">,</span>
+    <span class="n">expected_status</span><span class="o">=</span><span class="s1">'aberto'</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<div class="admonition danger">
+<p class="admonition-title">It does <strong>not</strong> create the case — and that is a 404</p>
+<p>Unlike <code>upsert_case</code>. A <code>case_id</code> that was never imported, or
+published under a different <code>environment</code>/<code>automation</code>, raises
+<code>APIHTTPError</code> with <code>status_code=404</code>, in both modes. Anyone
+handling only the 409 gets that exception unexpectedly.</p>
+</div>
+</div>
+<div class="tabbed-block">
+<p><strong>What changed.</strong> <code>APIHTTPError</code> now exposes <code>status_code</code> and
+<code>message</code> as attributes.</p>
+<p><strong>Why.</strong> The number only existed inside the formatted message, so
+telling an expected error from an unexpected one meant searching for
+a substring in the exception text — text that changes whenever
+somebody rewrites the sentence. The concrete case is the 409 from
+<code>expected_status</code>, which is not a failure: it is another process
+having written first, with newer information.</p>
+<p><strong>What to do.</strong> Replace the substring search with
+<code>except APIHTTPError as e: if e.status_code == 409:</code>.</p>
+</div>
+</div>
+</div>
+<hr />
+<h2 id="the-batch-can-skip-what-already-exists-api-030-and-sdk-050">The batch can skip what already exists — API 0.3.0 and SDK 0.5.0<a class="headerlink" href="#the-batch-can-skip-what-already-exists-api-030-and-sdk-050" title="Permanent link">&para;</a></h2>
+<p>Nothing to do to keep things as they are: the default did not change and
+the new response keys are additive. It is opt-in.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="4:2"><input checked="checked" id="__tabbed_4_1" name="__tabbed_4" type="radio" /><input id="__tabbed_4_2" name="__tabbed_4" type="radio" /><div class="tabbed-labels"><label for="__tabbed_4_1"><code>on_conflict</code> in the batch</label><label for="__tabbed_4_2"><code>created</code> and <code>skipped</code> in the response</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p><strong>What changed.</strong> <code>POST /v1/cases/batch</code> accepts <code>on_conflict</code>, with
+<code>update</code> (default, identical to before) or <code>skip</code>. In the SDK,
+<code>upsert_cases_batch</code> gained the parameter of the same name on both
+clients; omitted, nothing is sent and the server decides. Since
+<strong>0.7.0</strong> the CLI exposes it too, as <code>--on-conflict</code>.</p>
+<p><strong>Why.</strong> The upsert replaces the fields sent, <strong>without merging</strong>.
+Whoever republishes the same source every cycle rewrites the whole
+case every time and erases what another process added afterwards —
+with no error and no log.</p>
+<p><strong>What to do.</strong> If your source is re-read periodically, pass
+<code>on_conflict='skip'</code> and pin <code>casehub&gt;=0.5.0</code>. Expect <code>upserted</code> to
+fall to <code>0</code> in steady state — that is success, and the <code>skipped</code>
+beside it is what says why.</p>
+<div class="admonition tip">
+<p class="admonition-title">It is also what keeps a webhook quiet when nothing changed</p>
+<p>In <code>update</code> mode a re-capture stamps <code>updated_at</code> on everything,
+and a subscription with <code>cursor_field: updated</code> would receive the
+whole base every cycle.</p>
+</div>
+</div>
+<div class="tabbed-block">
+<p><strong>What changed.</strong> The batch response carries <code>created</code> (the
+<code>case_id</code>s created in that call) and <code>skipped</code> (how many already
+existed and were left alone), besides the usual <code>upserted</code>.</p>
+<p><strong>Why.</strong> The information already existed on the server side and was
+discarded. Without it, a publisher cannot act only on what is new —
+triggering an enrichment, say — without an extra query.</p>
+<p><strong>What to do.</strong> Nothing is mandatory. <code>upserted</code> keeps meaning "rows
+written", so what was skipped is not counted in it. The SDK passes
+the body through as it came.</p>
+</div>
+</div>
+</div>
+<hr />
+<h2 id="token-from-the-api-itself-api-020-and-sdk-040">Token from the API itself — API 0.2.0 and SDK 0.4.0<a class="headerlink" href="#token-from-the-api-itself-api-020-and-sdk-040" title="Permanent link">&para;</a></h2>
+<p>Whoever integrates no longer needs to know the identity provider's
+address: the token is requested from the CaseHub API itself.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="5:2"><input checked="checked" id="__tabbed_5_1" name="__tabbed_5" type="radio" /><input id="__tabbed_5_2" name="__tabbed_5" type="radio" /><div class="tabbed-labels"><label for="__tabbed_5_1">Ask for the token at <code>/v1/auth/token</code></label><label for="__tabbed_5_2"><code>api_key</code> is gone — and is not coming back</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p><strong>What changed.</strong> The API exposes <code>POST /v1/auth/token</code> and
+<code>POST /v1/auth/refresh</code>. Both accept the OAuth2 format
+(<code>application/x-www-form-urlencoded</code>) and JSON, and neither requires
+a credential — they are the way to obtain one.</p>
+<p><strong>Why.</strong> The realm address becomes configuration of the service, not
+something each automation carries in each environment.</p>
+<p><strong>What to do.</strong> Point the SDK's <code>token_url</code> at
+<code>&lt;base_url&gt;/v1/auth/token</code>. Nothing else changes: the API relays to
+the identity provider, which is still the one signing the token.</p>
+<div class="highlight"><pre><span></span><code><span class="n">client</span> <span class="o">=</span> <span class="n">CaseHubClient</span><span class="p">(</span>
+    <span class="n">base_url</span><span class="o">=</span><span class="s1">'https://casehub.internal'</span><span class="p">,</span>
+    <span class="n">client_id</span><span class="o">=</span><span class="s1">'minha-automacao'</span><span class="p">,</span>
+    <span class="n">client_secret</span><span class="o">=</span><span class="s1">'...'</span><span class="p">,</span>
+    <span class="n">token_url</span><span class="o">=</span><span class="s1">'https://casehub.internal/v1/auth/token'</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>Asking the provider directly still works — it is the way to debug
+with the API down.</p>
+<p>See <a href="../api/autenticacao/">Authentication</a>.</p>
+</div>
+<div class="tabbed-block">
+<p><strong>What changed.</strong> <code>Authorization: Bearer &lt;JWT&gt;</code> is the only way to
+authenticate. On the server, the <code>apikey</code> and <code>dual</code> modes were
+removed: a service configured with them <strong>does not start</strong>. In the
+SDK, the <code>api_key</code> parameter left
+<code>CaseHubClient</code>/<code>AsyncCaseHubClient</code>, along with the CLI's
+<code>--api-key</code> flag.</p>
+<p>The CLI <strong>stopped asking for a credential interactively</strong>: before,
+seven commands asked for a key before anything else. <code>casehub health</code>
+answers straight away.</p>
+<p><strong>Why.</strong> The <code>X-API-Key</code> header authenticated with any non-empty
+string and escaped per-automation authorization. What remained in the
+SDK was a path that only produced <code>401</code> — configurable, and therefore
+able to mislead.</p>
+<p><strong>What to do.</strong> Provision a <code>client_credentials</code> client per
+automation, with <code>client_id</code> equal to its name, and configure
+<code>client_id</code>, <code>client_secret</code> and <code>token_url</code> (the three together;
+partial configuration fails at construction).</p>
+</div>
+</div>
+</div>
+<hr />
+<h2 id="sdk-versions-to-avoid">SDK versions to avoid<a class="headerlink" href="#sdk-versions-to-avoid" title="Permanent link">&para;</a></h2>
+<div class="admonition danger">
+<p class="admonition-title">Do not install 0.7.0</p>
+<p>It shipped with <code>casehub.__version__</code> stuck at <code>'0.6.1'</code> while the
+distribution already said <code>0.7.0</code>: any consumer reading
+<code>__version__</code> gets the wrong version. Use <strong>0.7.1</strong> or later.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Exceptions survive <code>pickle</code> again — SDK 0.7.0</p>
+<p><code>APIHTTPError</code>, <code>APIConnectionError</code> and <code>APITimeoutError</code> raised
+<code>TypeError</code> when reconstructed, which <strong>masked the real HTTP error</strong>
+exactly where it crosses a process boundary: <code>ProcessPoolExecutor</code>,
+multiprocessing, or any retry layer that serialises the captured
+exception.</p>
+<p>That started to matter more from 0.6.1 on, which asks the caller to
+keep and inspect the exception to read <code>status_code</code>.</p>
+</div>
+<hr />
+<h2 id="contract-robustness-api-040">Contract robustness — API 0.4.0<a class="headerlink" href="#contract-robustness-api-040" title="Permanent link">&para;</a></h2>
+<p>No action required, but they change what you see when something goes
+wrong.</p>
+<p><strong>A null character in <code>source_record</code> becomes a per-item error, not a
+500.</strong> A <code>U+0000</code> in any key or value is rejected with
+<code>invalid_source_record</code> — in a batch, without taking the other items
+down. Before, the driver's exception reached the generic handler and
+became <code>500 internal_error</code> without saying which item of the batch
+failed. It is common in data coming from mainframe fixed-width files.</p>
+<p><strong>The response <code>status</code> now declares the enum in the published schema</strong>,
+instead of a free string. The input already declared the possible states
+and the output did not — whoever read only the response contract in
+Swagger had no way to know which values to expect.</p>
+<p><strong><code>created_at</code> and <code>updated_at</code> are stamped by the database</strong>, not by the
+process clock. No consequence with a single process, and a prerequisite
+for any reliable incremental consumption once there is more than one.</p>
+<p><strong>The <code>/docs</code> page opens again.</strong> The <code>/v1/auth/*</code> routes declared their
+body by reference to a schema that was never registered, and Swagger UI
+replaced the whole page with "Could not resolve reference" — no route was
+shown at all.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../operacao/observabilidade/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Observability">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Observability
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../estrutura/" class="md-footer__link md-footer__link--next" aria-label="Next: Structure">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Structure
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["content.code.annotate", "content.tabs.link", "content.code.copy", "navigation.footer", "navigation.sections", "navigation.top"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../../assets/js/pm-i18n.js"></script>
+      
+        <script src="../../assets/js/termynal.js"></script>
+      
+        <script src="../../assets/js/terminal.js"></script>
+      
+        <script src="../../assets/js/logo-animation.js"></script>
+      
+        <script src="../../assets/js/typography.js"></script>
+      
+        <script src="../../assets/js/doc-actions.js"></script>
+      
+        <script src="../../assets/js/filetree.js"></script>
+      
+    
+  </body>
+</html>

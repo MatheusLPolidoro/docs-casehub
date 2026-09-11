@@ -1,0 +1,2167 @@
+
+<!doctype html>
+<html lang="pt" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Documentação central do ecossistema CaseHub — a API fast-casehub e o SDK cliente casehub.">
+      
+      
+      
+      
+        <link rel="prev" href="../endpoints/">
+      
+      
+        <link rel="next" href="../erros/">
+      
+      
+        
+          <link rel="alternate" href="./" hreflang="pt">
+        
+          <link rel="alternate" href="../../en/api/webhooks/" hreflang="en">
+        
+      
+      
+      <link rel="icon" href="../../assets/logo.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Webhooks - CaseHub</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/css/marca.css">
+    
+      <link rel="stylesheet" href="../../assets/css/tipografia.css">
+    
+      <link rel="stylesheet" href="../../assets/css/termynal.css">
+    
+      <link rel="stylesheet" href="../../assets/css/extra.css">
+    
+      <link rel="stylesheet" href="../../assets/css/a11y.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#webhooks" class="md-skip">
+          Ir para o conteúdo
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+  
+  
+
+
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Cabeçalho">
+    <a href="../.." title="CaseHub" class="md-header__button md-logo" aria-label="CaseHub" data-md-component="logo">
+      
+  <img src="../../assets/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            CaseHub
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Webhooks
+            
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="md-header__option" data-pm-fonte hidden>
+      <div class="md-select">
+        <button class="md-header__button md-icon" aria-label="Fonte do texto" title="Fonte do texto">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 8h3v12h1v1h-4v-1h1v-3h-4l-1.5 3H14v1h-4v-1h1zm1 1-3.5 7H18zM5 3h5c1.11 0 2 .89 2 2v11H9v-5H6v5H3V5c0-1.11.89-2 2-2m1 2v4h3V5z"/></svg>
+        </button>
+        <div class="md-select__inner">
+          <ul class="md-select__list" data-pm-fonte-lista></ul>
+        </div>
+      </div>
+    </div>
+
+    
+      <a
+        class="md-header__button md-icon"
+        href="index.md"
+        download="api_webhooks.md"
+        title="Baixar o Markdown original desta página"
+        aria-label="Baixar o Markdown original desta página"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5 20h14v-2H5m14-9h-4V3H9v6H5l7 7z"/></svg>
+      </a>
+    
+
+    <button
+      type="button"
+      class="md-header__button md-icon"
+      data-doc-print
+      hidden
+      title="Salvar esta página em PDF"
+      aria-label="Salvar esta página em PDF"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 3H6v4h12m1 5a1 1 0 0 1-1-1 1 1 0 0 1 1-1 1 1 0 0 1 1 1 1 1 0 0 1-1 1m-3 7H8v-5h8m3-6H5a3 3 0 0 0-3 3v6h4v4h12v-4h4v-6a3 3 0 0 0-3-3"/></svg>
+    </button>
+
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="blue" data-md-color-accent="teal"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      
+<div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Selecione o idioma">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          
+          
+            
+          
+          <li class="md-select__item">
+            <a href="./" hreflang="pt" class="md-select__link">
+              Português (Brasil)
+            </a>
+          </li>
+        
+          
+          
+            
+          
+          <li class="md-select__item">
+            <a href="../../en/api/webhooks/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Buscar" placeholder="Buscar" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Pesquisar">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Limpar" aria-label="Limpar" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Inicializando a pesquisa
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/MatheusLPolidoro/docs-casehub" title="Ir ao repositório" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    MatheusLPolidoro/docs-casehub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navegação" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="CaseHub" class="md-nav__button md-logo" aria-label="CaseHub" data-md-component="logo">
+      
+  <img src="../../assets/logo.svg" alt="logo">
+
+    </a>
+    CaseHub
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/MatheusLPolidoro/docs-casehub" title="Ir ao repositório" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    MatheusLPolidoro/docs-casehub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sobre/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    O que é o CaseHub
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../arquitetura/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arquitetura
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Primeiros passos
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Primeiros passos
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../primeiros_passos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introdução
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../instalacao/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Instalação
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorial/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorial
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API (fast-casehub)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API (fast-casehub)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../autenticacao/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Autenticação
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../endpoints/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Endpoints
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Webhooks
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Webhooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Índice">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Índice
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#rotas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rotas
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cadastrar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cadastrar
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#entregar-so-quando-o-caso-estiver-pronto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Entregar só quando o caso estiver pronto
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#escolher-os-campos-do-source_record" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Escolher os campos do source_record
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#o-que-chega-na-sua-url" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        O que chega na sua URL
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#verificar-a-assinatura" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verificar a assinatura
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#o-que-esperar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        O que esperar
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quando-falha" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quando falha
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Quando falha">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#enabled-false-pausa-nao-descarta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        enabled: false pausa, não descarta
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reenviar-uma-entrega-redrive" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reenviar uma entrega (redrive)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#operacao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Operação
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#o-sdk-nao-cobre-webhooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        O SDK não cobre webhooks
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../erros/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Erros
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../retencao/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Retenção
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SDK (casehub)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    SDK (casehub)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk/cliente/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cliente síncrono
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk/assincrono/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cliente assíncrono
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operação
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Operação
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../operacao/deploy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deploy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../operacao/observabilidade/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Observabilidade
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mudancas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    O que mudou
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../estrutura/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Estrutura
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Índice">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Índice
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#rotas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rotas
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cadastrar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cadastrar
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#entregar-so-quando-o-caso-estiver-pronto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Entregar só quando o caso estiver pronto
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#escolher-os-campos-do-source_record" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Escolher os campos do source_record
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#o-que-chega-na-sua-url" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        O que chega na sua URL
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#verificar-a-assinatura" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verificar a assinatura
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#o-que-esperar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        O que esperar
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quando-falha" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quando falha
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Quando falha">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#enabled-false-pausa-nao-descarta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        enabled: false pausa, não descarta
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reenviar-uma-entrega-redrive" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reenviar uma entrega (redrive)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#operacao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Operação
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#o-sdk-nao-cobre-webhooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        O SDK não cobre webhooks
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="webhooks">Webhooks<a class="headerlink" href="#webhooks" title="Permanent link">&para;</a></h1>
+<p>Em vez de puxar <code>GET /v1/cases</code> em laço, um consumidor pode <strong>cadastrar
+a URL dele e receber os casos que lhe interessam</strong>.</p>
+<p>As regras de uma assinatura são <strong>os mesmos filtros que a listagem já
+aceita</strong> — não há gramática de consulta nova para aprender. O que muda é
+o sentido: em vez de você perguntar, o serviço avisa.</p>
+<pre class="mermaid"><code>flowchart LR
+    S["Descoberta&lt;br/&gt;&lt;small&gt;a cada ciclo&lt;/small&gt;"] --&gt; M{"Casa com as&lt;br/&gt;regras?"}
+    M --&gt;|não| N["Nada a fazer"]
+    M --&gt;|sim| F["Enfileira entrega"]
+    F --&gt; D["POST na URL do parceiro&lt;br/&gt;&lt;small&gt;corpo assinado&lt;/small&gt;"]
+    D --&gt;|2xx| OK["succeeded"]
+    D --&gt;|"outro / erro de rede"| R["Retenta com backoff"]
+    R --&gt; X["failed&lt;br/&gt;&lt;small&gt;tentativas esgotadas&lt;/small&gt;"]</code></pre>
+<div class="admonition info">
+<p class="admonition-title">A assinatura pertence à automação do token</p>
+<p>Como todo o resto do serviço: o claim <code>azp</code> do token que cadastrou é
+a automação da assinatura, e não existe campo <code>automation</code> no corpo.
+Quem consome duas automações precisa de dois clients OIDC.</p>
+</div>
+<hr />
+<h2 id="rotas">Rotas<a class="headerlink" href="#rotas" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Método</th>
+<th>Rota</th>
+<th>O que faz</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>POST</code></td>
+<td><code>/v1/webhooks</code></td>
+<td>Cadastra uma assinatura. Devolve o segredo <strong>uma vez</strong>.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/v1/webhooks</code></td>
+<td>Lista as assinaturas da automação do token.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/v1/webhooks/{webhook_id}</code></td>
+<td>Consulta uma assinatura.</td>
+</tr>
+<tr>
+<td><code>PATCH</code></td>
+<td><code>/v1/webhooks/{webhook_id}</code></td>
+<td>Altera url, regras, <code>fields</code>, <code>enabled</code>; rotaciona o segredo.</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/v1/webhooks/{webhook_id}</code></td>
+<td>Remove a assinatura — e com ela o log de entregas.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/v1/webhooks/{webhook_id}/deliveries</code></td>
+<td>Log de entregas: por que não chegou.</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/v1/webhooks/{webhook_id}/deliveries/{delivery_id}/retry</code></td>
+<td>Reenfileira uma entrega que falhou.</td>
+</tr>
+</tbody>
+</table>
+<p>Todas exigem <code>Authorization: Bearer &lt;JWT&gt;</code>, como as rotas de caso.</p>
+<p>As duas listagens (<code>/v1/webhooks</code> e o log de entregas) respondem no mesmo
+formato paginado de <code>GET /v1/cases</code> — <code>total</code>, <code>page</code>, <code>page_size</code>,
+<code>total_pages</code> e <code>items</code> —, com <code>page_size</code> até 500 e default 50.</p>
+<div class="admonition note">
+<p class="admonition-title"><code>total_pages</code> ainda não saiu numa release</p>
+<p>Ele está em <code>main</code> e no <code>openapi.yaml</code> publicado, mas é posterior ao
+corte da <strong>0.4.2</strong>. Campo aditivo: quem já trata a resposta continua
+funcionando com ou sem ele. Ver
+<a href="../endpoints/#get-listar-e-contar">Endpoints</a>.</p>
+</div>
+<hr />
+<h2 id="cadastrar">Cadastrar<a class="headerlink" href="#cadastrar" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-sX<span class="w"> </span>POST<span class="w"> </span>https://casehub.interno/v1/webhooks<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Authorization: Bearer </span><span class="nv">$TOKEN</span><span class="s2">"</span><span class="w"> </span>-H<span class="w"> </span><span class="s1">'Content-Type: application/json'</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{</span>
+<span class="s1">        "url": "https://parceiro.exemplo/casehub",</span>
+<span class="s1">        "environment": "prod",</span>
+<span class="s1">        "status": "concluido",</span>
+<span class="s1">        "source_filters": {"referencia": "REF-12345"},</span>
+<span class="s1">        "fields": ["referencia", "origem.id"]</span>
+<span class="s1">      }'</span>
+</code></pre></div>
+<p><strong>Corpo</strong></p>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Tipo</th>
+<th>Default</th>
+<th>O que faz</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>url</code></td>
+<td>string</td>
+<td>—</td>
+<td>Destino. <code>http</code> ou <code>https</code> absoluta. <strong>Obrigatório.</strong></td>
+</tr>
+<tr>
+<td><code>environment</code></td>
+<td>enum</td>
+<td>todos</td>
+<td>Regra: só casos desse ambiente.</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>enum</td>
+<td>todos</td>
+<td>Regra: só casos nesse status.</td>
+</tr>
+<tr>
+<td><code>batch_ref</code></td>
+<td>string</td>
+<td>todos</td>
+<td>Regra.</td>
+</tr>
+<tr>
+<td><code>source_schema</code></td>
+<td>string</td>
+<td>todos</td>
+<td>Regra.</td>
+</tr>
+<tr>
+<td><code>source_filters</code></td>
+<td>objeto</td>
+<td><code>{}</code></td>
+<td>Igualdades sobre <code>source_record</code> — o mesmo que <code>filter=chave=valor</code>.</td>
+</tr>
+<tr>
+<td><code>source_conditions</code></td>
+<td>lista</td>
+<td><code>[]</code></td>
+<td><code>exists</code>, <code>not_exists</code>, <code>eq</code>, <code>ne</code> sobre <code>source_record</code>.</td>
+</tr>
+<tr>
+<td><code>events</code></td>
+<td>lista</td>
+<td>todos</td>
+<td><code>case.created</code>, <code>case.updated</code>.</td>
+</tr>
+<tr>
+<td><code>fields</code></td>
+<td>lista</td>
+<td>tudo</td>
+<td>Caminhos do <code>source_record</code> a entregar. Máximo 100.</td>
+</tr>
+<tr>
+<td><code>include_source</code></td>
+<td>bool</td>
+<td><code>true</code></td>
+<td><code>false</code> entrega o caso sem <code>source_record</code> nenhum.</td>
+</tr>
+<tr>
+<td><code>cursor_field</code></td>
+<td>enum</td>
+<td><code>updated</code></td>
+<td><code>updated</code> ou <code>created</code> — qual carimbo a descoberta acompanha.</td>
+</tr>
+<tr>
+<td><code>enabled</code></td>
+<td>bool</td>
+<td><code>true</code></td>
+<td>Começar pausada é possível.</td>
+</tr>
+</tbody>
+</table>
+<p>Toda regra omitida significa <strong>todos</strong>: uma assinatura sem regra nenhuma
+recebe tudo o que a automação produzir. Quem quer dois status cadastra
+dois webhooks — o mesmo que faria com dois <code>GET</code>.</p>
+<div class="admonition danger">
+<p class="admonition-title">O <code>secret</code> da resposta é a única vez que ele trafega</p>
+<p>Guarde-o na hora. Nenhum <code>GET</code> devolve segredo, e não há como
+consultá-lo depois: perdido, o caminho é <strong>rotacionar</strong>
+(<code>PATCH</code> com <code>rotate_secret: true</code>), que gera um novo, devolve-o
+naquela resposta e invalida o antigo no mesmo instante.</p>
+</div>
+<hr />
+<h2 id="entregar-so-quando-o-caso-estiver-pronto">Entregar só quando o caso estiver pronto<a class="headerlink" href="#entregar-so-quando-o-caso-estiver-pronto" title="Permanent link">&para;</a></h2>
+<p>O caso costuma nascer incompleto: a automação cria e enriquece depois.
+Entregar na criação manda o registro cru para o sistema do parceiro — e,
+do ponto de vista dele, a entrega é definitiva.</p>
+<p>Duas regras resolvem isso, e são <strong>eixos diferentes</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Pergunta</th>
+<th>Exemplo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>events</code></td>
+<td><strong>quando</strong> o caso mudou</td>
+<td><code>["case.updated"]</code></td>
+</tr>
+<tr>
+<td><code>source_conditions</code></td>
+<td><strong>o que</strong> o caso contém</td>
+<td><code>[{"path": "enriquecimento", "op": "exists"}]</code></td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://parceiro.exemplo/casehub"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"cursor_field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"updated"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"events"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"case.updated"</span><span class="p">],</span>
+<span class="w">  </span><span class="nt">"source_conditions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span><span class="nt">"path"</span><span class="p">:</span><span class="w"> </span><span class="s2">"enriquecimento.confirmado"</span><span class="p">,</span><span class="w"> </span><span class="nt">"op"</span><span class="p">:</span><span class="w"> </span><span class="s2">"exists"</span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><code>events</code> vazio aceita todos os tipos. <code>["case.updated"]</code> é o que exclui a
+entrega da criação <strong>sem</strong> excluir as alterações seguintes.</p>
+<div class="admonition tip">
+<p class="admonition-title">As duas juntas dizem a intenção por escrito</p>
+<p><code>events</code> sozinho deixa passar um <code>PATCH</code> de status num caso que
+ninguém enriqueceu. <code>source_conditions</code> sozinho deixa passar a
+criação de um caso que já nasça com a chave. Cadastre as duas.</p>
+</div>
+<p><strong>Operadores de <code>source_conditions</code></strong> — os mesmos da listagem:</p>
+<table>
+<thead>
+<tr>
+<th><code>op</code></th>
+<th>Pergunta</th>
+<th><code>value</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>exists</code></td>
+<td>a chave existe (mesmo com valor <code>null</code>, objeto ou lista)</td>
+<td>recusado</td>
+</tr>
+<tr>
+<td><code>not_exists</code></td>
+<td>a chave não existe</td>
+<td>recusado</td>
+</tr>
+<tr>
+<td><code>eq</code></td>
+<td>o valor é igual</td>
+<td>obrigatório</td>
+</tr>
+<tr>
+<td><code>ne</code></td>
+<td>o valor existe e difere</td>
+<td>obrigatório</td>
+</tr>
+</tbody>
+</table>
+<p><code>value</code> é comparado como escalar. Objeto, lista e <code>null</code> são recusados no
+cadastro com 400 — eles nunca casariam, e a assinatura ficaria muda.</p>
+<p>Vazio não restringe, e as condições <strong>somam</strong> com <code>source_filters</code>: as
+duas contam para o mesmo teto (<code>CASEHUB_MAX_SOURCE_FILTERS</code>, default 20).</p>
+<div class="admonition danger">
+<p class="admonition-title">Regra que depende de conteúdo exige <code>cursor_field: updated</code></p>
+<p>Com <code>created</code>, um caso que não casava com a regra no instante em que
+nasceu <strong>nunca mais</strong> é reavaliado — <code>created_at</code> não se move, e
+assim que a descoberta passa por ele, passou de vez.</p>
+<p>Se o que decide a entrega é algo que a automação grava <em>depois</em> de
+criar o caso, use <code>updated</code>. Com <code>created</code> a assinatura fica muda,
+sem erro em lugar nenhum. O serviço avisa no log ao aceitar esse
+cadastro, mas não o recusa.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">A regra é reavaliada na hora de entregar</p>
+<p>Se você apertar a regra com um <code>PATCH</code>, o que já estava na fila e
+deixou de casar termina em <code>abandoned</code>, com o motivo no log de
+entregas — não sai para a sua URL. Isso vale para todas as regras da
+assinatura, o tipo de evento inclusive, e <strong>não conta como falha</strong>.</p>
+</div>
+<hr />
+<h2 id="escolher-os-campos-do-source_record">Escolher os campos do <code>source_record</code><a class="headerlink" href="#escolher-os-campos-do-source_record" title="Permanent link">&para;</a></h2>
+<p><code>fields</code> é uma lista de caminhos pontilhados — a mesma gramática do
+<code>filter=origem.id=42</code>:</p>
+<table>
+<thead>
+<tr>
+<th><code>fields</code></th>
+<th>O que chega em <code>source_record</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>[]</code> (ou omitido)</td>
+<td>o registro inteiro</td>
+</tr>
+<tr>
+<td><code>["referencia"]</code></td>
+<td><code>{"referencia": "REF-12345"}</code></td>
+</tr>
+<tr>
+<td><code>["origem.id"]</code></td>
+<td><code>{"origem": {"id": 42}}</code> — a estrutura é preservada</td>
+</tr>
+<tr>
+<td><code>["referencia", "nao_existe"]</code></td>
+<td>só <code>referencia</code> — caminho ausente é <strong>omitido</strong>, não vira <code>null</code></td>
+</tr>
+</tbody>
+</table>
+<p><code>include_source: false</code> entrega o caso sem <code>source_record</code> nenhum.</p>
+<div class="admonition tip">
+<p class="admonition-title">É também o controle de privacidade da assinatura</p>
+<p>O que não está declarado não sai daqui. Numa assinatura de terceiro,
+declarar os caminhos é mais barato que confiar que ninguém vai olhar
+o resto.</p>
+</div>
+<hr />
+<h2 id="o-que-chega-na-sua-url">O que chega na sua URL<a class="headerlink" href="#o-que-chega-na-sua-url" title="Permanent link">&para;</a></h2>
+<p><code>POST</code> com <code>Content-Type: application/json</code> e estes headers (nomes
+case-insensitive, RFC 9110 — busque-os com a API do seu framework, nunca
+por chave exata num dicionário):</p>
+<div class="highlight"><pre><span></span><code>X-Casehub-Event:     case.created | case.updated
+X-Casehub-Delivery:  &lt;id da entrega&gt;
+X-Casehub-Attempt:   &lt;número da tentativa, a partir de 1&gt;
+X-Casehub-Signature: t=&lt;epoch&gt;,v1=&lt;hmac_sha256_hex&gt;
+</code></pre></div>
+<p><strong>Corpo</strong></p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">"event"</span><span class="p">:</span><span class="w"> </span><span class="s2">"case.updated"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"delivered_at"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-09-11T12:00:00+00:00"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"case"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"environment"</span><span class="p">:</span><span class="w"> </span><span class="s2">"prod"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"automation"</span><span class="p">:</span><span class="w"> </span><span class="s2">"minha-automacao"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"case_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"a1b2c3"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"concluido"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"batch_ref"</span><span class="p">:</span><span class="w"> </span><span class="s2">"lote-a"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"source_schema"</span><span class="p">:</span><span class="w"> </span><span class="s2">"origem.v1"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"source_record"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"referencia"</span><span class="p">:</span><span class="w"> </span><span class="s2">"REF-12345"</span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"temporal_workflow_id"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"temporal_run_id"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"started_at"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-09-10T09:00:00-03:00"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"finished_at"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"created_at"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-09-10T09:00:02+00:00"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"updated_at"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-09-11T11:59:58+00:00"</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>O objeto <code>case</code> é serializado pelo <strong>mesmo</strong> modelo que <code>GET /v1/cases</code>
+devolve: quem consulta e recebe não aprende dois formatos do mesmo
+objeto. <code>source_record</code> é o único ponto de diferença — o que sai é o
+recorte de <code>fields</code>, ou nada com <code>include_source: false</code>.</p>
+<p>O tipo do evento é <strong>derivado dos carimbos do caso</strong>: <code>case.created</code>
+enquanto <code>created_at == updated_at</code>, <code>case.updated</code> depois disso.</p>
+<hr />
+<h2 id="verificar-a-assinatura">Verificar a assinatura<a class="headerlink" href="#verificar-a-assinatura" title="Permanent link">&para;</a></h2>
+<p>O HMAC-SHA256 é sobre <code>&lt;t&gt;.&lt;corpo bruto&gt;</code> — o instante é assinado
+<strong>junto</strong>, não só transportado ao lado, para que você possa recusar
+replay:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">hmac</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">confere</span><span class="p">(</span><span class="n">secret</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">header</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">corpo</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">tolerancia</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="n">partes</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">'='</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">header</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">','</span><span class="p">)</span> <span class="k">if</span> <span class="s1">'='</span> <span class="ow">in</span> <span class="n">p</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="nb">int</span><span class="p">(</span><span class="n">partes</span><span class="p">[</span><span class="s1">'t'</span><span class="p">]))</span> <span class="o">&gt;</span> <span class="n">tolerancia</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>  <span class="c1"># fora da janela: replay</span>
+    <span class="n">esperado</span> <span class="o">=</span> <span class="n">hmac</span><span class="o">.</span><span class="n">new</span><span class="p">(</span>
+        <span class="n">secret</span><span class="o">.</span><span class="n">encode</span><span class="p">(),</span>
+        <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">partes</span><span class="p">[</span><span class="s2">"t"</span><span class="p">]</span><span class="si">}</span><span class="s1">.'</span><span class="o">.</span><span class="n">encode</span><span class="p">()</span> <span class="o">+</span> <span class="n">corpo</span><span class="p">,</span>  <span class="c1"># o corpo CRU, não reserializado</span>
+        <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">,</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">hmac</span><span class="o">.</span><span class="n">compare_digest</span><span class="p">(</span><span class="n">esperado</span><span class="p">,</span> <span class="n">partes</span><span class="p">[</span><span class="s1">'v1'</span><span class="p">])</span>
+</code></pre></div>
+<div class="admonition danger">
+<p class="admonition-title">Use o corpo cru da requisição</p>
+<p>Reserializar o JSON antes de conferir muda os bytes — espaços, ordem
+de chaves — e a assinatura não bate. É o erro mais comum deste tipo
+de integração, e ele aparece como "assinatura inválida" num payload
+perfeitamente legítimo.</p>
+</div>
+<p>O <code>v1=</code> no header existe para que uma troca futura de algoritmo possa
+acrescentar <code>v2=</code> no mesmo header sem quebrar quem só sabe ler <code>v1</code>.</p>
+<hr />
+<h2 id="o-que-esperar">O que esperar<a class="headerlink" href="#o-que-esperar" title="Permanent link">&para;</a></h2>
+<p><strong>Chega o estado atual do caso, não cada transição.</strong> Duas mudanças entre
+dois ciclos chegam fundidas, com o valor final. Se você precisa reagir a
+um estado intermediário, o webhook não é o caminho.</p>
+<p><strong>At-least-once, sem ordem garantida.</strong> Um retry pode reentregar. Trate
+por <code>case_id</code> + <code>updated_at</code> e a repetição sai de graça.</p>
+<p><strong>Depende de quem publica usar <code>on_conflict=skip</code>.</strong> No modo <code>update</code> a
+recaptura reescreve tudo e carimba <code>updated_at</code> — e você receberia a base
+inteira a cada ciclo. Se só lhe interessa caso novo, cadastre
+<code>cursor_field: "created"</code>: <code>created_at</code> nunca muda, então a assinatura
+não re-dispara. Ver <a href="../endpoints/#post-upsert-em-lote">Endpoints</a>.</p>
+<p><strong>A latência mínima é o intervalo do ciclo</strong> (<code>CASEHUB_WEBHOOK_POLL_INTERVAL_SECONDS</code>,
+default 30s) mais a janela de segurança — o mesmo mecanismo do cursor
+incremental, que existe para não perder caso.</p>
+<hr />
+<h2 id="quando-falha">Quando falha<a class="headerlink" href="#quando-falha" title="Permanent link">&para;</a></h2>
+<p>Entrega que não devolve 2xx é retentada com backoff — <strong>30s, 2min,
+10min, 1h, 6h</strong> — e depois marcada como falha definitiva. Consulte o
+motivo você mesmo:</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-s<span class="w"> </span>-H<span class="w"> </span><span class="s2">"Authorization: Bearer </span><span class="nv">$TOKEN</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s1">'https://casehub.interno/v1/webhooks/&lt;id&gt;/deliveries?status=failed'</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th><code>status</code> da entrega</th>
+<th>Significa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pending</code></td>
+<td>enfileirada, ainda há tentativa pela frente</td>
+</tr>
+<tr>
+<td><code>succeeded</code></td>
+<td>o seu endpoint devolveu 2xx</td>
+</tr>
+<tr>
+<td><code>failed</code></td>
+<td><strong>definitivo</strong>: as tentativas acabaram</td>
+</tr>
+<tr>
+<td><code>abandoned</code></td>
+<td>não havia o que entregar — a regra deixou de casar, ou o caso foi expurgado pela retenção</td>
+</tr>
+</tbody>
+</table>
+<p>Cada linha traz <code>attempt</code>, <code>http_status</code>, <code>error</code>, <code>next_attempt_at</code> e o
+<code>case_updated_at</code> que a originou. O <strong>corpo enviado não é guardado</strong> — ele
+é remontado do estado atual do caso a cada tentativa.</p>
+<div class="admonition warning">
+<p class="admonition-title">Falhas definitivas seguidas desativam a assinatura</p>
+<p>Acima de <code>CASEHUB_WEBHOOK_MAX_CONSECUTIVE_FAILURES</code> (default 20), o
+serviço desliga a assinatura sozinho e escreve o motivo em
+<code>disabled_reason</code>. Para voltar:</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-sX<span class="w"> </span>PATCH<span class="w"> </span>https://casehub.interno/v1/webhooks/&lt;id&gt;<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Authorization: Bearer </span><span class="nv">$TOKEN</span><span class="s2">"</span><span class="w"> </span>-H<span class="w"> </span><span class="s1">'Content-Type: application/json'</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{"enabled": true}'</span>
+</code></pre></div>
+<p>Mandar <code>enabled: true</code> <strong>zera</strong> <code>failure_count</code> e limpa
+<code>disabled_reason</code> — senão a assinatura voltaria já perto do teto e
+cairia de novo na primeira falha. Só o valor <strong>enviado</strong> conta: um
+<code>PATCH</code> que omite o campo numa assinatura já ativa não apaga o
+histórico de falhas.</p>
+</div>
+<h3 id="enabled-false-pausa-nao-descarta"><code>enabled: false</code> pausa, não descarta<a class="headerlink" href="#enabled-false-pausa-nao-descarta" title="Permanent link">&para;</a></h3>
+<p>A pausa cobre os dois lados. O que já estava enfileirado fica parado, sem
+consumir tentativa, e volta a sair quando você reativar. O período em que
+a descoberta ficou parada <strong>também não se perde</strong>: o cursor da assinatura
+congela junto — a descoberta só visita as ativas —, então reativar relê
+desde o ponto em que parou.</p>
+<div class="admonition tip">
+<p class="admonition-title">Espere uma rajada, não um buraco</p>
+<p>Tudo que mudou durante a pausa entra na fila de uma vez, drenado ao
+longo dos ciclos seguintes. Uma pausa longa numa automação
+movimentada reativa-se melhor fora do horário de pico do seu
+endpoint.</p>
+</div>
+<p>O cursor incremental (<code>GET /v1/cases?updated_since=</code>) continua sendo a
+recuperação para o que a reativação <strong>não</strong> alcança: o log de entregas
+tem prazo (<code>CASEHUB_WEBHOOK_DELIVERY_RETENTION_DAYS</code>, default 30 dias), e
+repovoar a sua própria base depois de perdê-la nunca passou pelo webhook.</p>
+<hr />
+<h2 id="reenviar-uma-entrega-redrive">Reenviar uma entrega (redrive)<a class="headerlink" href="#reenviar-uma-entrega-redrive" title="Permanent link">&para;</a></h2>
+<p>Uma entrega em <code>failed</code> ou <code>abandoned</code> volta a ser tentada:</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-sX<span class="w"> </span>POST<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>https://casehub.interno/v1/webhooks/&lt;id&gt;/deliveries/&lt;delivery_id&gt;/retry<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Authorization: Bearer </span><span class="nv">$TOKEN</span><span class="s2">"</span>
+</code></pre></div>
+<p>Ela volta com a <strong>contagem de tentativas zerada</strong> — é um redrive manual,
+não a continuação da sequência que falhou.</p>
+<table>
+<thead>
+<tr>
+<th>Estado atual</th>
+<th>Resposta</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>failed</code> ou <code>abandoned</code></td>
+<td><code>200</code>, reenfileirada</td>
+</tr>
+<tr>
+<td><code>pending</code></td>
+<td><code>409</code> — continua enfileirada</td>
+</tr>
+<tr>
+<td><code>succeeded</code></td>
+<td><code>409</code> — já chegou até você</td>
+</tr>
+</tbody>
+</table>
+<p>Os dois <code>409</code> existem para que um redrive por engano não vire duplicata.</p>
+<div class="admonition note">
+<p class="admonition-title">O corpo é remontado do estado atual do caso</p>
+<p>Não do que se tentou enviar antes: o payload nunca é guardado. Se o
+caso mudou nesse meio tempo, você recebe o valor de agora — que é a
+semântica de sincronização de estado deste webhook.</p>
+</div>
+<p>Não há redrive em massa nem automático. Para recuperação de longo prazo,
+o caminho continua sendo o cursor.</p>
+<hr />
+<h2 id="operacao">Operação<a class="headerlink" href="#operacao" title="Permanent link">&para;</a></h2>
+<p>O despachante roda <strong>dentro do processo da API</strong>, pelo mesmo scheduler
+in-process do expurgo — não há worker separado, e nenhuma dependência
+nova entrou no serviço por causa dele.</p>
+<table>
+<thead>
+<tr>
+<th>Variável</th>
+<th>Default</th>
+<th>Para quê</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CASEHUB_WEBHOOK_ENABLED</code></td>
+<td><code>true</code></td>
+<td>Liga o despachante.</td>
+</tr>
+<tr>
+<td><code>CASEHUB_WEBHOOK_POLL_INTERVAL_SECONDS</code></td>
+<td><code>30</code></td>
+<td>Intervalo do ciclo de descoberta.</td>
+</tr>
+<tr>
+<td><code>CASEHUB_WEBHOOK_SAFETY_WINDOW_SECONDS</code></td>
+<td><code>30</code></td>
+<td>Janela relida para trás, para não perder caso.</td>
+</tr>
+<tr>
+<td><code>CASEHUB_WEBHOOK_TIMEOUT_SECONDS</code></td>
+<td><code>10</code></td>
+<td>Timeout do <code>POST</code> ao endpoint do parceiro.</td>
+</tr>
+<tr>
+<td><code>CASEHUB_WEBHOOK_MAX_ATTEMPTS</code></td>
+<td><code>6</code></td>
+<td>Tentativas antes de <code>failed</code>.</td>
+</tr>
+<tr>
+<td><code>CASEHUB_WEBHOOK_MAX_CONSECUTIVE_FAILURES</code></td>
+<td><code>20</code></td>
+<td>Falhas seguidas que desativam a assinatura.</td>
+</tr>
+<tr>
+<td><code>CASEHUB_WEBHOOK_DELIVERY_RETENTION_DAYS</code></td>
+<td><code>30</code></td>
+<td>Prazo do log de entregas.</td>
+</tr>
+<tr>
+<td><code>CASEHUB_WEBHOOK_DISCOVERY_PAGE_SIZE</code></td>
+<td><code>200</code></td>
+<td>Página da varredura.</td>
+</tr>
+<tr>
+<td><code>CASEHUB_WEBHOOK_DELIVERY_BATCH_SIZE</code></td>
+<td><code>50</code></td>
+<td>Entregas por ciclo.</td>
+</tr>
+</tbody>
+</table>
+<p>Para uma passada avulsa — depois de reativar uma assinatura, por exemplo
+— sem esperar o próximo ciclo:</p>
+<div class="highlight"><pre><span></span><code>casehub-webhook
+</code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">A URL cadastrada não é restringida a faixas públicas</p>
+<p>Qualquer URL alcançável pelo processo é cadastrável, endereços de
+rede interna inclusive, e <code>https</code> não é exigido — num endpoint
+<code>http://</code>, o corpo e a assinatura trafegam em claro. O que o cadastro
+recusa é só o que não seria buscável: esquema fora de <code>http</code>/<code>https</code>,
+ou URL sem host.</p>
+<p>Quem abre o cadastro a terceiros de fora da rede precisa tratar isso
+na borda, antes de expor a rota.</p>
+</div>
+<hr />
+<h2 id="o-sdk-nao-cobre-webhooks">O SDK não cobre webhooks<a class="headerlink" href="#o-sdk-nao-cobre-webhooks" title="Permanent link">&para;</a></h2>
+<p><code>casehub</code> cobre as rotas de caso. As rotas de <code>/v1/webhooks</code> se chamam
+por HTTP direto, com o mesmo <code>Bearer</code> que o SDK obtém — nada impede usar
+o token do SDK e um <code>httpx</code> ao lado.</p>
+<div class="admonition tip">
+<p class="admonition-title">Cadastrar é uma operação de configuração, não de fluxo</p>
+<p>Uma assinatura é cadastrada uma vez e vive por conta própria. É por
+isso que ela não sentiu falta de um método de biblioteca: quem
+integra publica casos em laço, mas cadastra webhook uma vez.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Voltar ao topo
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Rodapé" >
+        
+          
+          <a href="../endpoints/" class="md-footer__link md-footer__link--prev" aria-label="Anterior: Endpoints">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Anterior
+              </span>
+              <div class="md-ellipsis">
+                Endpoints
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../erros/" class="md-footer__link md-footer__link--next" aria-label="Próximo: Erros">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Próximo
+              </span>
+              <div class="md-ellipsis">
+                Erros
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["content.code.annotate", "content.tabs.link", "content.code.copy", "navigation.footer", "navigation.sections", "navigation.top"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copiado para \u00e1rea de transfer\u00eancia", "clipboard.copy": "Copiar para \u00e1rea de transfer\u00eancia", "search.result.more.one": "Mais 1 nesta p\u00e1gina", "search.result.more.other": "Mais # nesta p\u00e1gina", "search.result.none": "Nenhum resultado encontrado", "search.result.one": "1 resultado encontrado", "search.result.other": "# resultados encontrados", "search.result.placeholder": "Digite para iniciar a busca", "search.result.term.missing": "Ausente", "select.version": "Selecione a vers\u00e3o"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../../assets/js/pm-i18n.js"></script>
+      
+        <script src="../../assets/js/termynal.js"></script>
+      
+        <script src="../../assets/js/terminal.js"></script>
+      
+        <script src="../../assets/js/logo-animation.js"></script>
+      
+        <script src="../../assets/js/typography.js"></script>
+      
+        <script src="../../assets/js/doc-actions.js"></script>
+      
+        <script src="../../assets/js/filetree.js"></script>
+      
+    
+  </body>
+</html>
