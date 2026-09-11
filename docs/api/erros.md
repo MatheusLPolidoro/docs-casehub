@@ -19,11 +19,21 @@ inesperadas — um bug interno não escapa em outro formato.
 |---|:---:|---|
 | `unauthorized` | 401 | Credencial ausente, inválida ou expirada. |
 | `forbidden` | 403 | Autenticado, mas a automação do token não bate com a da chamada. |
-| `invalid_request` | 400 | Payload fora do contrato, lote vazio/grande demais, filtros demais. |
-| `invalid_source_record` | 400 | `source_record` não é um objeto JSON. |
+| `invalid_request` | 400 | Payload fora do contrato, lote vazio/grande demais, filtros demais, condição de webhook malformada. |
+| `invalid_source_record` | 400 | `source_record` não é objeto JSON, ou carrega o caractere nulo (`U+0000`). |
 | `source_record_too_large` | 413 | Acima de `CASEHUB_MAX_SOURCE_RECORD_BYTES`. |
 | `case_not_found` | 404 | O caso não existe. |
+| `status_conflict` | 409 | O `expected_status` do `PATCH` não bate com o estado atual — e nada foi escrito. |
+| `invalid_webhook_url` | 400 | A `url` da assinatura não é `http(s)` absoluta; ou veio `null` num `PATCH`. |
+| `webhook_not_found` | 404 | A assinatura (ou a entrega) não existe, ou é de outra automação. |
 | `internal_error` | 500 | Falha inesperada do serviço. |
+
+!!! note "409 aparece em dois lugares, com sentidos diferentes"
+    No `PATCH` de caso é `status_conflict`: outro processo escreveu
+    primeiro, e a sua troca condicional não aconteceu. No redrive de uma
+    entrega de webhook é uma entrega que ainda está `pending` ou já
+    chegou (`succeeded`) — a guarda que impede um reenvio por engano de
+    virar duplicata. Ver [Webhooks](webhooks.md#reenviar-uma-entrega-redrive).
 
 !!! note "Validação de payload é 400, não 422"
     O FastAPI usaria 422 por padrão; o contrato converte para 400 com
@@ -99,8 +109,8 @@ O SDK normaliza tudo isso em exceções. Ver
 
 | Exceção | Origem |
 |---|---|
-| `APIHTTPError` | A API respondeu com status de erro. Carrega status e corpo. |
+| `APIHTTPError` | A API respondeu com status de erro. Expõe `status_code` e `message` como atributos. |
 | `APIConnectionError` | Não foi possível alcançar a API. |
 | `APITimeoutError` | A API não respondeu no tempo. |
-| `OidcTokenError` | Falha ao obter o token no Keycloak. |
+| `OidcTokenError` | Falha ao obter o token no `token_url` configurado. |
 | `APIUnexpectedError` | Qualquer outra coisa. |

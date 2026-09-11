@@ -149,6 +149,20 @@ for caso in pagina['items']:
     print(caso['case_id'], caso['source_record']['origem'])
 ```
 
+## Quando o consumo é do outro lado
+
+O fluxo acima é de quem **publica**. Quem consome tem dois caminhos: o
+cursor incremental (`GET /v1/cases?updated_since=`), que é o que a
+`list_cases` acima faz, e o webhook — cadastrar uma URL e receber os
+casos que interessam, sem laço de polling. Ver
+[Webhooks](api/webhooks.md).
+
+!!! tip "Publicar com `on_conflict='skip'` é o que torna o aviso honesto"
+    Se a sua importação republica a mesma fonte a cada ciclo em modo
+    `update`, ela carimba `updated_at` em tudo — e um webhook do outro
+    lado receberia a base inteira a cada ciclo, como se tudo tivesse
+    mudado.
+
 ## Em código assíncrono
 
 Dentro de uma Activity do Temporal, ou de qualquer corrotina, troque

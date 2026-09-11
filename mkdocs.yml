@@ -47,6 +47,7 @@ nav:
   - API (fast-casehub):
       - Autenticação: api/autenticacao.md
       - Endpoints: api/endpoints.md
+      - Webhooks: api/webhooks.md
       - Erros: api/erros.md
       - Retenção: api/retencao.md
   - SDK (casehub):

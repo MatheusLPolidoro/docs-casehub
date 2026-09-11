@@ -27,8 +27,8 @@
      repository — inventing one would be worse than having no badge. The
      versions come from each project's `pyproject.toml` and the Python floor
      from the `requires-python` of both; change those, change these. -->
-![SDK casehub](https://img.shields.io/badge/SDK%20casehub-0.4.0-1565c0)
-![API fast-casehub](https://img.shields.io/badge/API%20fast--casehub-0.2.0-1565c0)
+![SDK casehub](https://img.shields.io/badge/SDK%20casehub-0.7.2-1565c0)
+![API fast-casehub](https://img.shields.io/badge/API%20fast--casehub-0.4.2-1565c0)
 ![Python](https://img.shields.io/badge/python-3.11%2B-34D058?logo=python&logoColor=white)
 ![Contract](https://img.shields.io/badge/contract-v1-6a1b9a)
 </div>
@@ -66,8 +66,12 @@ stored.
 SDK, local API, Docker, and the variables each one requires.
 
 ## [API (fast-casehub)](api/endpoints.md)
-The four endpoints of contract v1, field by field, with the authentication
-modes, the single error format and the retention job.
+Contract v1 field by field: the case routes, the token routes, the single
+error format and the retention job.
+
+## [Webhooks](api/webhooks.md)
+Register a URL and receive the cases you care about, instead of polling the
+listing in a loop.
 
 ## [SDK (casehub)](sdk/cliente.md)
 Synchronous client, asynchronous client and the CLI — when to use each.
@@ -79,7 +83,7 @@ Deploy, environment variables and what to watch in production.
 The behaviour changes that affect whoever integrates — and what to do about
 each one.
 
-!!! info "This documentation describes the current state of `main`"
-    The batch of fixes from the August 2026 audit was promoted to `main` in
-    `fast-casehub`. If you run an earlier version, see
-    [What changed](mudancas.md) for the differences.
+!!! info "This documentation describes API 0.4.2 and SDK 0.7.2"
+    Those are the current versions of the two artefacts. If you run an
+    earlier one, see [What changed](mudancas.md) for the differences — and
+    for what requires action from whoever integrates.

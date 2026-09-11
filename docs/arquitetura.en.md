@@ -78,6 +78,33 @@ It is what lets an automation republish a case only to update `status`,
 without re-sending the whole `source_record` — and what makes a re-capture
 preserve the original `started_at`.
 
+## Consuming: pull or receive
+
+There are two paths, and they answer different questions.
+
+```mermaid
+flowchart TB
+    subgraph Pull
+        C1["Consumer"] -->|"GET /v1/cases?updated_since="| A1["fast-casehub"]
+    end
+    subgraph Receive
+        A2["fast-casehub"] -->|"discovery every cycle"| Q["Delivery queue"]
+        Q -->|"signed POST"| C2["Consumer URL"]
+    end
+```
+
+| | Cursor (`GET /v1/cases`) | Webhook |
+|---|---|---|
+| Who starts it | the consumer | the service |
+| History recovery | yes, that is what it does | no — the delivery log has a deadline |
+| Latency | however often you ask | the dispatcher cycle |
+| Needs an exposed endpoint | no | yes |
+
+Both deliver the **current state** of the case, not every transition. The
+webhook does not replace the cursor: it removes the polling loop in the
+common case, and the cursor remains the recovery path when something is
+lost. See [Webhooks](api/webhooks.md).
+
 ## Retention
 
 ```mermaid

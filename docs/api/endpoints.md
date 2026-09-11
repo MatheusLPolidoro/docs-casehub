@@ -1,8 +1,10 @@
 # Endpoints
 
-O contrato v1 tem **quatro rotas de negócio** e duas de saúde. Todas as
-rotas de negócio vivem sob `/v1` e exigem autenticação; `/health` e
-`/ready` nunca exigem.
+Todas as rotas de caso vivem sob `/v1` e exigem autenticação. `/health`,
+`/ready` e `/v1/auth/*` nunca exigem — as de token são o caminho para
+obter a credencial.
+
+**Casos**
 
 | Método | Rota | O que faz |
 |---|---|---|
@@ -11,8 +13,21 @@ rotas de negócio vivem sob `/v1` e exigem autenticação; `/health` e
 | `POST` | `/v1/cases/batch` | Cria ou atualiza vários casos. |
 | `GET` | `/v1/cases/{environment}/{automation}/{case_id}` | Consulta um caso. |
 | `GET` | `/v1/cases` | Lista e conta casos. |
+
+**Token, webhooks e saúde**
+
+| Método | Rota | O que faz |
+|---|---|---|
+| `POST` | `/v1/auth/token` | Emite o token — repasse ao provedor de identidade. Ver [Autenticação](autenticacao.md). |
+| `POST` | `/v1/auth/refresh` | Renova o token. |
+| — | `/v1/webhooks*` | Sete rotas de assinatura e log de entregas. Ver [Webhooks](webhooks.md). |
 | `GET` | `/health` | Liveness — não toca o banco. |
 | `GET` | `/ready` | Readiness — `SELECT 1`, responde 503 se o banco caiu. |
+
+!!! tip "Os paths no Swagger aparecem sem `/v1`"
+    O prefixo é o `root_path` do FastAPI, e o `/docs` o oferece num
+    seletor "Servers" no topo. As chamadas reais continuam usando
+    `/v1/...`.
 
 ---
 
@@ -50,6 +65,16 @@ seguintes.
     Omitir `source_record` mantém o que já estava gravado. Enviar
     `source_record: {}` limpa. Vale igual para `source_schema` e para os
     campos `temporal_*`.
+
+!!! warning "`source_record` precisa ser objeto JSON, e sem caractere nulo"
+    Não-objeto é `400 invalid_source_record`; acima de
+    `CASEHUB_MAX_SOURCE_RECORD_BYTES` é `413 source_record_too_large`.
+
+    O caractere nulo (`U+0000`) em qualquer chave ou valor também é
+    `400 invalid_source_record`: o Postgres o rejeita incondicionalmente
+    em texto e JSONB. É comum em dado vindo de arquivo de largura fixa
+    de mainframe, que às vezes carrega lixo binário — e no lote a recusa
+    é **daquele item**, sem derrubar os demais.
 
 ---
 
@@ -185,7 +210,7 @@ GET /v1/cases
 | `environment` | |
 | `automation` | Em OIDC, o token já restringe — ver abaixo. |
 | `status` | |
-| `filter` | Filtro sobre `source_record` — ver abaixo. |
+| `filter` / `ne` / `exists` / `not_exists` | Filtros sobre `source_record` — ver abaixo. |
 | `batch_ref` | |
 | `source_schema` | |
 | `started_from` / `started_to` | Janela sobre `started_at` — a data do registro **na origem**. |
@@ -221,30 +246,69 @@ GET /v1/cases
 
 **Filtros sobre `source_record`**
 
-O parâmetro `filter` recebe `chave=valor` e é repetido uma vez por
-filtro:
+Quatro operadores, todos **repetíveis** e somando com `AND` entre si:
+
+| Parâmetro | Pergunta | Exemplo |
+|---|---|---|
+| `filter=chave=valor` | o campo **é igual** ao valor | `filter=uf=SP` |
+| `ne=chave=valor` | o campo existe e **difere** do valor | `ne=uf=SP` |
+| `exists=caminho` | a **chave existe** | `exists=enriquecimento` |
+| `not_exists=caminho` | a chave **não existe** | `not_exists=erro` |
 
 ```
 GET /v1/cases?filter=referencia=REF-12345&filter=uf=SP
 ```
 
-Caminho aninhado usa ponto: `filter=origem.id=42`.
+Caminho aninhado usa ponto (`origem.id`), e **segmento numérico indexa
+array** (`telas.0`).
 
-Só o **primeiro** `=` separa a chave do valor, então um valor que
-contenha `=` atravessa inteiro — `filter=expr=a=b` filtra `expr` pelo
-valor `a=b`.
+Em `filter=` e `ne=`, só o **primeiro** `=` separa a chave do valor, então
+um valor que contenha `=` atravessa inteiro — `filter=expr=a=b` filtra
+`expr` pelo valor `a=b`.
 
-A comparação é **em texto**, então `filter=valor=10` casa com o JSON
-tendo número ou string — sem ambiguidade de tipo na query string.
+A comparação é **em texto**, então `filter=valor=10` casa com o JSON tendo
+número ou string — sem ambiguidade de tipo na query string.
+
+!!! danger "Duas coisas que a intuição erra, e as duas custam uma resposta vazia sem erro"
+    **`not_exists` não é `ne`.** Comparar valor exige que haja valor,
+    então um caminho ausente não casa com `ne` **nem** com `filter`. Para
+    "não tem a chave", só `not_exists` serve.
+
+    **`exists` pergunta pela chave, não pelo valor.** Casa quando o valor
+    é `null`, um objeto ou uma lista — inclusive lista vazia. É o que
+    permite perguntar "este caso já foi enriquecido?" sem saber o que a
+    automação grava no enriquecimento. Já `filter=` e `ne=` só comparam
+    escalares: objeto e lista não casam com nenhum dos dois.
 
 !!! note "Teto de filtros"
-    Cada filtro vira um predicado no `WHERE`. Acima de
-    `CASEHUB_MAX_SOURCE_FILTERS` (default 20) a resposta é 400 — melhor
-    que uma consulta arbitrariamente cara sem explicação.
+    Cada filtro vira um predicado no `WHERE`. Os quatro operadores contam
+    para o **mesmo** teto, somados — dividir a consulta entre eles não
+    dobra o limite. Acima de `CASEHUB_MAX_SOURCE_FILTERS` (default 20) a
+    resposta é 400, melhor que uma consulta arbitrariamente cara sem
+    explicação.
 
 !!! tip "`source_record` não vem por padrão na listagem"
     Só com `include=source_record`. Uma listagem de 500 casos com o JSON
     completo de cada um é um payload grande e raramente é o que se quer.
+
+**A resposta**
+
+| Campo | Significado |
+|---|---|
+| `total` | Quantos itens bateram o filtro, não quantos vieram. |
+| `page` / `page_size` | A página pedida e o tamanho dela. |
+| `total_pages` | `ceil(total / page_size)`. Lista vazia devolve `0`, não `1` — sem registro não há página de conteúdo nenhuma. |
+| `items` | Os casos desta página. |
+
+!!! note "`total_pages` ainda não saiu numa release"
+    Ele está em `main` e no `openapi.yaml` publicado, mas é posterior ao
+    corte da **0.4.2**: quem roda a versão publicada não recebe o campo e
+    segue calculando `ceil(total / page_size)` por conta própria.
+
+    O campo é **aditivo** — nenhum campo existente mudou —, então o
+    cliente que já trata a resposta continua funcionando nos dois casos.
+    As três listagens paginadas da API o ganharam de uma vez: esta,
+    `GET /v1/webhooks` e `GET /v1/webhooks/{id}/deliveries`.
 
 **Autorização na listagem** — um cliente OIDC não consegue ver outras
 automações simplesmente omitindo o filtro: o claim do token **é** o

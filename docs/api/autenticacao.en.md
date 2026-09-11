@@ -54,9 +54,10 @@ environment.
       -d '{"client_id": "my-automation", "client_secret": "..."}'
     ```
 
-The response carries `access_token`, `expires_in` and — when the client
-has refresh issuance enabled — `refresh_token` and
-`refresh_expires_in`. Renewing is `POST /v1/auth/refresh`, or the same
+The response carries `access_token`, `token_type`, `expires_in` and —
+when the client has refresh issuance enabled — `refresh_token` and
+`refresh_expires_in`. Those are the five fields that pass through:
+`id_token`, `session_state` and `scope` stay at the provider. Renewing is `POST /v1/auth/refresh`, or the same
 `/v1/auth/token` with `grant_type=refresh_token`.
 
 !!! info "The API does not sign the token"
@@ -118,23 +119,22 @@ To close it, in this order — inverting it knocks consumers out with 401s:
 
 ## Configuring the SDK
 
-=== "OIDC"
+```python
+from casehub import CaseHubClient
 
-    ```python
-    from casehub import CaseHubClient
+client = CaseHubClient(
+    base_url='https://casehub.internal',
+    client_id='minha-automacao',
+    client_secret='...',
+    token_url='https://casehub.internal/v1/auth/token',
+)
+```
 
-    client = CaseHubClient(
-        base_url='https://casehub.interno',
-        client_id='minha-automacao',
-        client_secret='...',
-        token_url='https://casehub.interno/v1/auth/token',
-    )
-    ```
-
-    The three fields come together or not at all — a partial configuration
-    fails at construction, before touching the network.
-
-!!! tip "The three fields come together"
+!!! tip "The three fields come together, or none of them"
     `client_id`, `client_secret` and `token_url` are configured as a
-    set — passing only some of them raises at client construction,
-    before any network call.
+    set — passing only some of them raises `ValueError` at client
+    construction, before any network call.
+
+    Without the three, the client only reaches `health()` and
+    `readiness()`: the other routes require a token, and the API answers
+    401.

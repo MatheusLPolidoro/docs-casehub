@@ -67,12 +67,15 @@ não é reimplementado aqui.* Em troca, o caso carrega
 `temporal_workflow_id` e `temporal_run_id` — opcionais, apenas para
 correlação, sem chave estrangeira.
 
-**Não orquestra nada.** Não dispara automação, não agenda, não
-notifica. É um registro consultável.
+**Não orquestra nada.** Não dispara automação e não agenda trabalho de
+ninguém. Ele **avisa** — um consumidor pode cadastrar uma URL e receber
+os casos que lhe interessam ([Webhooks](api/webhooks.md)) —, mas o que
+sai é sempre o estado de um caso, nunca uma ordem de execução. Quem
+decide o que fazer com o aviso é quem o recebe.
 
 **Não interpreta `source_record`.** Nem para validar, nem para indexar
-campo por campo — a consulta por conteúdo existe (`filter`), mas
-é genérica sobre o JSON, sem schema declarado.
+campo por campo — a consulta por conteúdo existe (`filter`, `exists`,
+`not_exists`, `ne`), mas é genérica sobre o JSON, sem schema declarado.
 
 ## Ecossistema
 

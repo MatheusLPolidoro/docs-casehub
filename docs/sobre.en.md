@@ -65,12 +65,16 @@ The rule that stuck: *what Temporal already does well is not reimplemented
 here.* In exchange, the case carries `temporal_workflow_id` and
 `temporal_run_id` — optional, for correlation only, with no foreign key.
 
-**It orchestrates nothing.** It does not trigger automations, does not
-schedule, does not notify. It is a queryable record.
+**It orchestrates nothing.** It does not trigger automations and does not
+schedule anybody's work. It does **notify** — a consumer can register a URL
+and receive the cases it cares about ([Webhooks](api/webhooks.md)) — but
+what goes out is always the state of a case, never an order to execute.
+Whoever receives the notice decides what to do with it.
 
 **It does not interpret `source_record`.** Neither to validate nor to index
-field by field — querying by content exists (`filter`), but it is generic
-over the JSON, with no declared schema.
+field by field — querying by content exists (`filter`, `exists`,
+`not_exists`, `ne`), but it is generic over the JSON, with no declared
+schema.
 
 ## Ecosystem
 

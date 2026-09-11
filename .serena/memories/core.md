@@ -2,7 +2,7 @@
 
 Documentação central do ecossistema CaseHub (a API `fast-casehub` e o SDK
 `casehub`). mkdocs-material, **português e inglês**, versionada por `mike` — a versão
-do site é própria (`VERSION`, hoje `1.0.0`), **não** a da API nem a do SDK, porque ele
+do site é própria (`VERSION`, hoje `1.1.0`), **não** a da API nem a do SDK, porque ele
 documenta os dois com números diferentes.
 
 **Publicada em dois lugares, a partir do mesmo `main`** (2026-08-21):
@@ -29,6 +29,18 @@ GitLab Pages publica um artefato (o job extrai a árvore da `gh-pages` para
 `pagina.en.md` o inglês. O build em `pt` vai para a raiz e o `en` para `/en/`.
 **Página nova entra em dois arquivos** — com `fallback_to_default: true`, esquecer
 o inglês entrega a página em português sem aviso nenhum.
+
+**Editar usando um heading como ancora engole o heading.** Ao inserir
+secao nova por `replace('## X', 'secao nova
+
+## X')`, esquecer de
+recolocar o `## X` numa das linguas deixa o conteudo orfao sob o
+heading errado — e **nada reprova**: `--strict` passa, o link continua
+resolvendo, a pagina so perde uma secao. Foi o que aconteceu com
+`## Retention` em `arquitetura.en.md` (2026-09-11). O que pega isso e
+comparar a estrutura das duas linguas — contagem de `##`/`###`,
+admonicoes, abas, tabelas e fences por par `pagina.md`/`pagina.en.md`.
+Rode essa comparacao antes de fechar qualquer edicao bilingue.
 
 Os assets ficam **só na raiz**; não existe `/en/assets/`. `extra_css` e
 `extra_javascript` resolvem sozinhos, mas `<img src>` cru em HTML apontaria para
@@ -133,21 +145,53 @@ condição de exploração junto (`mudancas.md`); e, no `docs-param-manager`, qu
 duas viraram descrição de mecanismo — o aviso no log de subida como
 verificação, e a regra de rotacionar o que alcança o histórico.
 
-### Divergencia conhecida com o codigo (2026-08-24)
+### Alinhamento com o codigo (2026-09-11)
 
-O site descreve autenticacao so por OIDC, que e o que vale - a
-`api-key` foi expurgada de todas as paginas, nos dois idiomas, a
-pedido do dono do produto ("como se nunca tivesse existido"). O que
-sobrou de historico e uma entrada em `docs/mudancas.md`, deliberada:
+O site foi recolocado em dia com **API 0.4.2** e **SDK 0.7.2** — eram
+0.2.0 e 0.4.0 no texto anterior. O que entrou, e onde:
+
+- **`docs/api/webhooks.md`** (pt+en), pagina nova no nav: era a lacuna
+  inteira. Sete rotas, assinatura HMAC, `source_conditions`/`events`,
+  projecao por `fields`, log de entregas, redrive, pausa por
+  `enabled: false`, e as `CASEHUB_WEBHOOK_*`.
+- Quatro operadores de `source_record` (`filter`/`ne`/`exists`/
+  `not_exists`), o cursor `created_since`/`updated_since`, as rotas
+  `/v1/auth/*` na tabela, `status_conflict`/`invalid_webhook_url`/
+  `webhook_not_found` nos erros.
+- SDK: `patch_case_status`, `APIHTTPError.status_code`, e a CLI com
+  `patch-case-status` e `--on-conflict`.
+- `mudancas.md` reescrito, mais novo primeiro. Saiu o que so falava de
+  versoes anteriores a 0.2.0 (os endpoints de tratamento, o
+  `worker_id` -> `case_id`) e a lista da auditoria de agosto que ja
+  virou comportamento normal descrito nas outras paginas.
+
+**A entrada da `api-key` em `mudancas.md` continua, e continua
+deliberada** — a credencial foi expurgada de todas as outras paginas a
+pedido do dono do produto ("como se nunca tivesse existido"), mas
 apagar tambem essa deixaria quem integra sem entender por que a
 credencial dele parou.
 
-**O site esta atras das versoes.** Ele fala do SDK na 0.3.0; o
-`casehub-connect` esta na **0.4.0** (removeu o parametro `api_key`, e a
-CLI parou de pedir credencial interativamente) e o `fast-casehub` na
-**0.2.0** (removeu o modo `apikey`, ganhou `/v1/auth/token` e
-`/v1/auth/refresh`). Falta secao em `docs/mudancas.md` para as duas.
-O texto pronto esta nos `CHANGELOG.md` de cada repo.
+**Tres correcoes de conteudo que estavam erradas, nao so velhas**: o
+`on_conflict` era atribuido a API 0.2.0 (e 0.3.0); a `sdk/cli.md`
+listava a flag `--api-key`, removida na 0.4.0; e a `sdk/cliente.md`
+dizia que o retry de 401 podia duplicar itens de lote sem `case_id` —
+desde a 0.3.0 o retry e **desligado** justamente nesse caso.
+
+**Uma ressalva a trocar no proximo corte da API**: `total_pages` (nas
+tres listagens paginadas) esta em `main` e no `openapi.yaml`, mas e
+posterior a tag `v0.4.2` — nenhuma release cortada devolve o campo. O
+site o documenta com uma nota dizendo exatamente isso, em
+`api/endpoints.md` e `api/webhooks.md` (pt+en). Quando a proxima versao
+sair, troque a nota pelo numero dela. A armadilha que criou a duvida: o
+`info.version` do `openapi.yaml` vem do metadado instalado, entao o
+arquivo diz `0.4.2` **e ja contem o campo** — o numero nele nao prova o
+que ele descreve.
+
+**O que o SDK nao cobre, e o site agora diz**: as rotas de webhook, o
+cursor e os operadores `exists`/`not_exists`/`ne` nao tem metodo nem
+flag. O cursor atravessa em runtime (`**params` repassa o que nao e
+`None`), mas nao esta em `ListCasesParams` — verificado rodando
+`_build_list_query`.
 
 ### Conferir o render, não só o build
 

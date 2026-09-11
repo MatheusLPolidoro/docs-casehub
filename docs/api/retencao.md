@@ -63,6 +63,18 @@ junto com o caso normal de "parâmetro nunca cadastrado".
     parece não estar valendo, verifique a conectividade com o
     ParamManager antes de suspeitar do parâmetro.
 
+## O log de entregas tem prazo próprio
+
+O expurgo descrito aqui cobre **casos**. O log de entregas dos webhooks
+tem um prazo separado, `CASEHUB_WEBHOOK_DELIVERY_RETENTION_DAYS` (default
+30 dias), e não depende do ParamManager. Ver
+[Webhooks](webhooks.md#quando-falha).
+
+!!! note "Um caso expurgado no meio de uma fila de entrega vira `abandoned`"
+    Não há o que entregar, e insistir seria retry contra uma linha que
+    não existe mais. O desfecho aparece no log de entregas e conta na
+    métrica `casehub.webhook.delivered`.
+
 ## Desligando
 
 `CASEHUB_RETENTION_ENABLED=false` — nenhum scheduler é criado e nenhum

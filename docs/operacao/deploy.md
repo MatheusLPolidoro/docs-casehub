@@ -5,12 +5,12 @@
 ```mermaid
 flowchart TD
     S["Processo inicia"] --> V["Valida configuração"]
-    V -->|"auth_mode inválido"| F1["❌ Não sobe"]
-    V -->|"oidc/dual sem issuer/JWKS"| F2["❌ Não sobe"]
+    V -->|"auth_mode != oidc"| F1["❌ Não sobe"]
+    V -->|"sem issuer/JWKS"| F2["❌ Não sobe"]
     V -->|"require_audience sem audience"| F3["❌ Não sobe"]
     V -->|ok| M["Aplica migrações<br/><small>entrypoint</small>"]
     M --> T["Inicia telemetria"]
-    T --> R["Sobe scheduler de retenção<br/><small>se habilitado</small>"]
+    T --> R["Sobe os schedulers in-process<br/><small>retenção e webhooks,<br/>cada um se habilitado</small>"]
     R --> U["Uvicorn aceita tráfego"]
 ```
 
@@ -23,8 +23,33 @@ flowchart TD
 
 | Profile | O que sobe |
 |---|---|
-| `uat` | API + Postgres + Keycloak — stack local completa e descartável. |
-| `prod` | Só a API, apontando para a infraestrutura que já existe. |
+| `uat` | API + Postgres + Keycloak + nginx — stack local completa e descartável. |
+| `prod` | Só a API e o nginx, apontando para a infraestrutura que já existe. |
+
+Os dois são **mutuamente exclusivos**, e nos dois quem publica a porta no
+host é o **nginx**: os serviços de API não publicam porta nenhuma e só
+são alcançáveis pela rede do compose. O endereço que o consumidor usa não
+muda.
+
+!!! warning "Ainda sem TLS"
+    O proxy entrou primeiro, o certificado vem depois. O bloco
+    `listen ... ssl` está escrito e comentado no template, e ligá-lo não
+    exige mudança do lado da API — o `X-Forwarded-Proto` passa a valer
+    `https` sozinho.
+
+### Healthcheck
+
+Os serviços de API têm healthcheck em **`/ready`**, não `/health`: é o
+que toca o banco, então "processo de pé com o Postgres fora" reprova. O
+nginx espera esse `healthy` para subir, e tem healthcheck próprio que ele
+mesmo responde sem tocar no upstream — assim "o proxy caiu" e "a API
+caiu" continuam sendo dois estados distintos.
+
+!!! note "O healthcheck não reinicia nada"
+    `restart: unless-stopped` reage a processo que morre, não a container
+    `unhealthy`. O valor aqui é visibilidade (`docker compose ps`) e a
+    ordem de subida. Reinício automático por saúde exigiria um
+    orquestrador.
 
 <div class="pm-terminal" data-pm-terminal data-pm-command="docker compose --profile uat up -d">
 <div class="termynal" data-termynal data-ty-startDelay="500" data-ty-typeDelay="45" data-ty-lineDelay="800">
@@ -80,6 +105,7 @@ a revisão à mão a partir do banco.
 | `CASEHUB_AUTH_MODE` | `oidc` | `oidc` |
 | `CASEHUB_OIDC_*` | do Keycloak local | do Keycloak corporativo |
 | `CASEHUB_RETENTION_ENABLED` | `false` | `true` |
+| `CASEHUB_WEBHOOK_ENABLED` | `false` | `true` |
 
 !!! danger "Sem issuer e JWKS, o serviço não sobe"
     É deliberado: uma configuração de autenticação pela metade falha no

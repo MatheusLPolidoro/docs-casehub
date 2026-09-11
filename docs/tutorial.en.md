@@ -151,6 +151,20 @@ for caso in pagina['items']:
     print(caso['case_id'], caso['source_record']['origem'])
 ```
 
+## When the consuming happens on the other side
+
+The flow above is the **publisher's**. A consumer has two paths: the
+incremental cursor (`GET /v1/cases?updated_since=`), which is what the
+`list_cases` above does, and the webhook — registering a URL and
+receiving the cases that matter, with no polling loop. See
+[Webhooks](api/webhooks.md).
+
+!!! tip "Publishing with `on_conflict='skip'` is what makes the notice honest"
+    If your import republishes the same source every cycle in `update`
+    mode, it stamps `updated_at` on everything — and a webhook on the
+    other side would receive the whole base every cycle, as if everything
+    had changed.
+
 ## In asynchronous code
 
 Inside a Temporal Activity, or any coroutine, switch to the asynchronous

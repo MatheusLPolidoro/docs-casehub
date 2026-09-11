@@ -99,3 +99,4 @@ ciclo de vida de um caso sem carregar o payload inteiro a cada vez.
 - [Tutorial](tutorial.md) — um fluxo completo de importação em lote.
 - [Autenticação](api/autenticacao.md) — como obter e usar o token.
 - [Endpoints](api/endpoints.md) — o contrato campo a campo.
+- [Webhooks](api/webhooks.md) — receber os casos em vez de consultá-los.

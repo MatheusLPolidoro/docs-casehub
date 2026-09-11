@@ -62,6 +62,18 @@ along with the ordinary "parameter was never configured" case.
     seems not to be taking effect, check connectivity to ParamManager before
     suspecting the parameter.
 
+## The delivery log has its own deadline
+
+The purge described here covers **cases**. The webhook delivery log has a
+separate deadline, `CASEHUB_WEBHOOK_DELIVERY_RETENTION_DAYS` (default 30
+days), and does not depend on ParamManager. See
+[Webhooks](webhooks.md#when-it-fails).
+
+!!! note "A case purged mid-queue turns the delivery into `abandoned`"
+    There is nothing to deliver, and insisting would retry against a row
+    that no longer exists. The outcome shows up in the delivery log and
+    counts towards the `casehub.webhook.delivered` metric.
+
 ## Turning it off
 
 `CASEHUB_RETENTION_ENABLED=false` — no scheduler is created and no

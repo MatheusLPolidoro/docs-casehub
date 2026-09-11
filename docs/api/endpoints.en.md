@@ -1,8 +1,10 @@
 # Endpoints
 
-Contract v1 has **four business routes** and two health ones. Every business
-route lives under `/v1` and requires authentication; `/health` and `/ready`
-never do.
+Every case route lives under `/v1` and requires authentication.
+`/health`, `/ready` and `/v1/auth/*` never do — the token routes are the
+way to obtain the credential.
+
+**Cases**
 
 | Method | Route | What it does |
 |---|---|---|
@@ -11,8 +13,20 @@ never do.
 | `POST` | `/v1/cases/batch` | Creates or updates several cases. |
 | `GET` | `/v1/cases/{environment}/{automation}/{case_id}` | Fetches one case. |
 | `GET` | `/v1/cases` | Lists and counts cases. |
+
+**Token, webhooks and health**
+
+| Method | Route | What it does |
+|---|---|---|
+| `POST` | `/v1/auth/token` | Issues the token — relayed to the identity provider. See [Authentication](autenticacao.md). |
+| `POST` | `/v1/auth/refresh` | Renews the token. |
+| — | `/v1/webhooks*` | Seven routes for subscriptions and the delivery log. See [Webhooks](webhooks.md). |
 | `GET` | `/health` | Liveness — does not touch the database. |
 | `GET` | `/ready` | Readiness — `SELECT 1`, answers 503 if the database is down. |
+
+!!! tip "Swagger shows the paths without `/v1`"
+    The prefix is FastAPI's `root_path`, and `/docs` offers it in a
+    "Servers" selector at the top. Real calls still use `/v1/...`.
 
 ---
 
@@ -49,6 +63,17 @@ afterwards.
     Omitting `source_record` keeps what was already stored. Sending
     `source_record: {}` clears it. The same holds for `source_schema` and
     for the `temporal_*` fields.
+
+!!! warning "`source_record` must be a JSON object, and carry no null character"
+    A non-object is `400 invalid_source_record`; above
+    `CASEHUB_MAX_SOURCE_RECORD_BYTES` it is `413
+    source_record_too_large`.
+
+    The null character (`U+0000`) in any key or value is also `400
+    invalid_source_record`: Postgres rejects it unconditionally in text
+    and JSONB. It is common in data coming from mainframe fixed-width
+    files, which sometimes carry binary junk — and in a batch the
+    rejection is **for that item**, without taking the others down.
 
 ---
 
@@ -185,7 +210,7 @@ GET /v1/cases
 | `environment` | |
 | `automation` | Under OIDC the token already restricts it — see below. |
 | `status` | |
-| `filter` | Filter over `source_record` — see below. |
+| `filter` / `ne` / `exists` / `not_exists` | Filters over `source_record` — see below. |
 | `batch_ref` | |
 | `source_schema` | |
 | `started_from` / `started_to` | Window over `started_at` — the record's date **at the source**. |
@@ -222,31 +247,71 @@ GET /v1/cases
 
 **Filters over `source_record`**
 
-The `filter` parameter takes `key=value` and is repeated once per
-filter:
+Four operators, all **repeatable**, combined with `AND`:
+
+| Parameter | Question | Example |
+|---|---|---|
+| `filter=key=value` | the field **equals** the value | `filter=uf=SP` |
+| `ne=key=value` | the field exists and **differs** from the value | `ne=uf=SP` |
+| `exists=path` | the **key exists** | `exists=enriquecimento` |
+| `not_exists=path` | the key **does not exist** | `not_exists=erro` |
 
 ```
 GET /v1/cases?filter=referencia=REF-12345&filter=uf=SP
 ```
 
-Nested paths use a dot: `filter=origem.id=42`.
+Nested paths use a dot (`origem.id`), and a **numeric segment indexes an
+array** (`telas.0`).
 
-Only the **first** `=` separates key from value, so a value containing
-`=` goes through whole — `filter=expr=a=b` filters `expr` by the value
-`a=b`.
+In `filter=` and `ne=`, only the **first** `=` separates key from value,
+so a value containing `=` goes through whole — `filter=expr=a=b` filters
+`expr` by the value `a=b`.
 
 The comparison is **textual**, so `filter=valor=10` matches the JSON
 holding either a number or a string — no type ambiguity in the query
 string.
 
+!!! danger "Two things intuition gets wrong, and both cost an empty answer with no error"
+    **`not_exists` is not `ne`.** Comparing a value requires a value to
+    exist, so a missing path matches neither `ne` **nor** `filter`. For
+    "the key is absent", only `not_exists` works.
+
+    **`exists` asks about the key, not the value.** It matches when the
+    value is `null`, an object or a list — an empty list included. That
+    is what lets you ask "has this case been enriched?" without knowing
+    what the automation writes into the enrichment. `filter=` and `ne=`
+    only compare scalars: objects and lists match neither.
+
 !!! note "Filter ceiling"
-    Each filter becomes a predicate in the `WHERE`. Above
-    `CASEHUB_MAX_SOURCE_FILTERS` (default 20) the answer is 400 — better
+    Each filter becomes a predicate in the `WHERE`. All four operators
+    count towards the **same** ceiling, added up — splitting the query
+    between them does not double the limit. Above
+    `CASEHUB_MAX_SOURCE_FILTERS` (default 20) the answer is 400, better
     than an arbitrarily expensive query with no explanation.
 
 !!! tip "`source_record` does not come by default in a listing"
     Only with `include=source_record`. A listing of 500 cases with each
     one's full JSON is a large payload and rarely what you want.
+
+**The response**
+
+| Field | Meaning |
+|---|---|
+| `total` | How many items matched the filter, not how many came back. |
+| `page` / `page_size` | The requested page and its size. |
+| `total_pages` | `ceil(total / page_size)`. An empty list returns `0`, not `1` — with no records there is no page of content at all. |
+| `items` | The cases on this page. |
+
+!!! note "`total_pages` has not shipped in a release yet"
+    It is on `main` and in the published `openapi.yaml`, but it came
+    after the **0.4.2** cut: whoever runs the released version does not
+    get the field and keeps computing `ceil(total / page_size)` on their
+    own.
+
+    The field is **additive** — no existing field changed — so a client
+    that already handles the response keeps working either way. All three
+    paginated listings gained it at once: this one, `GET /v1/webhooks`
+    and `GET /v1/webhooks/{id}/deliveries`.
 
 **Authorization on listings** — an OIDC client cannot see other automations
 by simply omitting the filter: the token's claim **is** the filter when none

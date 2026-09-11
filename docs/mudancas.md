@@ -1,10 +1,179 @@
 # O que mudou
 
 Registro das mudanças de comportamento que afetam quem integra. Não
-substitui o `CHANGELOG.md` de cada repositório — aqui ficam apenas as
-que mudam o **contrato** ou exigem ação de quem consome.
+substitui o `CHANGELOG.md` de cada repositório — aqui ficam apenas as que
+mudam o **contrato** ou exigem ação de quem consome.
 
-## Lote sabe pular o que já existe — API 0.2.0 e SDK 0.5.0
+Versões atuais: **API 0.4.2** e **SDK 0.7.2**.
+
+---
+
+## Webhooks — API 0.4.0
+
+Um consumidor passa a poder cadastrar uma URL própria e **receber** os
+casos que lhe interessam, em vez de só puxar `GET /v1/cases` em laço.
+
+=== "O que mudou"
+
+    Sete rotas novas em `/v1/webhooks`: cadastro, listagem, consulta,
+    alteração, remoção, o log de entregas e o reenvio de uma entrega que
+    falhou.
+
+    As regras de cada assinatura são **os mesmos filtros que a listagem
+    já aceita** — nenhum vocabulário de consulta novo. A assinatura
+    pertence à automação do client OIDC que a criou, como todo o resto do
+    serviço.
+
+    Cada entrega vai assinada com HMAC-SHA256 no header
+    `X-Casehub-Signature`, sobre `<t>.<corpo>`. O segredo é devolvido
+    **uma única vez**, na criação.
+
+=== "O que fazer"
+
+    Nada é obrigatório: quem consome por `GET /v1/cases` continua
+    consumindo igual. O cursor incremental permanece sendo a recuperação
+    de longo prazo — o log de entregas tem prazo de 30 dias.
+
+    Se for cadastrar, leia antes a regra que decide se a assinatura vai
+    funcionar: **regra que depende de conteúdo exige
+    `cursor_field: updated`**. Com `created`, o caso é avaliado só no
+    instante em que nasce, e o que a automação gravar depois nunca é
+    reconsiderado — a assinatura fica muda, sem erro.
+
+    Ver [Webhooks](api/webhooks.md).
+
+!!! info "O SDK não cobre essas rotas"
+    `casehub` cobre as rotas de caso. As de webhook se chamam por HTTP
+    direto, com o mesmo `Bearer`. Cadastrar é operação de configuração,
+    feita uma vez — não de fluxo.
+
+### Regras mais finas de entrega, e a reavaliação — API 0.4.0 e 0.4.1
+
+`source_conditions` (`exists`, `not_exists`, `eq`, `ne` sobre o
+`source_record`) e `events` (`case.created`, `case.updated`) respondem
+juntos *"só me mande depois que a automação terminar de montar o caso"*.
+
+A regra é **reavaliada no momento da entrega**, e desde a 0.4.1 isso
+cobre **todas** as regras da assinatura — `status`, `batch_ref`,
+`source_schema`, `source_filters` e o tipo de evento. Apertar a regra com
+um `PATCH` faz o que já estava na fila e deixou de casar terminar em
+`abandoned`, com o motivo no log, sem sair para a URL do parceiro.
+
+!!! warning "Condição booleana estava invertida antes da 0.4.1"
+    `{"op": "eq", "value": true}` era guardado como `"True"` enquanto o
+    banco compara `"true"`: a condição nunca casava, e a `ne` equivalente
+    casava sempre — sem erro em lugar nenhum. Se você cadastrou uma
+    condição com valor booleano antes da 0.4.1, **recadastre-a**.
+
+---
+
+## Cursor incremental e três filtros novos — API 0.4.0
+
+=== "`created_since` / `updated_since`"
+
+    **O que mudou.** `GET /v1/cases` passou a aceitar os dois parâmetros
+    de cursor. Até aqui não havia como perguntar "o que mudou desde a
+    última vez que olhei": `started_from` filtra a data do registro **na
+    origem**, que pode ser de anos atrás num caso criado hoje.
+
+    Quando um dos dois é usado, a listagem ordena pelo campo do cursor;
+    sem eles, segue ordenando por `started_at`.
+
+    **O que fazer.** Se você paginava a lista inteira para descobrir
+    novidades, troque pelo cursor — e **releia uma janela de alguns
+    segundos para trás**. Uma linha carimbada antes pode ser gravada
+    depois, e apareceria atrás de um cursor que já passou. Os filtros são
+    `>=`, então repetir o instante devolve a linha do limite de novo:
+    trate por `case_id` e a repetição sai de graça. A perda, não tem
+    conserto.
+
+=== "`exists`, `not_exists` e `ne`"
+
+    **O que mudou.** Três operadores novos sobre o `source_record`,
+    somando com o `filter` que já existia. Todos repetíveis, com `AND`
+    entre eles.
+
+    **O que fazer.** Nada — são aditivos. Mas saiba que **`not_exists`
+    não é `ne`**: comparar valor exige que haja valor, então um caminho
+    ausente não casa com `ne` nem com `filter`. E `exists` pergunta pela
+    **chave**, não pelo valor: casa inclusive quando o valor é `null`,
+    objeto ou lista.
+
+    Os quatro operadores contam para o **mesmo** teto
+    (`CASEHUB_MAX_SOURCE_FILTERS`), agora somados — dividir a consulta
+    entre eles não dobra mais o limite.
+
+    Ver [Endpoints](api/endpoints.md#get-listar-e-contar).
+
+!!! note "O SDK não declara esses parâmetros"
+    `ListCasesParams` não inclui o cursor nem os três operadores. Eles
+    atravessam mesmo assim, mas um verificador de tipos reclama, e a CLI
+    não os expõe. Ver [Cliente síncrono](sdk/cliente.md).
+
+---
+
+## Trocar só o status — API 0.4.0 e SDK 0.6.0
+
+=== "`PATCH` de caso e o status `cancelado`"
+
+    **O que mudou.** Nova rota
+    `PATCH /v1/cases/{environment}/{automation}/{case_id}`, que muda
+    **só o status**. E um status novo, `cancelado` — para o caso que
+    deixou de existir na origem antes de ser tratado, distinto de
+    `concluido` (foi tratado e acabou) e de `falhou` (tentou e não
+    conseguiu).
+
+    **Por quê.** `PUT` e lote exigem `status` **e** `started_at`, então
+    corrigir só o estado obrigava a ler o caso antes para reescrever o
+    resto igual — duas chamadas, e uma janela entre elas.
+
+    **O que fazer.** Acrescentar um valor ao enum é aditivo: nada que já
+    era aceito deixou de ser. Se o seu código valida `status` contra uma
+    lista própria, acrescente `cancelado` a ela.
+
+=== "SDK: `patch_case_status`"
+
+    **O que mudou.** O método existe nos dois clientes, síncrono e
+    assíncrono. `expected_status` é opcional: preenchido, a troca só
+    acontece se o estado atual bater, e a API responde 409 sem escrever
+    nada quando não bate.
+
+    **O que fazer.** Fixe `casehub>=0.6.0` e a API a partir da 0.4.0.
+
+    ```python
+    client.patch_case_status(
+        environment='prod',
+        automation='minha-automacao',
+        case_id='a1b2c3',
+        status='cancelado',
+        expected_status='aberto',
+    )
+    ```
+
+    !!! danger "Ele **não cria** o caso — e isso é 404"
+        Ao contrário do `upsert_case`. Um `case_id` que nunca foi
+        importado, ou publicado sob outro `environment`/`automation`,
+        levanta `APIHTTPError` com `status_code=404`, nos dois modos.
+        Quem tratava só o 409 recebe essa exceção sem esperar.
+
+=== "SDK 0.6.1: `status_code` virou atributo"
+
+    **O que mudou.** `APIHTTPError` passa a expor `status_code` e
+    `message` como atributos.
+
+    **Por quê.** O número existia só dentro da mensagem formatada, então
+    distinguir um erro esperado de um inesperado obrigava a procurar
+    substring no texto da exceção — texto que muda quando alguém
+    reescreve a frase. O caso concreto é o 409 do `expected_status`, que
+    não é falha: é outro processo tendo escrito primeiro, com informação
+    mais nova.
+
+    **O que fazer.** Troque a busca por substring por
+    `except APIHTTPError as e: if e.status_code == 409:`.
+
+---
+
+## Lote sabe pular o que já existe — API 0.3.0 e SDK 0.5.0
 
 Nada a fazer para continuar como está: o default não mudou e as chaves
 novas na resposta são aditivas. É opt-in.
@@ -13,19 +182,24 @@ novas na resposta são aditivas. É opt-in.
 
     **O que mudou.** `POST /v1/cases/batch` aceita `on_conflict`, com
     `update` (default, idêntico ao de antes) ou `skip`. No SDK,
-    `upsert_cases_batch` ganhou o parâmetro homônimo nos dois clientes,
-    síncrono e assíncrono; omitido, nada é enviado e quem decide é o
-    servidor.
+    `upsert_cases_batch` ganhou o parâmetro homônimo nos dois clientes;
+    omitido, nada é enviado e quem decide é o servidor. Desde a **0.7.0**
+    a CLI também o expõe, em `--on-conflict`.
 
     **Por quê.** O upsert substitui os campos enviados, **sem merge**.
-    Quem republica a mesma fonte a cada ciclo regrava o caso inteiro
-    toda vez e apaga o que outro processo tenha acrescentado depois —
-    sem erro e sem log. `skip` não escreve nada no caso que já existe.
+    Quem republica a mesma fonte a cada ciclo regrava o caso inteiro toda
+    vez e apaga o que outro processo tenha acrescentado depois — sem erro
+    e sem log.
 
     **O que fazer.** Se a sua fonte é relida periodicamente, passe
     `on_conflict='skip'` e fixe `casehub>=0.5.0`. Espere `upserted` cair
     a `0` em regime estacionário — isso é sucesso, e é o `skipped` ao
-    lado que diz por quê. Ver [Endpoints](api/endpoints.md).
+    lado que diz por quê.
+
+    !!! tip "É também o que torna um webhook silencioso quando nada mudou"
+        No modo `update` a recaptura carimba `updated_at` de tudo, e uma
+        assinatura com `cursor_field: updated` receberia a base inteira a
+        cada ciclo.
 
 === "`created` e `skipped` na resposta"
 
@@ -42,47 +216,7 @@ novas na resposta são aditivas. É opt-in.
     "linhas gravadas", então o que foi pulado não entra nele. O SDK
     repassa o corpo como veio.
 
-## Contrato v1 — os tratamentos saíram
-
-Duas quebras do mesmo ciclo, uma de cada lado. Quem integra a partir de
-uma versão anterior precisa agir nas duas.
-
-=== "Tratamentos removidos do contrato"
-
-    **O que mudou.** Os endpoints de tratamento saíram do v1, junto com
-    `sub_id`, `processing_round`, o header `Idempotency-Key` e o campo
-    `is_latest`. No SDK saíram `create_treatment` e `patch_treatment`, e
-    com eles a exceção `MissingIdempotencyKeyError`.
-
-    **Por quê.** A tabela `case_treatment` duplicava controle de execução
-    e de tentativas que o Temporal já resolve nativamente — `run_id`,
-    `RetryPolicy`, deduplicação por `WorkflowID`. Não havia consumidor
-    real em produção.
-
-    **O que fazer.** Correlacione pelo Temporal: o caso ganhou
-    `temporal_workflow_id` e `temporal_run_id`, ambos opcionais e sem
-    chave estrangeira — servem para investigação, não para integridade
-    referencial. Ver [Endpoints](api/endpoints.md).
-
-=== "`worker_id` virou `case_id`"
-
-    **O que mudou.** O campo foi renomeado em todo o client e em toda a
-    CLI — `get_case`, `upsert_case`, `upsert_cases_batch` e `list-cases`.
-
-    **Por quê.** Alinhar o SDK ao nome que o contrato do servidor usa. O
-    identificador sempre foi a chave natural do caso, não de um worker.
-
-    **O que fazer.** Renomeie nas chamadas e fixe uma versão a partir da
-    0.2.0 — hoje, `casehub==0.3.0`. É a
-    mudança que torna o SDK anterior incompatível com a API atual — e o
-    sintoma é um 400 de campo desconhecido, porque o contrato é estrito
-    (`extra='forbid'`), não um campo silenciosamente ignorado. Ver
-    [Instalação](instalacao.md).
-
-**Novidade do mesmo release, sem ação necessária.** O SDK 0.2.0 trouxe o
-`AsyncCaseHubClient`, com a mesma API pública e o mesmo comportamento de
-autenticação do cliente síncrono. Quem usa o síncrono não precisa mudar
-nada. Ver [Cliente assíncrono](sdk/assincrono.md).
+---
 
 ## Token pela própria API — API 0.2.0 e SDK 0.4.0
 
@@ -93,15 +227,15 @@ identidade: o token se pede à própria API do CaseHub.
 
     **O que mudou.** A API expõe `POST /v1/auth/token` e
     `POST /v1/auth/refresh`. As duas aceitam o formato OAuth2
-    (`application/x-www-form-urlencoded`) e também JSON, e nenhuma
-    exige credencial — são o caminho para obtê-la.
+    (`application/x-www-form-urlencoded`) e também JSON, e nenhuma exige
+    credencial — são o caminho para obtê-la.
 
-    **Por quê.** O endereço do realm passa a ser configuração do
-    serviço, e não algo que cada automação carregue em cada ambiente.
+    **Por quê.** O endereço do realm passa a ser configuração do serviço,
+    e não algo que cada automação carregue em cada ambiente.
 
     **O que fazer.** Aponte o `token_url` do SDK para
-    `<base_url>/v1/auth/token`. Nada mais muda: a API repassa ao
-    provedor de identidade, que continua sendo quem assina o token.
+    `<base_url>/v1/auth/token`. Nada mais muda: a API repassa ao provedor
+    de identidade, que continua sendo quem assina o token.
 
     ```python
     client = CaseHubClient(
@@ -117,105 +251,70 @@ identidade: o token se pede à própria API do CaseHub.
 
     Ver [Autenticação](api/autenticacao.md).
 
-=== "SDK 0.4.0: `api_key` saiu"
+=== "`api_key` saiu — e não volta"
 
-    **O que mudou.** O parâmetro `api_key` foi removido de
-    `CaseHubClient`/`AsyncCaseHubClient`, junto da flag `--api-key` da
-    CLI. Passá-lo levanta `TypeError` na construção.
+    **O que mudou.** `Authorization: Bearer <JWT>` é a única forma de
+    autenticar. No servidor, os modos `apikey` e `dual` foram removidos:
+    um serviço configurado com eles **não sobe**. No SDK, o parâmetro
+    `api_key` saiu de `CaseHubClient`/`AsyncCaseHubClient`, junto da flag
+    `--api-key` da CLI.
 
     A CLI **parou de pedir credencial interativamente**: antes, sete
     comandos perguntavam por uma chave antes de qualquer outra coisa.
-    `casehub health` agora responde direto.
+    `casehub health` responde direto.
 
-    **Por quê.** A API aceita `Authorization: Bearer <JWT>` e nada
-    mais, então o parâmetro só levava a `401` — e, por ser
-    configurável, dava a impressão de uma alternativa que não existe.
+    **Por quê.** O header `X-API-Key` autenticava com qualquer string não
+    vazia e escapava da autorização por automação. O que restava no SDK
+    era um caminho que só produzia `401` — configurável, e por isso capaz
+    de enganar.
 
-    **O que fazer.** Configure `client_id`, `client_secret` e
-    `token_url` (os três juntos; parcial falha na construção). Um
-    cliente que só tinha `api_key` precisa de um client
-    `client_credentials` provisionado no provedor de identidade.
+    **O que fazer.** Provisione um client `client_credentials` por
+    automação, com `client_id` igual ao nome dela, e configure
+    `client_id`, `client_secret` e `token_url` (os três juntos; parcial
+    falha na construção).
 
-## Auditoria de segurança — agosto de 2026
+---
 
-Uma revisão dos três repositórios do ecossistema produziu 11 correções,
-todas já em `main` no `fast-casehub`.
+## Versões do SDK a evitar
 
-### :material-alert: Exigem atenção de quem integra
+!!! danger "Não instale a 0.7.0"
+    Ela saiu com `casehub.__version__` parado em `'0.6.1'` enquanto a
+    distribuição já dizia `0.7.0`: qualquer consumidor que leia
+    `__version__` recebe a versão errada. Use a **0.7.1** ou superior.
 
-=== "Autenticação é exclusivamente OIDC"
+!!! warning "Exceções voltaram a sobreviver a `pickle` — SDK 0.7.0"
+    `APIHTTPError`, `APIConnectionError` e `APITimeoutError` levantavam
+    `TypeError` ao serem reconstruídas, o que **mascarava o erro HTTP
+    real** justamente onde ele cruza fronteira de processo:
+    `ProcessPoolExecutor`, multiprocessing, ou qualquer camada de retry
+    que serialize a exceção capturada.
 
-    **O que mudou.** `Authorization: Bearer <JWT>` passou a ser a única
-    credencial aceita, e `CASEHUB_AUTH_MODE` aceita um único valor,
-    `oidc`. Qualquer outro valor derruba a subida do serviço.
+    Isso passou a importar mais desde a 0.6.1, que pede que o chamador
+    guarde e inspecione a exceção para ler o `status_code`.
 
-    **Por quê.** Autenticação e autorização por automação passam a
-    valer para todo acesso, sem exceção — não há mais um segundo
-    caminho com garantias diferentes.
+---
 
-    **O que fazer.** Nada, se você já usa OIDC. Caso contrário,
-    provisione um client `client_credentials` por automação, com
-    `client_id` igual ao nome dela, e peça o token em
-    `POST /v1/auth/token`.
+## Robustez do contrato — API 0.4.0
 
-    Ver [Autenticação](api/autenticacao.md).
+Sem ação necessária, mas mudam o que você vê quando algo dá errado.
 
-=== "Lote passou a ter teto"
+**Caractere nulo no `source_record` vira erro do item, não 500.** Um
+`U+0000` em qualquer chave ou valor é recusado com `invalid_source_record`
+— no lote, sem derrubar os demais itens. Antes, a exceção do driver subia
+até o handler genérico e virava `500 internal_error` sem indicar qual
+item do lote falhou. É comum em dado vindo de arquivo de largura fixa de
+mainframe.
 
-    **O que mudou.** `POST /v1/cases/batch` recusa lote vazio ou acima
-    de `CASEHUB_MAX_BATCH_ITEMS` (default 1000), com 400.
+**O `status` da resposta passou a declarar o enum no schema publicado**,
+em vez de uma string livre. A entrada já declarava os estados possíveis e
+a saída não — quem lia só o contrato de resposta no Swagger não tinha
+como saber quais valores esperar.
 
-    **Por quê.** Sem teto, um único request podia carregar dezenas de
-    gigabytes e derrubar o serviço por memória.
+**`created_at` e `updated_at` são carimbados pelo banco**, não pelo
+relógio do processo. Sem consequência com um processo só, e pré-requisito
+de qualquer consumo incremental confiável quando houver mais de um.
 
-    **O que fazer.** Publique em blocos. O default tem 10x de folga
-    sobre o tamanho usado hoje pelos consumidores — a mensagem do 400
-    informa o limite efetivo do ambiente, que é configurável.
-
-    Ver [Endpoints](api/endpoints.md#post-upsert-em-lote).
-
-### :material-wrench: Correções sem ação necessária
-
-**Erro inesperado passou a respeitar o contrato.** Uma falha interna
-respondia no formato padrão do framework (`{"detail": ...}`), quebrando
-o tratamento de erro de quem lê `error.code` — justamente quando o
-serviço já estava com problema. Agora responde 500 no envelope único.
-Ver [Erros](api/erros.md#erro-interno).
-
-**Retenção deixou de cruzar ambientes.** O expurgo passou a ser sempre
-escopado por `environment`, e aceita prazo por ambiente
-(`RETENTION_DAYS_<AUTOMATION>_<ENVIRONMENT>`). Antes, um prazo curto
-configurado para limpar `dev` apagava também o histórico de `prod` da
-mesma automação, silenciosamente. Ver [Retenção](api/retencao.md).
-
-**Limites passaram a valer do ambiente.** Os tetos de tamanho eram
-lidos uma única vez na importação do serviço — configurados no `.env`,
-eram silenciosamente ignorados e o processo subia com o default. Quem
-roda via Docker nunca foi afetado, porque o compose injeta as variáveis
-antes do processo nascer.
-
-**Aviso quando o `aud` não é validado.** Com `CASEHUB_OIDC_AUDIENCE`
-vazio, o serviço agora avisa na subida que aceita qualquer token do
-mesmo emissor. Também existe `CASEHUB_OIDC_REQUIRE_AUDIENCE` para
-travar a configuração depois que o Keycloak estiver provisionado.
-
-**Build reproduzível e varredura de segredos.** A imagem passou a ser
-construída a partir de um lockfile versionado, e o pipeline varre o
-histórico completo com gitleaks.
-
-### :material-progress-clock: O que depende de provisionamento
-
-!!! warning "Validar `aud` não é mudança de código"
-    O serviço valida o claim `aud` assim que `CASEHUB_OIDC_AUDIENCE`
-    estiver preenchida — não falta nada no código. O que ela exige antes
-    é provisionar um audience dedicado nos clients do Keycloak de cada
-    ambiente, trabalho de quem administra o realm.
-
-    Com a variável vazia, o serviço aceita como autenticação qualquer
-    token válido do mesmo emissor, e **avisa isso no log de subida**. O
-    aviso é a verificação: se ele está lá, a configuração ainda não está
-    completa naquele ambiente.
-
-    O roteiro está em
-    [Autenticação](api/autenticacao.md#validacao-de-aud) — e a ordem
-    importa: inverter derruba os consumidores com 401.
+**A página `/docs` voltou a abrir.** As rotas de `/v1/auth/*` declaravam
+o corpo por referência a um schema que nunca era registrado, e o Swagger
+UI substituía a página inteira por "Could not resolve reference" — nenhuma
+rota era exibida.
