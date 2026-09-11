@@ -99,3 +99,4 @@ case's life cycle without carrying the whole payload every time.
 - [Tutorial](tutorial.md) — a complete batch import flow.
 - [Authentication](api/autenticacao.md) — how to obtain and use the token.
 - [Endpoints](api/endpoints.md) — the contract field by field.
+- [Webhooks](api/webhooks.md) — receive the cases instead of querying them.

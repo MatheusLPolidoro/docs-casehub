@@ -1,222 +1,323 @@
 # What changed
 
 A record of the behaviour changes that affect whoever integrates. It does
-not replace each repository's `CHANGELOG.md` — only the ones that change the
-**contract** or demand action from consumers live here.
+not replace each repository's `CHANGELOG.md` — only the ones that change
+the **contract** or require action from a consumer live here.
 
-## The batch can skip what already exists — API 0.2.0 and SDK 0.5.0
+Current versions: **API 0.4.2** and **SDK 0.7.2**.
 
-Nothing to do to stay as you are: the default did not change and the new
-response keys are additive. This is opt-in.
+---
+
+## Webhooks — API 0.4.0
+
+A consumer can now register a URL of its own and **receive** the cases it
+cares about, instead of only polling `GET /v1/cases` in a loop.
+
+=== "What changed"
+
+    Seven new routes under `/v1/webhooks`: create, list, read, update,
+    delete, the delivery log and the resend of a failed delivery.
+
+    Each subscription's rules are **the same filters the listing already
+    accepts** — no new query vocabulary. The subscription belongs to the
+    automation of the OIDC client that created it, like everything else
+    in the service.
+
+    Every delivery is signed with HMAC-SHA256 in the
+    `X-Casehub-Signature` header, over `<t>.<body>`. The secret is
+    returned **exactly once**, at creation.
+
+=== "What to do"
+
+    Nothing is mandatory: whoever consumes through `GET /v1/cases` keeps
+    consuming the same way. The incremental cursor remains the long-term
+    recovery path — the delivery log has a 30-day deadline.
+
+    If you are going to register one, read first the rule that decides
+    whether the subscription will work at all: **a content rule requires
+    `cursor_field: updated`**. With `created`, the case is evaluated only
+    at the instant it is born, and whatever the automation writes later
+    is never reconsidered — the subscription goes silent, with no error.
+
+    See [Webhooks](api/webhooks.md).
+
+!!! info "The SDK does not cover these routes"
+    `casehub` covers the case routes. The webhook ones are called over
+    plain HTTP, with the same `Bearer`. Registering is a configuration
+    operation, done once — not a flow one.
+
+### Finer delivery rules, and re-evaluation — API 0.4.0 and 0.4.1
+
+`source_conditions` (`exists`, `not_exists`, `eq`, `ne` over
+`source_record`) and `events` (`case.created`, `case.updated`) together
+answer *"only send it to me once the automation has finished assembling
+the case"*.
+
+The rule is **re-evaluated at delivery time**, and since 0.4.1 that
+covers **every** rule of the subscription — `status`, `batch_ref`,
+`source_schema`, `source_filters` and the event type. Tightening a rule
+with a `PATCH` makes whatever was already queued and stopped matching end
+up `abandoned`, with the reason in the log, without going out to the
+partner URL.
+
+!!! warning "Boolean conditions were inverted before 0.4.1"
+    `{"op": "eq", "value": true}` was stored as `"True"` while the
+    database compares `"true"`: the condition never matched, and the
+    equivalent `ne` always did — with no error anywhere. If you
+    registered a condition with a boolean value before 0.4.1,
+    **register it again**.
+
+---
+
+## Incremental cursor and three new filters — API 0.4.0
+
+=== "`created_since` / `updated_since`"
+
+    **What changed.** `GET /v1/cases` now accepts both cursor parameters.
+    Until now there was no way to ask "what changed since I last looked":
+    `started_from` filters the record's date **at the source**, which may
+    be years old on a case created today.
+
+    When either is used, the listing orders by the cursor field; without
+    them, it keeps ordering by `started_at`.
+
+    **What to do.** If you were paging the whole list to find news,
+    switch to the cursor — and **re-read a window of a few seconds
+    backwards**. A row stamped earlier may be written later, and would
+    appear behind a cursor you already passed. The filters are `>=`, so
+    repeating the instant returns the boundary row again: key by
+    `case_id` and the repetition costs nothing. The loss cannot be
+    undone.
+
+=== "`exists`, `not_exists` and `ne`"
+
+    **What changed.** Three new operators over `source_record`, adding to
+    the `filter` that already existed. All repeatable, combined with
+    `AND`.
+
+    **What to do.** Nothing — they are additive. But know that
+    **`not_exists` is not `ne`**: comparing a value requires a value to
+    exist, so a missing path matches neither `ne` nor `filter`. And
+    `exists` asks about the **key**, not the value: it matches even when
+    the value is `null`, an object or a list.
+
+    All four operators count towards the **same** ceiling
+    (`CASEHUB_MAX_SOURCE_FILTERS`), now added up — splitting the query
+    between them no longer doubles the limit.
+
+    See [Endpoints](api/endpoints.md#get-list-and-count).
+
+!!! note "The SDK does not declare these parameters"
+    `ListCasesParams` includes neither the cursor nor the three
+    operators. They go through anyway, but a type checker complains, and
+    the CLI does not expose them. See
+    [Synchronous client](sdk/cliente.md).
+
+---
+
+## Changing only the status — API 0.4.0 and SDK 0.6.0
+
+=== "Case `PATCH` and the `cancelado` status"
+
+    **What changed.** A new route
+    `PATCH /v1/cases/{environment}/{automation}/{case_id}`, which changes
+    **only the status**. And a new status, `cancelado` — for a case that
+    ceased to exist at the source before being handled, distinct from
+    `concluido` (handled and finished) and `falhou` (tried and failed).
+
+    **Why.** `PUT` and the batch require `status` **and** `started_at`,
+    so fixing only the state forced a read of the case first, to rewrite
+    the rest unchanged — two calls, and a window between them.
+
+    **What to do.** Adding a value to the enum is additive: nothing that
+    was accepted before stopped being accepted. If your code validates
+    `status` against a list of its own, add `cancelado` to it.
+
+=== "SDK: `patch_case_status`"
+
+    **What changed.** The method exists on both clients, synchronous and
+    asynchronous. `expected_status` is optional: filled in, the change
+    only happens if the current state matches, and the API answers 409
+    without writing anything when it does not.
+
+    **What to do.** Pin `casehub>=0.6.0` and the API from 0.4.0 on.
+
+    ```python
+    client.patch_case_status(
+        environment='prod',
+        automation='minha-automacao',
+        case_id='a1b2c3',
+        status='cancelado',
+        expected_status='aberto',
+    )
+    ```
+
+    !!! danger "It does **not** create the case — and that is a 404"
+        Unlike `upsert_case`. A `case_id` that was never imported, or
+        published under a different `environment`/`automation`, raises
+        `APIHTTPError` with `status_code=404`, in both modes. Anyone
+        handling only the 409 gets that exception unexpectedly.
+
+=== "SDK 0.6.1: `status_code` became an attribute"
+
+    **What changed.** `APIHTTPError` now exposes `status_code` and
+    `message` as attributes.
+
+    **Why.** The number only existed inside the formatted message, so
+    telling an expected error from an unexpected one meant searching for
+    a substring in the exception text — text that changes whenever
+    somebody rewrites the sentence. The concrete case is the 409 from
+    `expected_status`, which is not a failure: it is another process
+    having written first, with newer information.
+
+    **What to do.** Replace the substring search with
+    `except APIHTTPError as e: if e.status_code == 409:`.
+
+---
+
+## The batch can skip what already exists — API 0.3.0 and SDK 0.5.0
+
+Nothing to do to keep things as they are: the default did not change and
+the new response keys are additive. It is opt-in.
 
 === "`on_conflict` in the batch"
 
-    **What changed.** `POST /v1/cases/batch` accepts `on_conflict`,
-    either `update` (default, identical to before) or `skip`. In the SDK,
-    `upsert_cases_batch` gained the parameter of the same name in both
-    clients, sync and async; omit it and nothing is sent, leaving the
-    decision to the server.
+    **What changed.** `POST /v1/cases/batch` accepts `on_conflict`, with
+    `update` (default, identical to before) or `skip`. In the SDK,
+    `upsert_cases_batch` gained the parameter of the same name on both
+    clients; omitted, nothing is sent and the server decides. Since
+    **0.7.0** the CLI exposes it too, as `--on-conflict`.
 
-    **Why.** The upsert replaces the fields you send, **without
-    merging**. A publisher that republishes the same source every cycle
-    rewrites the whole case each time and wipes whatever another process
-    added to it afterwards — with no error and no log. `skip` writes
-    nothing to a case that already exists.
+    **Why.** The upsert replaces the fields sent, **without merging**.
+    Whoever republishes the same source every cycle rewrites the whole
+    case every time and erases what another process added afterwards —
+    with no error and no log.
 
     **What to do.** If your source is re-read periodically, pass
     `on_conflict='skip'` and pin `casehub>=0.5.0`. Expect `upserted` to
     fall to `0` in steady state — that is success, and the `skipped`
-    beside it is what says why. See [Endpoints](api/endpoints.en.md).
+    beside it is what says why.
+
+    !!! tip "It is also what keeps a webhook quiet when nothing changed"
+        In `update` mode a re-capture stamps `updated_at` on everything,
+        and a subscription with `cursor_field: updated` would receive the
+        whole base every cycle.
 
 === "`created` and `skipped` in the response"
 
     **What changed.** The batch response carries `created` (the
     `case_id`s created in that call) and `skipped` (how many already
-    existed and were left as they were), alongside the usual `upserted`.
+    existed and were left alone), besides the usual `upserted`.
 
-    **Why.** The server already had this information and threw it away.
-    Without it, a publisher cannot act only on what is new — kicking off
-    an enrichment, say — without an extra query.
+    **Why.** The information already existed on the server side and was
+    discarded. Without it, a publisher cannot act only on what is new —
+    triggering an enrichment, say — without an extra query.
 
-    **What to do.** Nothing is required. `upserted` keeps meaning "rows
-    written", so what was skipped does not count towards it. The SDK
-    passes the body through as it came.
+    **What to do.** Nothing is mandatory. `upserted` keeps meaning "rows
+    written", so what was skipped is not counted in it. The SDK passes
+    the body through as it came.
 
-## Contract v1 — treatments are gone
-
-Two breaks from the same cycle, one on each side. Anyone integrating from an
-earlier version has to act on both.
-
-=== "Treatments removed from the contract"
-
-    **What changed.** The treatment endpoints left v1, along with `sub_id`,
-    `processing_round`, the `Idempotency-Key` header and the `is_latest`
-    field. In the SDK, `create_treatment` and `patch_treatment` are gone,
-    and with them the `MissingIdempotencyKeyError` exception.
-
-    **Why.** The `case_treatment` table duplicated execution and attempt
-    control that Temporal already solves natively — `run_id`, `RetryPolicy`,
-    deduplication by `WorkflowID`. There was no real consumer in production.
-
-    **What to do.** Correlate through Temporal: the case gained
-    `temporal_workflow_id` and `temporal_run_id`, both optional and with no
-    foreign key — they are for investigation, not for referential integrity.
-    See [Endpoints](api/endpoints.md).
-
-=== "`worker_id` became `case_id`"
-
-    **What changed.** The field was renamed across the client and the CLI —
-    `get_case`, `upsert_case`, `upsert_cases_batch` and `list-cases`.
-
-    **Why.** To align the SDK with the name the server contract uses. The
-    identifier was always the case's natural key, not a worker's.
-
-    **What to do.** Rename it in your calls and pin a version from 0.2.0
-    onwards — today, `casehub==0.3.0`. This is the change that makes an
-    older SDK incompatible with the current API — and the symptom is a 400
-    about an unknown field, because the contract is strict
-    (`extra='forbid'`), not a field silently ignored. See
-    [Installation](instalacao.md).
-
-**Something new in the same release, with no action needed.** SDK 0.2.0
-brought `AsyncCaseHubClient`, with the same public API and the same
-authentication behaviour as the synchronous client. Whoever uses the
-synchronous one does not have to change anything. See
-[Asynchronous client](sdk/assincrono.md).
+---
 
 ## Token from the API itself — API 0.2.0 and SDK 0.4.0
 
-Consumers no longer need to know the identity provider's address: the
-token is requested from the CaseHub API itself.
+Whoever integrates no longer needs to know the identity provider's
+address: the token is requested from the CaseHub API itself.
 
-=== "Request the token at `/v1/auth/token`"
+=== "Ask for the token at `/v1/auth/token`"
 
     **What changed.** The API exposes `POST /v1/auth/token` and
-    `POST /v1/auth/refresh`. Both accept the OAuth2 form
-    (`application/x-www-form-urlencoded`) as well as JSON, and neither
-    requires a credential — they are how you obtain one.
+    `POST /v1/auth/refresh`. Both accept the OAuth2 format
+    (`application/x-www-form-urlencoded`) and JSON, and neither requires
+    a credential — they are the way to obtain one.
 
-    **Why.** The realm address becomes the service's configuration,
-    rather than something every automation carries in every
-    environment.
+    **Why.** The realm address becomes configuration of the service, not
+    something each automation carries in each environment.
 
     **What to do.** Point the SDK's `token_url` at
-    `<base_url>/v1/auth/token`. Nothing else changes: the API forwards
-    to the identity provider, which is still what signs the token.
+    `<base_url>/v1/auth/token`. Nothing else changes: the API relays to
+    the identity provider, which is still the one signing the token.
 
     ```python
     client = CaseHubClient(
         base_url='https://casehub.internal',
-        client_id='my-automation',
+        client_id='minha-automacao',
         client_secret='...',
         token_url='https://casehub.internal/v1/auth/token',
     )
     ```
 
-    Requesting straight from the provider still works — it is the way
-    to debug with the API down.
+    Asking the provider directly still works — it is the way to debug
+    with the API down.
 
     See [Authentication](api/autenticacao.md).
 
-=== "SDK 0.4.0: `api_key` is gone"
+=== "`api_key` is gone — and is not coming back"
 
-    **What changed.** The `api_key` parameter was removed from
+    **What changed.** `Authorization: Bearer <JWT>` is the only way to
+    authenticate. On the server, the `apikey` and `dual` modes were
+    removed: a service configured with them **does not start**. In the
+    SDK, the `api_key` parameter left
     `CaseHubClient`/`AsyncCaseHubClient`, along with the CLI's
-    `--api-key` flag. Passing it raises `TypeError` at construction.
+    `--api-key` flag.
 
-    The CLI **stopped asking for a credential interactively**: seven
-    commands used to prompt for a key before anything else.
-    `casehub health` now answers straight away.
+    The CLI **stopped asking for a credential interactively**: before,
+    seven commands asked for a key before anything else. `casehub health`
+    answers straight away.
 
-    **Why.** The API accepts `Authorization: Bearer <JWT>` and nothing
-    else, so the parameter only led to `401` — and, being
-    configurable, suggested an alternative that does not exist.
+    **Why.** The `X-API-Key` header authenticated with any non-empty
+    string and escaped per-automation authorization. What remained in the
+    SDK was a path that only produced `401` — configurable, and therefore
+    able to mislead.
 
-    **What to do.** Configure `client_id`, `client_secret` and
-    `token_url` (all three together; partial configuration fails at
-    construction). A client that only had `api_key` needs a
-    `client_credentials` client provisioned in the identity provider.
+    **What to do.** Provision a `client_credentials` client per
+    automation, with `client_id` equal to its name, and configure
+    `client_id`, `client_secret` and `token_url` (the three together;
+    partial configuration fails at construction).
 
-## Security audit — August 2026
+---
 
-A review of the ecosystem's three repositories produced 11 fixes, all
-already on `main` in `fast-casehub`.
+## SDK versions to avoid
 
-### :material-alert: Require attention from integrators
+!!! danger "Do not install 0.7.0"
+    It shipped with `casehub.__version__` stuck at `'0.6.1'` while the
+    distribution already said `0.7.0`: any consumer reading
+    `__version__` gets the wrong version. Use **0.7.1** or later.
 
-=== "Authentication is OIDC only"
+!!! warning "Exceptions survive `pickle` again — SDK 0.7.0"
+    `APIHTTPError`, `APIConnectionError` and `APITimeoutError` raised
+    `TypeError` when reconstructed, which **masked the real HTTP error**
+    exactly where it crosses a process boundary: `ProcessPoolExecutor`,
+    multiprocessing, or any retry layer that serialises the captured
+    exception.
 
-    **What changed.** `Authorization: Bearer <JWT>` is the only accepted
-    credential, and `CASEHUB_AUTH_MODE` takes a single value, `oidc`.
-    Any other value refuses to start the service.
+    That started to matter more from 0.6.1 on, which asks the caller to
+    keep and inspect the exception to read `status_code`.
 
-    **Why.** Authentication and per-automation authorization now apply
-    to every access, with no exception — there is no second path with
-    different guarantees.
+---
 
-    **What to do.** Nothing, if you already use OIDC. Otherwise,
-    provision one `client_credentials` client per automation, with
-    `client_id` equal to its name, and request the token at
-    `POST /v1/auth/token`.
+## Contract robustness — API 0.4.0
 
-    See [Authentication](api/autenticacao.md).
+No action required, but they change what you see when something goes
+wrong.
 
-=== "Batches gained a ceiling"
+**A null character in `source_record` becomes a per-item error, not a
+500.** A `U+0000` in any key or value is rejected with
+`invalid_source_record` — in a batch, without taking the other items
+down. Before, the driver's exception reached the generic handler and
+became `500 internal_error` without saying which item of the batch
+failed. It is common in data coming from mainframe fixed-width files.
 
-    **What changed.** `POST /v1/cases/batch` rejects an empty batch or one
-    above `CASEHUB_MAX_BATCH_ITEMS` (default 1000), with a 400.
+**The response `status` now declares the enum in the published schema**,
+instead of a free string. The input already declared the possible states
+and the output did not — whoever read only the response contract in
+Swagger had no way to know which values to expect.
 
-    **Why.** With no ceiling, a single request could carry tens of gigabytes
-    and take the service down on memory.
+**`created_at` and `updated_at` are stamped by the database**, not by the
+process clock. No consequence with a single process, and a prerequisite
+for any reliable incremental consumption once there is more than one.
 
-    **What to do.** Publish in blocks. The default has 10x headroom over the
-    size consumers use today — the 400 message reports the environment's
-    effective limit, which is configurable.
-
-    See [Endpoints](api/endpoints.md#post-batch-upsert).
-
-### :material-wrench: Fixes with no action needed
-
-**An unexpected error now respects the contract.** An internal failure
-answered in the framework's default format (`{"detail": ...}`), breaking the
-error handling of anyone reading `error.code` — precisely when the service
-was already in trouble. It now answers 500 in the single envelope. See
-[Errors](api/erros.md#internal-error).
-
-**Retention stopped crossing environments.** The purge is now always scoped
-by `environment`, and accepts a per-environment term
-(`RETENTION_DAYS_<AUTOMATION>_<ENVIRONMENT>`). Before, a short term set up to
-clean `dev` also wiped the `prod` history of the same automation, silently.
-See [Retention](api/retencao.md).
-
-**Limits now come from the environment.** The size ceilings were read once at
-service import time — configured in the `.env`, they were silently ignored
-and the process started with the default. Anyone running through Docker was
-never affected, because compose injects the variables before the process is
-born.
-
-**A warning when `aud` is not validated.** With `CASEHUB_OIDC_AUDIENCE`
-empty, the service now warns at startup that it accepts any token from the
-same issuer. There is also `CASEHUB_OIDC_REQUIRE_AUDIENCE` to lock the
-configuration down once Keycloak is provisioned.
-
-**Reproducible build and secret scanning.** The image is now built from a
-versioned lockfile, and the pipeline scans the full history with gitleaks.
-
-### :material-progress-clock: What depends on provisioning
-
-!!! warning "Validating `aud` is not a code change"
-    The service validates the `aud` claim as soon as
-    `CASEHUB_OIDC_AUDIENCE` is filled in — nothing is missing in the code.
-    What it requires first is provisioning a dedicated audience on the
-    Keycloak clients of each environment, which is realm administration
-    work.
-
-    With the variable empty, the service accepts any valid token from the
-    same issuer as authentication, and **says so in the startup log**. That
-    warning is the check: if it is there, the configuration is not complete
-    in that environment yet.
-
-    The plan is in
-    [Authentication](api/autenticacao.md#validating-aud) — and the order
-    matters: inverting it knocks consumers out with 401s.
+**The `/docs` page opens again.** The `/v1/auth/*` routes declared their
+body by reference to a schema that was never registered, and Swagger UI
+replaced the whole page with "Could not resolve reference" — no route was
+shown at all.

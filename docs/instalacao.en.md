@@ -17,19 +17,16 @@ Requires **Python 3.11+**. The runtime dependencies are `httpx`, `typer`,
 `toml` and `rich`.
 
 !!! warning "Pin the version"
-    The current SDK version is **0.4.0**, and the API is at **0.2.0**.
-    Prefer `pip install "casehub==0.4.0"` over installing with no floor, so
+    The current SDK version is **0.7.2**, and the API is at **0.4.2**.
+    Prefer `pip install "casehub==0.7.2"` over installing with no floor, so
     that an environment does not wake up on an incompatible version.
 
-    Three SDK versions changed behaviour. **0.2.0** renamed `worker_id` to
-    `case_id` across the client and the CLI, so an SDK older than that
-    **does not speak** the contract the API serves today. **0.3.0** changed
-    three things a consumer notices: an invalid batch raises `ValueError`
-    before spending a request; a batch with an item lacking `case_id` is no
-    longer retried automatically after a 401, and the error surfaces as
-    `APIHTTPError`; and `ConnectTimeout`/`WriteTimeout`/`PoolTimeout` now
-    become `APITimeoutError`. **0.4.0** made OIDC the only way to
-    authenticate. See [What changed](mudancas.md).
+    Do not install **0.7.0**: it shipped with `casehub.__version__` stuck
+    at `'0.6.1'` while the distribution already said `0.7.0`, so anyone
+    reading `__version__` gets the wrong version. 0.7.1 fixes it.
+
+    What each version changed for consumers is in
+    [What changed](mudancas.md).
 
 !!! info "Internal registry"
     The package is published to the internal registry, not to public PyPI.
@@ -42,8 +39,8 @@ Requires **Python 3.11+**. The runtime dependencies are `httpx`, `typer`,
 <div class="termynal" data-termynal data-ty-startDelay="500" data-ty-typeDelay="45" data-ty-lineDelay="800">
 <span data-ty="input">casehub --help</span>
 <span data-ty>Usage: casehub [OPTIONS] COMMAND [ARGS]...</span>
-<span data-ty>  configure, health, readiness, list-cases,</span>
-<span data-ty>  get-case, upsert-case, upsert-cases-batch</span>
+<span data-ty>  configure, health, readiness, list-cases, get-case,</span>
+<span data-ty>  upsert-case, patch-case-status, upsert-cases-batch</span>
 </div>
 </div>
 
@@ -108,14 +105,16 @@ infrastructure.
 |---|---|---|
 | `CASEHUB_STORAGE` | `memory` | `memory` or `postgres`. |
 | `CASEHUB_AUTH_MODE` | `oidc` | The only accepted value; anything else refuses to start. See [Authentication](api/autenticacao.md). |
-| `CASEHUB_OIDC_ISSUER` | — | Required in `oidc`/`dual`. |
-| `CASEHUB_OIDC_JWKS_URL` | — | Required in `oidc`/`dual`. |
+| `CASEHUB_OIDC_ISSUER` | — | Required: without it the service does not start. |
+| `CASEHUB_OIDC_JWKS_URL` | — | Required: without it the service does not start. |
 | `CASEHUB_OIDC_AUDIENCE` | empty | Empty = `aud` is not validated. See the warning in [Authentication](api/autenticacao.md). |
 | `CASEHUB_DB` | — | Full Postgres URL. Takes precedence over `CASEHUB_DB_*`. |
 | `CASEHUB_MAX_BATCH_ITEMS` | `1000` | Ceiling of items per batch. |
 | `CASEHUB_MAX_SOURCE_RECORD_BYTES` | `262144` | Ceiling per `source_record`. |
-| `CASEHUB_MAX_SOURCE_FILTERS` | `20` | Ceiling of `f.` filters per query. |
+| `CASEHUB_MAX_SOURCE_FILTERS` | `20` | Ceiling of `source_record` filters per query — and per webhook subscription. |
 | `CASEHUB_RETENTION_ENABLED` | `true` | Turns the purge job on. |
+| `CASEHUB_WEBHOOK_ENABLED` | `true` | Turns the webhook dispatcher on. The other `CASEHUB_WEBHOOK_*` are in [Webhooks](api/webhooks.md#operations). |
+| `CASEHUB_NGINX_MAX_BODY` | `300m` | Maximum body the reverse proxy accepts. |
 | `CASEHUB_HOST` | `127.0.0.1` | Interface Uvicorn listens on. |
 | `CASEHUB_PORT` | `8080` | Service port. |
 | `CASEHUB_OIDC_LEEWAY_SECONDS` | `10` | Clock tolerance when validating the token. |
@@ -131,10 +130,22 @@ infrastructure.
     signed with the new key are rejected.
 
 !!! danger "Incomplete configuration kills the process, on purpose"
-    With `CASEHUB_AUTH_MODE=oidc` or `dual` and no `issuer`/`jwks_url`, the
-    service **refuses to start**. That is deliberate: failing at deploy is
-    far cheaper than finding out through an unexplainable 401 in
-    production — or, worse, starting up accepting every request.
+    Without `issuer`/`jwks_url` the service **refuses to start**. That is
+    deliberate: failing at deploy is far cheaper than finding out through
+    an unexplainable 401 in production — or, worse, starting up accepting
+    every request.
+
+### One-off API commands
+
+Besides the server, the package installs two commands that run a single
+pass of the jobs already scheduled inside the process. They complement
+the scheduler, they do not replace it — useful right after a deploy, or
+after re-enabling a subscription, without waiting for the cycle.
+
+| Command | What it does |
+|---|---|
+| `casehub-retention` | One purge pass. See [Retention](api/retencao.md). |
+| `casehub-webhook` | One discovery and delivery pass. See [Webhooks](api/webhooks.md). |
 
 ### For the database
 

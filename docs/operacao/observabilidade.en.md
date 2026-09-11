@@ -34,6 +34,18 @@ Automatic instrumentation emits the first two; `casehub.up` and
 | `http.server.active_requests` | gauge | route, method | Requests in flight. The average answers "how many clients at once". |
 | `casehub.up` | gauge | — | Heartbeat: `1` while the process is up. |
 | `casehub.retention.deleted` | counter | `automation`, `environment` | Cases purged per job run. |
+| `casehub.webhook.delivered` | counter | `automation`, `environment`, `outcome` | Webhook delivery **attempts**, by outcome. |
+
+!!! warning "The counter is of attempts, and `outcome` has four values"
+    `succeeded`, `failed`, `retrying` and `abandoned`. A delivery that
+    fails three times and then arrives adds **three** `retrying` and one
+    `succeeded` — summing every outcome gives attempts, not deliveries.
+
+    `abandoned` is the delivery that did not go out because the rule
+    stopped matching, the case was purged first, or the subscription was
+    removed mid-queue. A panel filtering only success and failure
+    under-reports precisely the outcome that most deserves an alert. See
+    [Webhooks](../api/webhooks.md#when-it-fails).
 
 !!! tip "`casehub.up` is read by absence, not by value"
     It is `1` whenever it exists — never `0`. The signal that the service is
@@ -51,6 +63,30 @@ Automatic instrumentation emits the first two; `casehub.up` and
     filtering only by `automation` still work — but the series is now split
     by environment, so a dashboard that showed one line per automation now
     shows one per automation × environment.
+
+## Access logs
+
+The `/v1/cases*` and `/v1/auth/*` routes emit a structured `INFO` log per
+**successful** request, carrying the caller's IP, the OIDC identity
+(`sub`/`azp` claims) and details of the operation — on `GET /v1/cases`,
+for instance, how many items matched the filter and how many came in the
+page.
+
+Before that, no business route logged anything on success: only traces
+and metrics answered "who/when/how many", and anyone looking at Loki
+alone had no way to know a query had happened.
+
+!!! danger "What these logs deliberately do not carry"
+    `source_record` and the **values** of `filter=` are left out. Only the
+    keys used in the filter appear, never the content — it is business
+    payload, potentially with sensitive data.
+
+    On webhook registration, the partner URL is logged as scheme and host
+    only (`https://hooks.example.com/<redacted>`). In a good share of
+    real receivers — Slack, Teams, Zapier, any callback with a token in
+    the path — **the whole URL is the publishing credential**, and this
+    log goes out over OTLP. Whoever needs the exact URL has the
+    `webhook_id` on the same line and the subscription lookup.
 
 ## What does not show up in traces
 
@@ -93,6 +129,7 @@ for referential integrity.
 | Non-empty `errors[]` in batches | A failure **on the publisher's side** — it does not show up as an HTTP error. |
 | The `aud` warning at startup | `aud` validation is not active in this environment. See the plan in [Authentication](../api/autenticacao.md#validating-aud). |
 | `casehub.retention.deleted` off expectation | A badly configured term, or an unreachable ParamManager making everything fall back to the 90-day default. |
+| `casehub.webhook.delivered{outcome="failed"}` climbing | A partner endpoint is down. Consecutive failures disable the subscription on their own — see [Webhooks](../api/webhooks.md#when-it-fails). |
 
 !!! danger "A batch with a rejected item produces no HTTP error"
     It is the most common blind spot: the 5xx dashboard stays clean while

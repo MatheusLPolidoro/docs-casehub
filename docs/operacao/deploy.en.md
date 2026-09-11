@@ -5,12 +5,12 @@
 ```mermaid
 flowchart TD
     S["Process starts"] --> V["Validates configuration"]
-    V -->|"invalid auth_mode"| F1["❌ Does not start"]
-    V -->|"oidc/dual with no issuer/JWKS"| F2["❌ Does not start"]
+    V -->|"auth_mode != oidc"| F1["❌ Does not start"]
+    V -->|"no issuer/JWKS"| F2["❌ Does not start"]
     V -->|"require_audience with no audience"| F3["❌ Does not start"]
     V -->|ok| M["Applies migrations<br/><small>entrypoint</small>"]
     M --> T["Starts telemetry"]
-    T --> R["Starts the retention scheduler<br/><small>if enabled</small>"]
+    T --> R["Starts the in-process schedulers<br/><small>retention and webhooks,<br/>each if enabled</small>"]
     R --> U["Uvicorn accepts traffic"]
 ```
 
@@ -23,8 +23,33 @@ flowchart TD
 
 | Profile | What it starts |
 |---|---|
-| `uat` | API + Postgres + Keycloak — a complete, disposable local stack. |
-| `prod` | The API only, pointing at infrastructure that already exists. |
+| `uat` | API + Postgres + Keycloak + nginx — a complete, disposable local stack. |
+| `prod` | Only the API and nginx, pointing at infrastructure that already exists. |
+
+The two are **mutually exclusive**, and in both it is **nginx** that
+publishes the port on the host: the API services publish no port at all
+and are only reachable over the compose network. The address the consumer
+uses does not change.
+
+!!! warning "Still no TLS"
+    The proxy came first, the certificate comes later. The
+    `listen ... ssl` block is written and commented out in the template,
+    and enabling it requires no change on the API side — `X-Forwarded-Proto`
+    starts reading `https` on its own.
+
+### Healthcheck
+
+The API services have a healthcheck on **`/ready`**, not `/health`: that
+is the one that touches the database, so "process up with Postgres down"
+fails it. nginx waits for that `healthy` before starting, and has a
+healthcheck of its own that it answers without touching the upstream — so
+"the proxy is down" and "the API is down" remain two distinct states.
+
+!!! note "The healthcheck restarts nothing"
+    `restart: unless-stopped` reacts to a dead process, not to an
+    `unhealthy` container. The value here is visibility
+    (`docker compose ps`) and start-up ordering. Automatic restart on
+    health would take an orchestrator.
 
 <div class="pm-terminal" data-pm-terminal data-pm-command="docker compose --profile uat up -d">
 <div class="termynal" data-termynal data-ty-startDelay="500" data-ty-typeDelay="45" data-ty-lineDelay="800">
@@ -80,6 +105,7 @@ hand from the database.
 | `CASEHUB_AUTH_MODE` | `oidc` | `oidc` |
 | `CASEHUB_OIDC_*` | from the local Keycloak | from the corporate Keycloak |
 | `CASEHUB_RETENTION_ENABLED` | `false` | `true` |
+| `CASEHUB_WEBHOOK_ENABLED` | `false` | `true` |
 
 !!! danger "Without issuer and JWKS, the service will not start"
     Deliberate: a half-configured authentication fails at boot instead of

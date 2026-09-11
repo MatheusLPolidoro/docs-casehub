@@ -19,11 +19,22 @@ failures too — an internal bug does not escape in another format.
 |---|:---:|---|
 | `unauthorized` | 401 | Credential missing, invalid or expired. |
 | `forbidden` | 403 | Authenticated, but the token's automation does not match the call's. |
-| `invalid_request` | 400 | Payload outside the contract, batch empty or too large, too many filters. |
-| `invalid_source_record` | 400 | `source_record` is not a JSON object. |
+| `invalid_request` | 400 | Payload outside the contract, batch empty or too large, too many filters, malformed webhook condition. |
+| `invalid_source_record` | 400 | `source_record` is not a JSON object, or carries the null character (`U+0000`). |
 | `source_record_too_large` | 413 | Above `CASEHUB_MAX_SOURCE_RECORD_BYTES`. |
 | `case_not_found` | 404 | The case does not exist. |
+| `status_conflict` | 409 | The `PATCH`'s `expected_status` does not match the current state — and nothing was written. |
+| `invalid_webhook_url` | 400 | The subscription `url` is not an absolute `http(s)` URL; or `null` came in a `PATCH`. |
+| `webhook_not_found` | 404 | The subscription (or the delivery) does not exist, or belongs to another automation. |
 | `internal_error` | 500 | Unexpected service failure. |
+
+!!! note "409 shows up in two places, with different meanings"
+    On a case `PATCH` it is `status_conflict`: another process wrote
+    first, and your conditional change did not happen. On a webhook
+    delivery redrive it is a delivery still `pending` or already
+    delivered (`succeeded`) — the guard that keeps an accidental resend
+    from becoming a duplicate. See
+    [Webhooks](webhooks.md#re-sending-a-delivery-redrive).
 
 !!! note "Payload validation is a 400, not a 422"
     FastAPI would use 422 by default; the contract converts it to 400 with
@@ -99,8 +110,8 @@ The SDK normalizes all of this into exceptions. See
 
 | Exception | Origin |
 |---|---|
-| `APIHTTPError` | The API answered with an error status. Carries status and body. |
+| `APIHTTPError` | The API answered with an error status. Exposes `status_code` and `message` as attributes. |
 | `APIConnectionError` | The API could not be reached. |
 | `APITimeoutError` | The API did not answer in time. |
-| `OidcTokenError` | Failure obtaining the token from Keycloak. |
+| `OidcTokenError` | Failure obtaining the token from the configured `token_url`. |
 | `APIUnexpectedError` | Anything else. |

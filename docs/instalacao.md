@@ -17,20 +17,16 @@ Requer **Python 3.11+**. As dependências de runtime são `httpx`,
 `typer`, `toml` e `rich`.
 
 !!! warning "Fixe a versão"
-    A versão atual do SDK é a **0.4.0**, e a da API é a **0.2.0**.
-    Prefira `pip install "casehub==0.4.0"` a instalar sem piso, para que
+    A versão atual do SDK é a **0.7.2**, e a da API é a **0.4.2**.
+    Prefira `pip install "casehub==0.7.2"` a instalar sem piso, para que
     um ambiente não acorde numa versão incompatível.
 
-    Três versões do SDK mudaram comportamento. A **0.2.0** renomeou
-    `worker_id` para `case_id` em todo o client e na CLI, então um SDK
-    anterior a ela **não fala** o contrato que a API atende hoje. A
-    **0.3.0** mudou três coisas que quem consome percebe: lote inválido
-    levanta `ValueError` antes de gastar requisição; um lote com item
-    sem `case_id` deixa de ser reenviado automaticamente depois de um
-    401, e o erro sobe como `APIHTTPError`; e
-    `ConnectTimeout`/`WriteTimeout`/`PoolTimeout` passaram a virar
-    `APITimeoutError`. A **0.4.0** deixou o OIDC como única forma de
-    autenticar. Ver [O que mudou](mudancas.md).
+    Não instale a **0.7.0**: ela saiu com `casehub.__version__` parado
+    em `'0.6.1'` enquanto a distribuição já dizia `0.7.0`, então quem lê
+    `__version__` recebe a versão errada. A 0.7.1 corrige.
+
+    O que cada versão mudou para quem consome está em
+    [O que mudou](mudancas.md).
 
 !!! info "Registry interno"
     O pacote é publicado no registry interno, não no PyPI público. Se o
@@ -43,8 +39,8 @@ Requer **Python 3.11+**. As dependências de runtime são `httpx`,
 <div class="termynal" data-termynal data-ty-startDelay="500" data-ty-typeDelay="45" data-ty-lineDelay="800">
 <span data-ty="input">casehub --help</span>
 <span data-ty>Usage: casehub [OPTIONS] COMMAND [ARGS]...</span>
-<span data-ty>  configure, health, readiness, list-cases,</span>
-<span data-ty>  get-case, upsert-case, upsert-cases-batch</span>
+<span data-ty>  configure, health, readiness, list-cases, get-case,</span>
+<span data-ty>  upsert-case, patch-case-status, upsert-cases-batch</span>
 </div>
 </div>
 
@@ -108,14 +104,16 @@ mesmo contrato e serve para desenvolver contra a API sem infraestrutura.
 |---|---|---|
 | `CASEHUB_STORAGE` | `memory` | `memory` ou `postgres`. |
 | `CASEHUB_AUTH_MODE` | `oidc` | Único valor aceito; qualquer outro derruba a subida. Ver [Autenticação](api/autenticacao.md). |
-| `CASEHUB_OIDC_ISSUER` | — | Obrigatória em `oidc`/`dual`. |
-| `CASEHUB_OIDC_JWKS_URL` | — | Obrigatória em `oidc`/`dual`. |
+| `CASEHUB_OIDC_ISSUER` | — | Obrigatória: sem ela o serviço não sobe. |
+| `CASEHUB_OIDC_JWKS_URL` | — | Obrigatória: sem ela o serviço não sobe. |
 | `CASEHUB_OIDC_AUDIENCE` | vazio | Vazio = não valida `aud`. Ver o aviso em [Autenticação](api/autenticacao.md). |
 | `CASEHUB_DB` | — | URL completa do Postgres. Tem precedência sobre `CASEHUB_DB_*`. |
 | `CASEHUB_MAX_BATCH_ITEMS` | `1000` | Teto de itens por lote. |
 | `CASEHUB_MAX_SOURCE_RECORD_BYTES` | `262144` | Teto por `source_record`. |
-| `CASEHUB_MAX_SOURCE_FILTERS` | `20` | Teto de filtros `f.` por consulta. |
+| `CASEHUB_MAX_SOURCE_FILTERS` | `20` | Teto de filtros sobre `source_record` por consulta — e por assinatura de webhook. |
 | `CASEHUB_RETENTION_ENABLED` | `true` | Liga o job de expurgo. |
+| `CASEHUB_WEBHOOK_ENABLED` | `true` | Liga o despachante de webhooks. As demais `CASEHUB_WEBHOOK_*` estão em [Webhooks](api/webhooks.md#operacao). |
+| `CASEHUB_NGINX_MAX_BODY` | `300m` | Corpo máximo aceito pelo proxy reverso. |
 | `CASEHUB_HOST` | `127.0.0.1` | Interface em que o Uvicorn escuta. |
 | `CASEHUB_PORT` | `8080` | Porta do serviço. |
 | `CASEHUB_OIDC_LEEWAY_SECONDS` | `10` | Tolerância de relógio ao validar o token. |
@@ -131,10 +129,22 @@ mesmo contrato e serve para desenvolver contra a API sem infraestrutura.
     assinados com a chave nova são recusados.
 
 !!! danger "Configuração incompleta derruba o processo, de propósito"
-    Com `CASEHUB_AUTH_MODE=oidc` ou `dual` e sem `issuer`/`jwks_url`, o
-    serviço **recusa subir**. É deliberado: é muito mais barato falhar
-    no deploy do que descobrir por um 401 inexplicável em produção — ou,
-    pior, subir aceitando qualquer requisição.
+    Sem `issuer`/`jwks_url`, o serviço **recusa subir**. É deliberado: é
+    muito mais barato falhar no deploy do que descobrir por um 401
+    inexplicável em produção — ou, pior, subir aceitando qualquer
+    requisição.
+
+### Comandos avulsos da API
+
+Além do servidor, o pacote instala dois comandos que disparam uma
+passada única dos jobs que já rodam agendados dentro do processo. São
+complementares ao scheduler, não substitutos — úteis logo após um
+deploy, ou depois de reativar uma assinatura, sem esperar o ciclo.
+
+| Comando | O que faz |
+|---|---|
+| `casehub-retention` | Uma passada do expurgo. Ver [Retenção](api/retencao.md). |
+| `casehub-webhook` | Uma passada de descoberta e entrega. Ver [Webhooks](api/webhooks.md). |
 
 ### Do banco
 

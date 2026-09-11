@@ -26,8 +26,8 @@
      repositórios — inventar um seria pior do que não ter o selo. As versões
      vêm do `pyproject.toml` de cada projeto e o piso de Python do
      `requires-python` dos dois; mexeu lá, mexa aqui. -->
-![SDK casehub](https://img.shields.io/badge/SDK%20casehub-0.4.0-1565c0)
-![API fast-casehub](https://img.shields.io/badge/API%20fast--casehub-0.2.0-1565c0)
+![SDK casehub](https://img.shields.io/badge/SDK%20casehub-0.7.2-1565c0)
+![API fast-casehub](https://img.shields.io/badge/API%20fast--casehub-0.4.2-1565c0)
 ![Python](https://img.shields.io/badge/python-3.11%2B-34D058?logo=python&logoColor=white)
 ![Contrato](https://img.shields.io/badge/contrato-v1-6a1b9a)
 </div>
@@ -65,8 +65,12 @@ gravado.
 SDK, API local, Docker e as variáveis que cada um exige.
 
 ## [API (fast-casehub)](api/endpoints.md)
-Os quatro endpoints do contrato v1, campo a campo, com os modos de
-autenticação, o formato único de erro e o job de retenção.
+O contrato v1 campo a campo: as rotas de caso, as rotas de token, o
+formato único de erro e o job de retenção.
+
+## [Webhooks](api/webhooks.md)
+Cadastrar uma URL e receber os casos que interessam, em vez de puxar a
+listagem em laço.
 
 ## [SDK (casehub)](sdk/cliente.md)
 Cliente síncrono, cliente assíncrono e a CLI — quando usar cada um.
@@ -78,7 +82,7 @@ Deploy, variáveis de ambiente e o que observar em produção.
 As mudanças de comportamento que afetam quem integra — e o que fazer
 sobre cada uma.
 
-!!! info "Esta documentação descreve o estado atual da `main`"
-    O lote de correções da auditoria de agosto de 2026 foi promovido
-    para `main` no `fast-casehub`. Se você opera uma versão anterior,
-    veja [O que mudou](mudancas.md) para saber o que difere.
+!!! info "Esta documentação descreve a API 0.4.2 e o SDK 0.7.2"
+    São as versões correntes dos dois artefatos. Se você opera uma
+    anterior, veja [O que mudou](mudancas.md) para saber o que difere — e
+    o que exige ação de quem integra.

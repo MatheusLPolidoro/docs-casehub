@@ -78,6 +78,33 @@ enviar `source_record: {}` limpa o objeto.
 `status`, sem precisar reenviar o `source_record` inteiro — e é o que
 faz uma recaptura preservar o `started_at` original.
 
+## Consumo: puxar ou receber
+
+Há dois caminhos, e eles respondem a perguntas diferentes.
+
+```mermaid
+flowchart TB
+    subgraph Puxar
+        C1["Consumidor"] -->|"GET /v1/cases?updated_since="| A1["fast-casehub"]
+    end
+    subgraph Receber
+        A2["fast-casehub"] -->|"descoberta a cada ciclo"| Q["Fila de entregas"]
+        Q -->|"POST assinado"| C2["URL do consumidor"]
+    end
+```
+
+| | Cursor (`GET /v1/cases`) | Webhook |
+|---|---|---|
+| Quem inicia | o consumidor | o serviço |
+| Recuperação de histórico | sim, é o que ele faz | não — o log de entregas tem prazo |
+| Latência | o intervalo em que você pergunta | o ciclo do despachante |
+| Precisa de endpoint exposto | não | sim |
+
+Os dois entregam o **estado atual** do caso, não cada transição. O
+webhook não substitui o cursor: ele evita o laço de polling no caso
+comum, e o cursor continua sendo a recuperação quando algo se perde. Ver
+[Webhooks](api/webhooks.md).
+
 ## Retenção
 
 ```mermaid

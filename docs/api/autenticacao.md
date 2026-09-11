@@ -53,8 +53,10 @@ configuração do serviço, não de cada consumidor em cada ambiente.
       -d '{"client_id": "minha-automacao", "client_secret": "..."}'
     ```
 
-A resposta traz `access_token`, `expires_in`, e — quando o client tem
-emissão de refresh habilitada — `refresh_token` e `refresh_expires_in`.
+A resposta traz `access_token`, `token_type`, `expires_in`, e — quando o
+client tem emissão de refresh habilitada — `refresh_token` e
+`refresh_expires_in`. São os cinco campos que atravessam: `id_token`,
+`session_state` e `scope` ficam no provedor.
 Renovar é `POST /v1/auth/refresh`, ou o mesmo `/v1/auth/token` com
 `grant_type=refresh_token`.
 
@@ -118,23 +120,21 @@ Para fechar, nesta ordem — inverter derruba os consumidores com 401:
 
 ## Configurando o SDK
 
-=== "OIDC"
+```python
+from casehub import CaseHubClient
 
-    ```python
-    from casehub import CaseHubClient
+client = CaseHubClient(
+    base_url='https://casehub.interno',
+    client_id='minha-automacao',
+    client_secret='...',
+    token_url='https://casehub.interno/v1/auth/token',
+)
+```
 
-    client = CaseHubClient(
-        base_url='https://casehub.interno',
-        client_id='minha-automacao',
-        client_secret='...',
-        token_url='https://casehub.interno/v1/auth/token',
-    )
-    ```
+!!! tip "Os três campos vêm juntos, ou nenhum"
+    `client_id`, `client_secret` e `token_url` são configurados como um
+    conjunto — passar só parte deles levanta `ValueError` na construção
+    do cliente, antes de qualquer chamada de rede.
 
-    Os três campos vêm juntos ou nenhum — configuração parcial falha na
-    construção, antes de bater na rede.
-
-!!! tip "Os três campos vêm juntos"
-    `client_id`, `client_secret` e `token_url` são configurados juntos —
-    passar só parte deles levanta erro na construção do cliente, antes
-    de qualquer chamada de rede.
+    Sem os três, o cliente só alcança `health()` e `readiness()`: as
+    demais rotas exigem token, e a API responde 401.
