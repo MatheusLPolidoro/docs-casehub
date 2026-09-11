@@ -74,7 +74,21 @@ pages:
     - |
       if [ -n "$MIKE_TOKEN" ]; then
         git remote set-url origin "http://gitlab-ci-token:${MIKE_TOKEN}@gitlab.127.0.0.1.nip.io/${CI_PROJECT_PATH}.git"
-        git fetch origin gh-pages:gh-pages || echo "gh-pages ainda nao existe"
+        # `fetch origin gh-pages:gh-pages` nao serve aqui: o runner
+        # reaproveita o diretorio de trabalho (estrategia `fetch`), entao
+        # sobra dele um `gh-pages` local de pipelines anteriores. Se esse
+        # branch divergir do remoto, o refspec e recusado com
+        # "non-fast-forward" e, pior, o `mike` para em
+        # "gh-pages is unrelated to origin/gh-pages" - que foi o que
+        # aconteceu na primeira vez que a branch remota passou a existir.
+        # Buscar e **reapontar** o local para o remoto nao tem esse
+        # problema, e o remoto e sempre a verdade: e nele que as versoes
+        # se acumulam.
+        if git fetch origin gh-pages; then
+          git branch -f gh-pages origin/gh-pages
+        else
+          echo "gh-pages ainda nao existe"
+        fi
       else
         echo "AVISO: MIKE_TOKEN ausente. Publicando sem persistir a gh-pages;"
         echo "AVISO: versoes anteriores nao serao preservadas."
