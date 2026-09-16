@@ -4,7 +4,41 @@ Registro das mudanças de comportamento que afetam quem integra. Não
 substitui o `CHANGELOG.md` de cada repositório — aqui ficam apenas as que
 mudam o **contrato** ou exigem ação de quem consome.
 
-Versões atuais: **API 0.4.2** e **SDK 0.7.2**.
+Versões atuais: **API 0.5.0** e **SDK 0.7.2**.
+
+---
+
+## HTTPS no profile `prod` e `total_pages` — API 0.5.0
+
+A troca para HTTPS **exige ação** de quem consome uma instalação que usa o
+profile `prod`. O `total_pages` é aditivo.
+
+=== "Só HTTPS no `prod`"
+
+    **O que mudou.** O nginx do profile `prod` passa a atender a API só
+    por HTTPS, na porta 443. A porta 80 responde `308` para o endereço
+    `https://` e não atende mais a API. O profile `uat` continua em HTTP.
+
+    **Por quê.** O token Bearer trafegava em texto claro entre o consumidor
+    e o proxy.
+
+    **O que fazer.** Troque `CASEHUB_BASE_URL` e `CASEHUB_TOKEN_URL` para
+    `https://`. **O SDK não segue redirecionamento**: um cliente ainda em
+    `http://` recebe o `308` como erro HTTP, em vez de ser levado ao
+    HTTPS — e o token dessa tentativa já saiu em texto claro.
+
+=== "`total_pages` nas listagens"
+
+    **O que mudou.** `GET /v1/cases`, `GET /v1/webhooks` e
+    `GET /v1/webhooks/{id}/deliveries` devolvem `total_pages` ao lado de
+    `total`, `page` e `page_size`. Lista vazia devolve `0`.
+
+    **Por quê.** Saber quantas páginas uma listagem tinha exigia calcular
+    `ceil(total / page_size)` no cliente.
+
+    **O que fazer.** Nada é obrigatório: o campo é aditivo. No SDK,
+    `list_cases` devolve o corpo como veio, então o campo já aparece sem
+    atualizar o `casehub`.
 
 ---
 

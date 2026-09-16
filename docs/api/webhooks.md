@@ -43,10 +43,9 @@ As duas listagens (`/v1/webhooks` e o log de entregas) respondem no mesmo
 formato paginado de `GET /v1/cases` — `total`, `page`, `page_size`,
 `total_pages` e `items` —, com `page_size` até 500 e default 50.
 
-!!! note "`total_pages` ainda não saiu numa release"
-    Ele está em `main` e no `openapi.yaml` publicado, mas é posterior ao
-    corte da **0.4.2**. Campo aditivo: quem já trata a resposta continua
-    funcionando com ou sem ele. Ver
+!!! note "`total_pages` existe desde a API 0.5.0"
+    Uma instalação em versão anterior não devolve o campo. Campo aditivo:
+    quem já trata a resposta continua funcionando com ou sem ele. Ver
     [Endpoints](endpoints.md#get-listar-e-contar).
 
 ---
