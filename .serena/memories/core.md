@@ -2,7 +2,7 @@
 
 Documentação central do ecossistema CaseHub (a API `fast-casehub` e o SDK
 `casehub`). mkdocs-material, **português e inglês**, versionada por `mike` — a versão
-do site é própria (`VERSION`, hoje `1.1.0`), **não** a da API nem a do SDK, porque ele
+do site é própria (`VERSION`, hoje `1.2.0`), **não** a da API nem a do SDK, porque ele
 documenta os dois com números diferentes.
 
 **Publicada em dois lugares, a partir do mesmo `main`** (2026-08-21):
@@ -220,15 +220,18 @@ listava a flag `--api-key`, removida na 0.4.0; e a `sdk/cliente.md`
 dizia que o retry de 401 podia duplicar itens de lote sem `case_id` —
 desde a 0.3.0 o retry e **desligado** justamente nesse caso.
 
-**Uma ressalva a trocar no proximo corte da API**: `total_pages` (nas
-tres listagens paginadas) esta em `main` e no `openapi.yaml`, mas e
-posterior a tag `v0.4.2` — nenhuma release cortada devolve o campo. O
-site o documenta com uma nota dizendo exatamente isso, em
-`api/endpoints.md` e `api/webhooks.md` (pt+en). Quando a proxima versao
-sair, troque a nota pelo numero dela. A armadilha que criou a duvida: o
-`info.version` do `openapi.yaml` vem do metadado instalado, entao o
-arquivo diz `0.4.2` **e ja contem o campo** — o numero nele nao prova o
-que ele descreve.
+**Realinhado com a API 0.5.0 em 2026-09-16** (`VERSION` 1.1.0 -> 1.2.0,
+mesmo precedente do realinhamento com a 0.4.2). A nota do `total_pages`
+em `api/endpoints.md` e `api/webhooks.md` (pt+en) passou a dizer "desde
+a API 0.5.0". Entrou em `mudancas.md` a secao da 0.5.0 com duas abas: o
+`prod` so HTTPS (exige acao: `CASEHUB_BASE_URL`/`CASEHUB_TOKEN_URL` em
+`https://`, porque o SDK nao segue o `308`) e o `total_pages`. O aviso
+"Ainda sem TLS" de `operacao/deploy.md` virou o do HTTPS. Selos, aviso da
+capa e `instalacao.md` citam 0.5.0. **Sem o dominio interno**: a regra de
+"o que este site nao pode dizer" vale - o texto descreve o profile, nao a
+instalacao. A armadilha que tinha criado a duvida continua valendo para a
+proxima vez: o `info.version` do `openapi.yaml` vem do metadado
+instalado, entao o numero nele nao prova o que o arquivo descreve.
 
 **O que o SDK nao cobre, e o site agora diz**: as rotas de webhook, o
 cursor e os operadores `exists`/`not_exists`/`ne` nao tem metodo nem
