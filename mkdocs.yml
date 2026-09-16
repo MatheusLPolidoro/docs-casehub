@@ -149,6 +149,10 @@ hooks:
   # "Unhandled file case" e reprova o `--strict`. O hook grava dentro do
   # `docs_dir`, antes da coleta, nos dois idiomas. Ver o cabeçalho dele.
   - hooks/estrutura.py
+  # Tira do <head> os links de idioma que faziam o JavaScript do tema buscar
+  # `sitemap.xml` em cada página (404 no console), e mantém o `404.html` da
+  # raiz no idioma padrão. Ver o cabeçalho dele.
+  - hooks/idiomas.py
 
 extra:
   version:
