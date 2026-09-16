@@ -302,16 +302,17 @@ string.
 | `total_pages` | `ceil(total / page_size)`. An empty list returns `0`, not `1` — with no records there is no page of content at all. |
 | `items` | The cases on this page. |
 
-!!! note "`total_pages` has not shipped in a release yet"
-    It is on `main` and in the published `openapi.yaml`, but it came
-    after the **0.4.2** cut: whoever runs the released version does not
-    get the field and keeps computing `ceil(total / page_size)` on their
+!!! note "`total_pages` exists since API 0.5.0"
+    An installation on an earlier version does not return the field, and
+    whoever consumes it keeps computing `ceil(total / page_size)` on their
     own.
 
     The field is **additive** — no existing field changed — so a client
     that already handles the response keeps working either way. All three
     paginated listings gained it at once: this one, `GET /v1/webhooks`
-    and `GET /v1/webhooks/{id}/deliveries`.
+    and `GET /v1/webhooks/{id}/deliveries`. In the SDK, `list_cases`
+    returns the body as it came: the field shows up in the dictionary
+    without upgrading `casehub`.
 
 **Authorization on listings** — an OIDC client cannot see other automations
 by simply omitting the filter: the token's claim **is** the filter when none

@@ -24,18 +24,21 @@ flowchart TD
 | Profile | What it starts |
 |---|---|
 | `uat` | API + Postgres + Keycloak + nginx — a complete, disposable local stack. |
-| `prod` | Only the API and nginx, pointing at infrastructure that already exists. |
+| `prod` | The API, nginx — HTTPS only — and the documentation, pointing at infrastructure that already exists. |
 
 The two are **mutually exclusive**, and in both it is **nginx** that
 publishes the port on the host: the API services publish no port at all
-and are only reachable over the compose network. The address the consumer
-uses does not change.
+and are only reachable over the compose network. On `uat` nginx publishes
+`CASEHUB_PORT` over HTTP; on `prod`, ports 80 and 443, and only 443 serves
+the API.
 
-!!! warning "Still no TLS"
-    The proxy came first, the certificate comes later. The
-    `listen ... ssl` block is written and commented out in the template,
-    and enabling it requires no change on the API side — `X-Forwarded-Proto`
-    starts reading `https` on its own.
+!!! warning "`prod` serves HTTPS only (since API 0.5.0)"
+    Port 80 answers `308` to `https://`, and the SDK does not follow
+    redirects: configure the consumer with `https://` (see
+    [What changed](../mudancas.md)). The certificate and key are mounted into
+    the proxy from `certs/`, outside git; without them nginx does not start.
+    Nothing changes on the API side — `X-Forwarded-Proto` starts reading
+    `https` on its own.
 
 ### Healthcheck
 

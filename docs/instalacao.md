@@ -17,7 +17,7 @@ Requer **Python 3.11+**. As dependências de runtime são `httpx`,
 `typer`, `toml` e `rich`.
 
 !!! warning "Fixe a versão"
-    A versão atual do SDK é a **0.7.2**, e a da API é a **0.4.2**.
+    A versão atual do SDK é a **0.7.2**, e a da API é a **0.5.0**.
     Prefira `pip install "casehub==0.7.2"` a instalar sem piso, para que
     um ambiente não acorde numa versão incompatível.
 

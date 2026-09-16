@@ -45,10 +45,10 @@ paginated shape as `GET /v1/cases` — `total`, `page`, `page_size`,
 `total_pages` and `items` — with `page_size` up to 500 and a default of
 50.
 
-!!! note "`total_pages` has not shipped in a release yet"
-    It is on `main` and in the published `openapi.yaml`, but it came
-    after the **0.4.2** cut. The field is additive: a client that already
-    handles the response keeps working with or without it. See
+!!! note "`total_pages` exists since API 0.5.0"
+    An installation on an earlier version does not return the field. The
+    field is additive: a client that already handles the response keeps
+    working with or without it. See
     [Endpoints](endpoints.md#get-list-and-count).
 
 ---

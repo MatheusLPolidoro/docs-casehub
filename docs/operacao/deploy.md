@@ -24,18 +24,21 @@ flowchart TD
 | Profile | O que sobe |
 |---|---|
 | `uat` | API + Postgres + Keycloak + nginx — stack local completa e descartável. |
-| `prod` | Só a API e o nginx, apontando para a infraestrutura que já existe. |
+| `prod` | A API, o nginx — só HTTPS — e a documentação, apontando para a infraestrutura que já existe. |
 
 Os dois são **mutuamente exclusivos**, e nos dois quem publica a porta no
 host é o **nginx**: os serviços de API não publicam porta nenhuma e só
-são alcançáveis pela rede do compose. O endereço que o consumidor usa não
-muda.
+são alcançáveis pela rede do compose. No `uat` o nginx publica
+`CASEHUB_PORT` em HTTP; no `prod`, as portas 80 e 443, e só a 443 atende
+a API.
 
-!!! warning "Ainda sem TLS"
-    O proxy entrou primeiro, o certificado vem depois. O bloco
-    `listen ... ssl` está escrito e comentado no template, e ligá-lo não
-    exige mudança do lado da API — o `X-Forwarded-Proto` passa a valer
-    `https` sozinho.
+!!! warning "O `prod` só atende por HTTPS (desde a API 0.5.0)"
+    A porta 80 responde `308` para o `https://`, e o SDK não segue
+    redirecionamento: configure o consumidor com `https://` (ver
+    [O que mudou](../mudancas.md)). O certificado e a chave são montados no
+    proxy a partir de `certs/`, fora do git; sem eles o nginx não sobe. Do
+    lado da API nada muda — o `X-Forwarded-Proto` passa a valer `https`
+    sozinho.
 
 ### Healthcheck
 

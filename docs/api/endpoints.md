@@ -300,15 +300,16 @@ número ou string — sem ambiguidade de tipo na query string.
 | `total_pages` | `ceil(total / page_size)`. Lista vazia devolve `0`, não `1` — sem registro não há página de conteúdo nenhuma. |
 | `items` | Os casos desta página. |
 
-!!! note "`total_pages` ainda não saiu numa release"
-    Ele está em `main` e no `openapi.yaml` publicado, mas é posterior ao
-    corte da **0.4.2**: quem roda a versão publicada não recebe o campo e
-    segue calculando `ceil(total / page_size)` por conta própria.
+!!! note "`total_pages` existe desde a API 0.5.0"
+    Uma instalação em versão anterior não devolve o campo, e quem a
+    consome segue calculando `ceil(total / page_size)` por conta própria.
 
     O campo é **aditivo** — nenhum campo existente mudou —, então o
     cliente que já trata a resposta continua funcionando nos dois casos.
     As três listagens paginadas da API o ganharam de uma vez: esta,
-    `GET /v1/webhooks` e `GET /v1/webhooks/{id}/deliveries`.
+    `GET /v1/webhooks` e `GET /v1/webhooks/{id}/deliveries`. No SDK,
+    `list_cases` devolve o corpo como veio: o campo aparece no dicionário
+    sem precisar atualizar o `casehub`.
 
 **Autorização na listagem** — um cliente OIDC não consegue ver outras
 automações simplesmente omitindo o filtro: o claim do token **é** o

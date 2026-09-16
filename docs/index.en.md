@@ -28,7 +28,7 @@
      versions come from each project's `pyproject.toml` and the Python floor
      from the `requires-python` of both; change those, change these. -->
 ![SDK casehub](https://img.shields.io/badge/SDK%20casehub-0.7.2-1565c0)
-![API fast-casehub](https://img.shields.io/badge/API%20fast--casehub-0.4.2-1565c0)
+![API fast-casehub](https://img.shields.io/badge/API%20fast--casehub-0.5.0-1565c0)
 ![Python](https://img.shields.io/badge/python-3.11%2B-34D058?logo=python&logoColor=white)
 ![Contract](https://img.shields.io/badge/contract-v1-6a1b9a)
 </div>
@@ -83,7 +83,7 @@ Deploy, environment variables and what to watch in production.
 The behaviour changes that affect whoever integrates — and what to do about
 each one.
 
-!!! info "This documentation describes API 0.4.2 and SDK 0.7.2"
+!!! info "This documentation describes API 0.5.0 and SDK 0.7.2"
     Those are the current versions of the two artefacts. If you run an
     earlier one, see [What changed](mudancas.md) for the differences — and
     for what requires action from whoever integrates.
