@@ -70,6 +70,49 @@ saiu do `requirements.txt` junto.
 O hook só grava quando o conteúdo mudou — o `mkdocs serve` observa o `docs_dir`,
 e reescrever igual a cada `on_config` faria o watcher entrar em laço.
 
+### Terceiro destino: cópia no fast-casehub, servida em /mkdocs (2026-09-16)
+
+`fast-casehub/mkdocs/` tem `docs/`, `hooks/`, `overrides/` e `mkdocs.yml`
+**copiados daqui** (origem registrada no `mkdocs/README.md` de lá), servidos
+pela VM de produção da API em `https://casehub.callink.com.br/mkdocs/`. Este
+repositório continua sendo a fonte da verdade — **uma edição aqui não chega lá
+sozinha**: depois de promover, rode `fast-casehub/mkdocs/sincronizar.sh` e
+commite no fast-casehub. Tudo o que é só daquele destino (`site_url` do
+subcaminho, `mike` desligado, pins exatos, Dockerfile) fica em arquivos
+próprios de lá, para a cópia continuar fiel.
+
+### `hooks/idiomas.py` e `overrides/404.html` — dois defeitos do i18n (2026-09-16)
+
+Achados na validação daquela cópia, e presentes no GitHub Pages também:
+
+- **404 de `sitemap.xml` a cada página.** Quem busca **não** é o seletor de
+  idioma, e sim o `integrations/alternate` do tema: para cada
+  `<link rel="alternate" hreflang>` do `<head>` (escrito pelo `base.html` a
+  partir de `config.extra.alternate`), ele baixa `sitemap.xml` relativo ao
+  `href`. Foi feito para idiomas em sites separados; o i18n reescreve esse
+  `href` para a página equivalente, então a busca caía em
+  `api/endpoints/sitemap.xml` — e, sob o `mike`, até em `/sitemap.xml` na raiz
+  do domínio. O hook tira **só essas tags do `<head>`** (`on_post_page` e
+  `on_post_template`). Nada depende delas: o seletor é o `alternate.html`, que
+  navega sozinho, e o `hreflang` para buscadores segue no `sitemap.xml` (72
+  `xhtml:link`).
+- **`404.html` da raiz em inglês.** O i18n gera o 2º idioma chamando `build()`
+  de novo no **mesmo `site_dir`**; o `404.html` é *static template* do tema e
+  vai sempre para a raiz, então o último idioma vence. O hook guarda o 404 do
+  idioma padrão e o devolve no build dos outros. E o título: o `404.html` do
+  Material 9.7.7 escreve `404 - Not found` **fixo**, fora das traduções — daí o
+  `overrides/404.html`, que escolhe o texto por `config.theme.language`.
+
+Medido com Chromium num deploy **real** do `mike` (repo temporário, servido em
+`/docs-casehub/latest/`): sem a correção, 16 pedidos de sitemap num roteiro de
+troca de idioma; com ela, zero, e a troca pela capa e por páginas internas
+segue funcionando nos dois sentidos, com o seletor de versões intacto.
+
+Sobra um 404 **externo** no console, sem relação: o tema consulta
+`api.github.com/.../releases/latest` para a barra do repositório, e o repo não
+tem release publicada. O `docs-param-manager` usa o mesmo i18n e
+provavelmente tem os mesmos dois defeitos — não verificado.
+
 ### Os arquivos de interface são cópias do docs-param-manager
 
 **Byte a byte, e de propósito.** Estes vieram de lá e devem continuar
