@@ -1,0 +1,21 @@
+{#
+  Página 404 com o título no idioma do build.
+
+  O `404.html` do mkdocs-material (9.7.7) escreve `404 - Not found` fixo, sem
+  passar pelas traduções do tema — em qualquer idioma, a página de erro saía
+  com o título em inglês. O resto do arquivo é o original: estende `main.html`
+  e só troca o bloco de conteúdo.
+
+  O `404.html` da raiz é o do idioma padrão por causa de `hooks/idiomas.py`;
+  este template só decide o texto. Ao atualizar o tema, conferir se o
+  original mudou.
+#}
+{% extends "main.html" %}
+
+{% block content %}
+  {% if config.theme.language == "en" %}
+    <h1>404 - Page not found</h1>
+  {% else %}
+    <h1>404 - Página não encontrada</h1>
+  {% endif %}
+{% endblock %}
