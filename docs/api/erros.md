@@ -25,6 +25,10 @@ inesperadas — um bug interno não escapa em outro formato.
 | `case_not_found` | 404 | O caso não existe. |
 | `status_conflict` | 409 | O `expected_status` do `PATCH` não bate com o estado atual — e nada foi escrito. |
 | `invalid_webhook_url` | 400 | A `url` da assinatura não é `http(s)` absoluta; ou veio `null` num `PATCH`. |
+| `invalid_request_spec` | 400 | A especificação de requisição é malformada: diretiva desconhecida, caminho inválido, expressão regular que não compila, ou um dos tetos estourado. |
+| `invalid_connection_config` | 400 | A conexão de destino não serve ao modo declarado: campo obrigatório ausente, `base_url` sem `https` ou apontando para endereço interno, nome repetido na automação. |
+| `connection_not_found` | 404 | A conexão não existe, ou é de outra automação. |
+| `connection_in_use` | 409 | Há assinatura apontando para a conexão — ela não é removida, e nada foi alterado. |
 | `webhook_not_found` | 404 | A assinatura (ou a entrega) não existe, ou é de outra automação. |
 | `internal_error` | 500 | Falha inesperada do serviço. |
 

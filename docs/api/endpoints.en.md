@@ -320,6 +320,28 @@ is given, and an explicit filter that disagrees answers 403.
 
 ---
 
+## Delivery connections and delivering to other APIs
+
+Seven routes used by [delivering to a third-party API](entregas.en.md).
+The dedicated page explains the design; this is just the map.
+
+| Method | Route | What it does |
+|---|---|---|
+| `POST` | `/v1/delivery-connections` | registers a connection: base URL, auth mode, credentials, throughput |
+| `GET` | `/v1/delivery-connections` | lists the automation's connections, paginated |
+| `GET` | `/v1/delivery-connections/{connection_id}` | reads one |
+| `PATCH` | `/v1/delivery-connections/{connection_id}` | changes it; this is where a credential is rotated |
+| `DELETE` | `/v1/delivery-connections/{connection_id}` | removes it, if no subscription uses it |
+| `POST` | `/v1/delivery-connections/{connection_id}/test` | authenticates for real and returns the outcome |
+| `POST` | `/v1/webhooks/{webhook_id}/preview` | shows what **would** be sent, without sending |
+
+!!! warning "The credential goes in and never comes back"
+    None of these routes returns `auth_secrets` or the cached token. If
+    lost, the credential is rewritten via `PATCH`.
+
+A connection belongs to the automation in the `azp` claim, like
+everything else: another automation's id answers `404`, never `403`.
+
 ## `/health` and `/ready`
 
 | Route | Touches the database | Use |

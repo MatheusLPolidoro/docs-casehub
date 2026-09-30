@@ -8,6 +8,48 @@ Versões atuais: **API 0.5.0** e **SDK 0.7.2**.
 
 ---
 
+## Entrega para APIs de terceiros — API 0.6.0
+
+Uma assinatura deixou de só saber entregar o payload do CaseHub: ela
+pode entregar **no formato de uma API que já existe**, com o verbo, o
+caminho, os cabeçalhos e o corpo que aquela API exige.
+
+Ver [Entregas para outras APIs](api/entregas.md) para o desenho
+completo. O essencial:
+
+- **Conexão de destino** (`/v1/delivery-connections`): para onde
+  entregar e como autenticar, **compartilhada** entre assinaturas. Sete
+  modos de autenticação, incluindo login em endpoint próprio do destino
+  com o token lido por caminho configurável.
+- **Especificação de requisição** na assinatura: um template JSON cuja
+  **forma é a forma do destino** — é o que permite montar um corpo em
+  array de pares rótulo-valor a partir de um registro aninhado. Quinze
+  tratamentos de valor (expressão regular, dicionário, data, caixa,
+  recorte, conversão).
+- **Pré-visualização** (`POST /v1/webhooks/{id}/preview`): mostra o que
+  seria enviado, sem enviar nada.
+- **Teste de conexão**: autentica de verdade no destino, para credencial
+  errada aparecer no cadastro e não como entrega falhando de madrugada.
+
+!!! danger "Mudança de comportamento: redirecionamento não é mais seguido"
+    Vale **também para o webhook clássico**, e é a única coisa aqui que
+    um consumidor pode notar.
+
+    Antes, uma entrega cujo destino respondesse `301`/`302`/`303` era
+    seguida automaticamente — e ao seguir, o serviço trocava o verbo por
+    `GET` e **descartava o corpo**. O destino respondia `200` a uma
+    leitura vazia, e o caso era registrado como entregue **sem nada ter
+    chegado**. O cabeçalho de autorização também era reenviado ao
+    endereço apontado, que pode ser de outro host.
+
+    Agora o redirecionamento é erro de configuração: a entrega falha,
+    entra no backoff, e o registro nomeia o endereço apontado. **Se
+    alguma assinatura sua depende de um destino que redireciona, aponte-a
+    para o endereço final.**
+
+**Assinatura sem especificação continua idêntica**: mesmo verbo, mesmo
+corpo, mesmos cabeçalhos `X-Casehub-*` e a mesma assinatura HMAC.
+
 ## HTTPS no profile `prod` e `total_pages` — API 0.5.0
 
 A troca para HTTPS **exige ação** de quem consome uma instalação que usa o

@@ -24,6 +24,19 @@ flowchart LR
     `automation` field in the body. Consuming two automations takes two
     OIDC clients.
 
+
+!!! danger "Redirects are no longer followed (API 0.6.0)"
+    If your endpoint answers `301`/`302`/`303`, the delivery **fails**
+    instead of being followed. Previously it was followed, the verb
+    became `GET`, the body was dropped, and the case was recorded as
+    delivered with nothing having arrived. Point the subscription's
+    `url` at the final address.
+
+!!! tip "Need delivery in your API's format instead of this one?"
+    See [Delivering to other APIs](entregas.en.md): the subscription can
+    declare verb, path, headers and body, and the service builds the
+    request your side already expects.
+
 ---
 
 ## Routes
