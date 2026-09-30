@@ -25,6 +25,10 @@ failures too — an internal bug does not escape in another format.
 | `case_not_found` | 404 | The case does not exist. |
 | `status_conflict` | 409 | The `PATCH`'s `expected_status` does not match the current state — and nothing was written. |
 | `invalid_webhook_url` | 400 | The subscription `url` is not an absolute `http(s)` URL; or `null` came in a `PATCH`. |
+| `invalid_request_spec` | 400 | The request specification is malformed: unknown directive, invalid path, a regular expression that does not compile, or one of the ceilings exceeded. |
+| `invalid_connection_config` | 400 | The delivery connection does not fit the declared mode: required field missing, `base_url` without `https` or pointing at an internal address, duplicate name within the automation. |
+| `connection_not_found` | 404 | The connection does not exist, or belongs to another automation. |
+| `connection_in_use` | 409 | A subscription points at the connection — it is not removed, and nothing was changed. |
 | `webhook_not_found` | 404 | The subscription (or the delivery) does not exist, or belongs to another automation. |
 | `internal_error` | 500 | Unexpected service failure. |
 

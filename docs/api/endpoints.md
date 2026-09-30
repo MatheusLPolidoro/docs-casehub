@@ -318,6 +318,28 @@ responde 403.
 
 ---
 
+## Conexões de destino e entrega para outras APIs
+
+Sete rotas que a [entrega para uma API de terceiro](entregas.md) usa. A
+página dedicada explica o desenho; aqui fica só o mapa.
+
+| Método | Rota | O que faz |
+|---|---|---|
+| `POST` | `/v1/delivery-connections` | cadastra uma conexão: URL base, modo de autenticação, credenciais, vazão |
+| `GET` | `/v1/delivery-connections` | lista as conexões da automação, paginado |
+| `GET` | `/v1/delivery-connections/{connection_id}` | consulta uma |
+| `PATCH` | `/v1/delivery-connections/{connection_id}` | altera; é aqui que se rotaciona credencial |
+| `DELETE` | `/v1/delivery-connections/{connection_id}` | remove, se nenhuma assinatura usar |
+| `POST` | `/v1/delivery-connections/{connection_id}/test` | autentica de verdade no destino e devolve o desfecho |
+| `POST` | `/v1/webhooks/{webhook_id}/preview` | mostra o que **seria** enviado, sem enviar |
+
+!!! warning "A credencial entra e nunca volta"
+    Nenhuma dessas rotas devolve `auth_secrets` nem o token em cache.
+    Perdida, a credencial se regrava por `PATCH`.
+
+A conexão pertence à automação do claim `azp`, como todo o resto: id de
+outra automação responde `404`, nunca `403`.
+
 ## `/health` e `/ready`
 
 | Rota | Toca o banco | Uso |

@@ -8,6 +8,49 @@ Current versions: **API 0.5.0** and **SDK 0.7.2**.
 
 ---
 
+## Delivering to third-party APIs — API 0.6.0
+
+A subscription is no longer limited to delivering the CaseHub payload:
+it can deliver **in the format of an API that already exists**, with the
+verb, path, headers and body that API requires.
+
+See [Delivering to other APIs](api/entregas.en.md) for the full design.
+The essentials:
+
+- **Delivery connection** (`/v1/delivery-connections`): where to deliver
+  and how to authenticate, **shared** across subscriptions. Seven
+  authentication modes, including logging in at the destination's own
+  endpoint with the token read by a configurable path.
+- **Request specification** on the subscription: a JSON template whose
+  **shape is the shape of the destination** — that is what allows
+  building a body as an array of label/value pairs out of a nested
+  record. Fifteen value transforms (regular expression, dictionary,
+  date, case, slicing, conversion).
+- **Preview** (`POST /v1/webhooks/{id}/preview`): shows what would be
+  sent, without sending anything.
+- **Connection test**: authenticates for real against the destination,
+  so a wrong credential shows up at registration instead of as a
+  delivery failing in the middle of the night.
+
+!!! danger "Behavior change: redirects are no longer followed"
+    This applies **to the classic webhook too**, and it is the only
+    thing here a consumer may notice.
+
+    Previously, a delivery whose destination answered `301`/`302`/`303`
+    was followed automatically — and on following, the service switched
+    the verb to `GET` and **dropped the body**. The destination answered
+    `200` to an empty read, and the case was recorded as delivered
+    **with nothing having arrived**. The authorization header was also
+    resent to the address pointed at, possibly another host.
+
+    Redirects are now a configuration error: the delivery fails, enters
+    the backoff, and the record names the address pointed at. **If any
+    of your subscriptions relies on a destination that redirects, point
+    it at the final address.**
+
+**A subscription without a specification is unchanged**: same verb, same
+body, same `X-Casehub-*` headers and the same HMAC signature.
+
 ## HTTPS on the `prod` profile and `total_pages` — API 0.5.0
 
 The switch to HTTPS **requires action** from whoever consumes an

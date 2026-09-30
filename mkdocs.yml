@@ -48,6 +48,7 @@ nav:
       - Autenticação: api/autenticacao.md
       - Endpoints: api/endpoints.md
       - Webhooks: api/webhooks.md
+      - Entregas para outras APIs: api/entregas.md
       - Erros: api/erros.md
       - Retenção: api/retencao.md
   - SDK (casehub):
@@ -134,6 +135,7 @@ plugins:
             Autenticação: Authentication
             Erros: Errors
             Retenção: Retention
+            Entregas para outras APIs: Delivering to other APIs
             Cliente síncrono: Synchronous client
             Cliente assíncrono: Asynchronous client
             Operação: Operations

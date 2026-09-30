@@ -113,6 +113,25 @@ Sobra um 404 **externo** no console, sem relação: o tema consulta
 tem release publicada. O `docs-param-manager` usa o mesmo i18n e
 provavelmente tem os mesmos dois defeitos — não verificado.
 
+### Página `api/entregas` (2026-09-30, ADR-0005 do fast-casehub)
+
+A entrega para APIs de terceiros: conexão de destino, os sete modos de
+autenticação, o template que monta a requisição, os quinze tratamentos
+de valor e a pré-visualização. Nos dois idiomas, com a nav traduzida
+(`Entregas para outras APIs` / `Delivering to other APIs`).
+
+**Prosa auditada para o site público**: nenhum nome de cliente, tenant,
+host interno ou endereço de rede. Os exemplos usam `api.exemplo.com` /
+`api.example.com`. Isso não é zelo genérico — é a regra da seção "O que
+este site não pode dizer", aplicada a uma página que descreve uma
+integração com um produto de terceiro identificável.
+
+O render foi conferido por inspeção do HTML servido (título traduzido,
+mermaid, 16 admoestações, 7 tabelas, nada de markdown cru vazando);
+**a conferência visual em navegador ficou pendente** na sessão que a
+escreveu, porque a extensão não estava conectada. `--strict` verde com a
+página quebrada é rotina aqui.
+
 ### Os arquivos de interface são cópias do docs-param-manager
 
 **Byte a byte, e de propósito.** Estes vieram de lá e devem continuar

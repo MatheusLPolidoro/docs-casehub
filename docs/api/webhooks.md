@@ -23,6 +23,19 @@ flowchart LR
     a automação da assinatura, e não existe campo `automation` no corpo.
     Quem consome duas automações precisa de dois clients OIDC.
 
+
+!!! danger "Redirecionamento não é mais seguido (API 0.6.0)"
+    Se o seu endpoint responder `301`/`302`/`303`, a entrega **falha**
+    em vez de ser seguida. Antes ela era seguida, o verbo virava `GET`,
+    o corpo era descartado, e o caso era registrado como entregue sem
+    nada ter chegado. Aponte a `url` da assinatura para o endereço
+    final.
+
+!!! tip "Precisa entregar no formato da sua API, e não neste?"
+    Veja [Entregas para outras APIs](entregas.md): a assinatura pode
+    declarar verbo, caminho, cabeçalhos e corpo, e o serviço monta a
+    requisição que o seu lado já espera.
+
 ---
 
 ## Rotas
