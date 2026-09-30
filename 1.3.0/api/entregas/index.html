@@ -1,0 +1,2208 @@
+
+<!doctype html>
+<html lang="pt" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Documentação central do ecossistema CaseHub — a API fast-casehub e o SDK cliente casehub.">
+      
+      
+      
+      
+        <link rel="prev" href="../webhooks/">
+      
+      
+        <link rel="next" href="../erros/">
+      
+      
+        
+        
+        
+      
+      
+      <link rel="icon" href="../../assets/logo.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Entregas para outras APIs - CaseHub</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/css/marca.css">
+    
+      <link rel="stylesheet" href="../../assets/css/tipografia.css">
+    
+      <link rel="stylesheet" href="../../assets/css/termynal.css">
+    
+      <link rel="stylesheet" href="../../assets/css/extra.css">
+    
+      <link rel="stylesheet" href="../../assets/css/a11y.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#entregar-para-uma-api-de-terceiro" class="md-skip">
+          Ir para o conteúdo
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+  
+  
+
+
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Cabeçalho">
+    <a href="../.." title="CaseHub" class="md-header__button md-logo" aria-label="CaseHub" data-md-component="logo">
+      
+  <img src="../../assets/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            CaseHub
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Entregas para outras APIs
+            
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="md-header__option" data-pm-fonte hidden>
+      <div class="md-select">
+        <button class="md-header__button md-icon" aria-label="Fonte do texto" title="Fonte do texto">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 8h3v12h1v1h-4v-1h1v-3h-4l-1.5 3H14v1h-4v-1h1zm1 1-3.5 7H18zM5 3h5c1.11 0 2 .89 2 2v11H9v-5H6v5H3V5c0-1.11.89-2 2-2m1 2v4h3V5z"/></svg>
+        </button>
+        <div class="md-select__inner">
+          <ul class="md-select__list" data-pm-fonte-lista></ul>
+        </div>
+      </div>
+    </div>
+
+    
+      <a
+        class="md-header__button md-icon"
+        href="index.md"
+        download="api_entregas.md"
+        title="Baixar o Markdown original desta página"
+        aria-label="Baixar o Markdown original desta página"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5 20h14v-2H5m14-9h-4V3H9v6H5l7 7z"/></svg>
+      </a>
+    
+
+    <button
+      type="button"
+      class="md-header__button md-icon"
+      data-doc-print
+      hidden
+      title="Salvar esta página em PDF"
+      aria-label="Salvar esta página em PDF"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 3H6v4h12m1 5a1 1 0 0 1-1-1 1 1 0 0 1 1-1 1 1 0 0 1 1 1 1 1 0 0 1-1 1m-3 7H8v-5h8m3-6H5a3 3 0 0 0-3 3v6h4v4h12v-4h4v-6a3 3 0 0 0-3-3"/></svg>
+    </button>
+
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="blue" data-md-color-accent="teal"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      
+<div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Selecione o idioma">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          
+          
+            
+          
+          <li class="md-select__item">
+            <a href="./" hreflang="pt" class="md-select__link">
+              Português (Brasil)
+            </a>
+          </li>
+        
+          
+          
+            
+          
+          <li class="md-select__item">
+            <a href="../../en/api/entregas/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Buscar" placeholder="Buscar" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Pesquisar">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Limpar" aria-label="Limpar" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Inicializando a pesquisa
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/MatheusLPolidoro/docs-casehub" title="Ir ao repositório" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    MatheusLPolidoro/docs-casehub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navegação" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="CaseHub" class="md-nav__button md-logo" aria-label="CaseHub" data-md-component="logo">
+      
+  <img src="../../assets/logo.svg" alt="logo">
+
+    </a>
+    CaseHub
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/MatheusLPolidoro/docs-casehub" title="Ir ao repositório" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    MatheusLPolidoro/docs-casehub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sobre/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    O que é o CaseHub
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../arquitetura/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arquitetura
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Primeiros passos
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Primeiros passos
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../primeiros_passos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introdução
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../instalacao/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Instalação
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorial/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorial
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API (fast-casehub)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API (fast-casehub)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../autenticacao/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Autenticação
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../endpoints/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Endpoints
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../webhooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Webhooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Entregas para outras APIs
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Entregas para outras APIs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Índice">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Índice
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-cadastrar-a-conexao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Cadastrar a conexão
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Cadastrar a conexão">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#modos-de-autenticacao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modos de autenticação
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#o-que-nao-sai-daqui" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        O que não sai daqui
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#base_url-exige-tls-e-destino-externo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        base_url exige TLS e destino externo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vazao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Vazão
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-conferir-a-credencial" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Conferir a credencial
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-declarar-a-requisicao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Declarar a requisição
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Declarar a requisição">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#diretivas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Diretivas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tratamentos-de-valor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tratamentos de valor
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quando-o-dado-nao-existe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quando o dado não existe
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fields-continua-sendo-o-controle-de-privacidade" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fields continua sendo o controle de privacidade
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#success_rule" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        success_rule
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-conferir-antes-de-ligar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Conferir antes de ligar
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#o-que-esperar-em-operacao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        O que esperar em operação
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="O que esperar em operação">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#conexao-desativada-pausa-nao-descarta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conexão desativada pausa, não descarta
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#entrega-e-at-least-once" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Entrega é at-least-once
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#diagnostico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Diagnóstico
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rotas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rotas
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../erros/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Erros
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../retencao/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Retenção
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SDK (casehub)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    SDK (casehub)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk/cliente/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cliente síncrono
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk/assincrono/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cliente assíncrono
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sdk/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operação
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Operação
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../operacao/deploy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deploy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../operacao/observabilidade/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Observabilidade
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mudancas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    O que mudou
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../estrutura/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Estrutura
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Índice">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Índice
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-cadastrar-a-conexao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Cadastrar a conexão
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Cadastrar a conexão">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#modos-de-autenticacao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modos de autenticação
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#o-que-nao-sai-daqui" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        O que não sai daqui
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#base_url-exige-tls-e-destino-externo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        base_url exige TLS e destino externo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vazao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Vazão
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-conferir-a-credencial" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Conferir a credencial
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-declarar-a-requisicao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Declarar a requisição
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Declarar a requisição">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#diretivas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Diretivas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tratamentos-de-valor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tratamentos de valor
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quando-o-dado-nao-existe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quando o dado não existe
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fields-continua-sendo-o-controle-de-privacidade" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fields continua sendo o controle de privacidade
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#success_rule" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        success_rule
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-conferir-antes-de-ligar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Conferir antes de ligar
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#o-que-esperar-em-operacao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        O que esperar em operação
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="O que esperar em operação">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#conexao-desativada-pausa-nao-descarta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conexão desativada pausa, não descarta
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#entrega-e-at-least-once" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Entrega é at-least-once
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#diagnostico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Diagnóstico
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rotas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rotas
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="entregar-para-uma-api-de-terceiro">Entregar para uma API de terceiro<a class="headerlink" href="#entregar-para-uma-api-de-terceiro" title="Permanent link">&para;</a></h1>
+<p>Um <a href="../webhooks/">webhook</a> exige que o consumidor construa um receptor
+sob medida. Quando do outro lado <strong>já existe uma API com contrato
+próprio</strong> — verbo, caminho, corpo e autenticação decididos por ela —, a
+assinatura pode entregar naquele formato, sem ninguém escrever receptor
+nenhum.</p>
+<p>São duas peças, e a separação tem motivo:</p>
+<table>
+<thead>
+<tr>
+<th>Peça</th>
+<th>O que guarda</th>
+<th>Por que é separada</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Conexão de destino</strong></td>
+<td>para onde entregar e como autenticar</td>
+<td>é <strong>compartilhada</strong>: um login serve várias assinaturas, e rotacionar a credencial é uma operação só</td>
+</tr>
+<tr>
+<td><strong>Especificação de requisição</strong></td>
+<td>o que enviar, na forma que o destino espera</td>
+<td>é por assinatura, porque cada uma recorta e mapeia o caso de um jeito</td>
+</tr>
+</tbody>
+</table>
+<pre class="mermaid"><code>flowchart LR
+    C["Caso muda"] --&gt; D{"Casa com as&lt;br/&gt;regras?"}
+    D --&gt;|não| N["Nada a fazer"]
+    D --&gt;|sim| F["Enfileira entrega"]
+    F --&gt; A["Autentica pela&lt;br/&gt;conexão"]
+    A --&gt; M["Monta a requisição&lt;br/&gt;&lt;small&gt;template&lt;/small&gt;"]
+    M --&gt; E["Envia ao destino"]
+    E --&gt;|"regra de sucesso"| OK["succeeded"]
+    E --&gt;|"429"| V["Reagenda pelo&lt;br/&gt;Retry-After"]
+    E --&gt;|"recusou"| R["Retenta com backoff"]</code></pre>
+<div class="admonition info">
+<p class="admonition-title">Assinatura sem especificação continua sendo webhook</p>
+<p>Tudo nesta página é <strong>aditivo</strong>. Uma assinatura sem
+<code>request_spec</code> entrega exatamente o que sempre entregou: mesmo
+verbo, mesmo corpo, mesmos cabeçalhos <code>X-Casehub-*</code> e a mesma
+assinatura HMAC.</p>
+</div>
+<hr />
+<h2 id="1-cadastrar-a-conexao">1. Cadastrar a conexão<a class="headerlink" href="#1-cadastrar-a-conexao" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>https://&lt;host&gt;/v1/delivery-connections<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Authorization: Bearer </span><span class="nv">$TOKEN</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s1">'Content-Type: application/json'</span><span class="w"> </span>-d<span class="w"> </span><span class="s1">'{</span>
+<span class="s1">  "name": "crm-producao",</span>
+<span class="s1">  "base_url": "https://api.exemplo.com",</span>
+<span class="s1">  "auth_mode": "login_token",</span>
+<span class="s1">  "auth_config": {</span>
+<span class="s1">    "url": "https://api.exemplo.com/v1/auth/",</span>
+<span class="s1">    "body_template": {</span>
+<span class="s1">      "username": {"$concat": [{"$secret": "tenant"}, {"$const": "\\"}, {"$secret": "usuario"}]},</span>
+<span class="s1">      "password": {"$secret": "senha"}</span>
+<span class="s1">    },</span>
+<span class="s1">    "token_path": "token",</span>
+<span class="s1">    "expires_in_path": "expiresIn",</span>
+<span class="s1">    "header_format": "Bearer {token}"</span>
+<span class="s1">  },</span>
+<span class="s1">  "auth_secrets": {"tenant": "...", "usuario": "...", "senha": "..."},</span>
+<span class="s1">  "rate_limit_per_second": 8</span>
+<span class="s1">}'</span>
+</code></pre></div>
+<h3 id="modos-de-autenticacao">Modos de autenticação<a class="headerlink" href="#modos-de-autenticacao" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th><code>auth_mode</code></th>
+<th>Quando usar</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>none</code></td>
+<td>destino aberto, ou que autentica por outro meio</td>
+</tr>
+<tr>
+<td><code>hmac_casehub</code></td>
+<td>o webhook clássico — é o default de toda assinatura antiga</td>
+</tr>
+<tr>
+<td><code>static_headers</code></td>
+<td>chave fixa em cabeçalho próprio</td>
+</tr>
+<tr>
+<td><code>basic</code></td>
+<td>usuário e senha em <code>Authorization: Basic</code></td>
+</tr>
+<tr>
+<td><code>bearer</code></td>
+<td>token fixo, sem renovação</td>
+</tr>
+<tr>
+<td><code>oauth2_client_credentials</code></td>
+<td>emissor OAuth2 padrão</td>
+</tr>
+<tr>
+<td><code>login_token</code></td>
+<td>o destino tem endpoint de login próprio</td>
+</tr>
+</tbody>
+</table>
+<p><code>login_token</code> é o mais genérico: ele autentica onde você mandar, lê o
+token <strong>por um caminho configurável</strong> e o injeta num cabeçalho cujo
+nome e formato também são seus.</p>
+<div class="admonition tip">
+<p class="admonition-title"><code>token_path</code> é configurável porque o nome do campo varia</p>
+<p>Há API que sequer publica como se chama o campo do token na
+resposta do login. Descubra com o <a href="#2-conferir-a-credencial">teste de conexão</a>:
+se o caminho estiver errado, a resposta diz exatamente isso.</p>
+</div>
+<p>O corpo do login é montado a partir dos segredos cadastrados, e aceita
+composição — <code>$secret</code>, <code>$const</code> e <code>$concat</code>. É o que permite um
+usuário em formato composto sem guardar tudo num segredo só, para o
+tenant não precisar ser reescrito toda vez que a senha girar.</p>
+<h3 id="o-que-nao-sai-daqui">O que não sai daqui<a class="headerlink" href="#o-que-nao-sai-daqui" title="Permanent link">&para;</a></h3>
+<div class="admonition warning">
+<p class="admonition-title">A credencial entra e nunca volta</p>
+<p>Nenhuma resposta desta API devolve <code>auth_secrets</code>, e nenhuma
+devolve o token em cache. Perdida, a credencial se <strong>regrava</strong> por
+<code>PATCH</code>, não se consulta. O <code>PATCH</code> substitui os segredos por
+inteiro, sem mesclar por chave — assim nenhum segredo antigo
+sobrevive sem alguém ver.</p>
+</div>
+<h3 id="base_url-exige-tls-e-destino-externo"><code>base_url</code> exige TLS e destino externo<a class="headerlink" href="#base_url-exige-tls-e-destino-externo" title="Permanent link">&para;</a></h3>
+<p>Mais estrito que o cadastro de webhook, e de propósito: a URL de um
+webhook <strong>recebe</strong> o caso, enquanto uma conexão pode <strong>enviar usuário e
+senha</strong> ao destino. Endereço de rede privada, laço local ou metadata é
+recusado no cadastro.</p>
+<h3 id="vazao">Vazão<a class="headerlink" href="#vazao" title="Permanent link">&para;</a></h3>
+<p><code>rate_limit_per_second</code> espaça os envios daquela conexão.</p>
+<div class="admonition warning">
+<p class="admonition-title">Configure <strong>abaixo</strong> do teto que o destino publica</p>
+<p>A janela é contada aqui, no instante do envio, e lá, no instante em
+que ele recebe. Com latência variável as duas não coincidem, e quem
+configura no limite exato fica disputando a borda — tomando <code>429</code>
+de vez em quando sem que nada esteja errado dos dois lados. Para um
+destino que corta em 10/s, use 8.</p>
+<p>O controle é por processo. É melhor esforço, não garantia.</p>
+</div>
+<hr />
+<h2 id="2-conferir-a-credencial">2. Conferir a credencial<a class="headerlink" href="#2-conferir-a-credencial" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>https://&lt;host&gt;/v1/delivery-connections/<span class="nv">$ID</span>/test<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Authorization: Bearer </span><span class="nv">$TOKEN</span><span class="s2">"</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">"ok"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="nt">"auth_mode"</span><span class="p">:</span><span class="w"> </span><span class="s2">"login_token"</span><span class="p">,</span><span class="w"> </span><span class="nt">"error"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w"> </span><span class="nt">"http_status"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">}</span>
+</code></pre></div>
+<p>Autentica <strong>de verdade</strong> no destino, ignorando qualquer token em cache
+— a pergunta é se a credencial cadastrada funciona agora, e um cache
+responderia sobre o passado. Nenhum caso é entregue.</p>
+<p>Faça isto <strong>antes</strong> de apontar qualquer assinatura para a conexão. Sem
+este passo, credencial errada só se manifesta como entrega falhando em
+segundo plano, num registro que talvez ninguém consulte.</p>
+<hr />
+<h2 id="3-declarar-a-requisicao">3. Declarar a requisição<a class="headerlink" href="#3-declarar-a-requisicao" title="Permanent link">&para;</a></h2>
+<p>As regras de filtro são as mesmas do webhook. O que muda é
+<code>request_spec</code> — e a ideia central é uma só:</p>
+<div class="admonition abstract">
+<p class="admonition-title">A forma do template é a forma do destino</p>
+<p>O corpo que você declara <strong>é</strong> o corpo que sai. Um mapa
+chave→chave plano não produziria um array de pares rótulo-valor; o
+template produz, porque ele tem a forma do que o destino espera.</p>
+</div>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">"connection_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"&lt;id da conexão&gt;"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"fields"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"documento"</span><span class="p">,</span><span class="w"> </span><span class="s2">"nome"</span><span class="p">,</span><span class="w"> </span><span class="s2">"id_externo"</span><span class="p">],</span>
+<span class="w">  </span><span class="nt">"request_spec"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"method"</span><span class="p">:</span><span class="w"> </span><span class="s2">"PUT"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"path"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"$concat"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"/v1/case/"</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="nt">"$from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"case.source_record.id_externo"</span><span class="p">}]},</span>
+<span class="w">    </span><span class="nt">"body"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"fields"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span><span class="nt">"fieldLabel"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"$const"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Document"</span><span class="p">},</span>
+<span class="w">         </span><span class="nt">"value"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"$from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"case.source_record.documento"</span><span class="p">,</span>
+<span class="w">                   </span><span class="nt">"$transforms"</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="nt">"op"</span><span class="p">:</span><span class="w"> </span><span class="s2">"keep_digits"</span><span class="p">}]}},</span>
+<span class="w">        </span><span class="p">{</span><span class="nt">"fieldLabel"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"$const"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Full Name"</span><span class="p">},</span>
+<span class="w">         </span><span class="nt">"value"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"$from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"case.source_record.nome"</span><span class="p">,</span>
+<span class="w">                   </span><span class="nt">"$transforms"</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="nt">"op"</span><span class="p">:</span><span class="w"> </span><span class="s2">"trim"</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="nt">"op"</span><span class="p">:</span><span class="w"> </span><span class="s2">"upper"</span><span class="p">}]}},</span>
+<span class="w">        </span><span class="p">{</span><span class="nt">"fieldLabel"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"$const"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Case Status"</span><span class="p">},</span>
+<span class="w">         </span><span class="nt">"value"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"$from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"case.status"</span><span class="p">,</span>
+<span class="w">                   </span><span class="nt">"$transforms"</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="nt">"op"</span><span class="p">:</span><span class="w"> </span><span class="s2">"map"</span><span class="p">,</span><span class="w"> </span><span class="nt">"table"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"aberto"</span><span class="p">:</span><span class="w"> </span><span class="s2">"OPEN"</span><span class="p">,</span><span class="w"> </span><span class="nt">"concluido"</span><span class="p">:</span><span class="w"> </span><span class="s2">"CLOSED"</span><span class="p">}}]}},</span>
+<span class="w">        </span><span class="p">{</span><span class="nt">"fieldLabel"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"$const"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Opened At"</span><span class="p">},</span>
+<span class="w">         </span><span class="nt">"value"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"$from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"case.started_at"</span><span class="p">,</span>
+<span class="w">                   </span><span class="nt">"$transforms"</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="nt">"op"</span><span class="p">:</span><span class="w"> </span><span class="s2">"date_format"</span><span class="p">,</span><span class="w"> </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"iso8601"</span><span class="p">,</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"epoch_ms"</span><span class="p">}]}},</span>
+<span class="w">        </span><span class="p">{</span><span class="nt">"fieldLabel"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"$const"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Observacao"</span><span class="p">},</span>
+<span class="w">         </span><span class="nt">"value"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"$from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"case.source_record.observacao"</span><span class="p">,</span><span class="w"> </span><span class="nt">"$omit_parent"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">}}</span>
+<span class="w">      </span><span class="p">],</span>
+<span class="w">      </span><span class="nt">"details"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"$each"</span><span class="p">:</span><span class="w"> </span><span class="s2">"case.source_record.extras"</span><span class="p">,</span><span class="w"> </span><span class="nt">"$as"</span><span class="p">:</span><span class="w"> </span><span class="s2">"extra"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"$template"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"fieldLabel"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"$from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"extra.rotulo"</span><span class="p">},</span>
+<span class="w">                      </span><span class="nt">"value"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"$from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"extra.valor"</span><span class="p">,</span><span class="w"> </span><span class="nt">"$transforms"</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="nt">"op"</span><span class="p">:</span><span class="w"> </span><span class="s2">"cast"</span><span class="p">,</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string"</span><span class="p">}]}}</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">"success_rule"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">200</span><span class="p">],</span><span class="w"> </span><span class="nt">"body"</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="nt">"path"</span><span class="p">:</span><span class="w"> </span><span class="s2">"status"</span><span class="p">,</span><span class="w"> </span><span class="nt">"op"</span><span class="p">:</span><span class="w"> </span><span class="s2">"eq"</span><span class="p">,</span><span class="w"> </span><span class="nt">"value"</span><span class="p">:</span><span class="w"> </span><span class="s2">"OK"</span><span class="p">}]}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="diretivas">Diretivas<a class="headerlink" href="#diretivas" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Diretiva</th>
+<th>O que faz</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>$const</code></td>
+<td>valor fixo, inclusive objeto ou array</td>
+</tr>
+<tr>
+<td><code>$from</code></td>
+<td>lê um caminho do caso e aplica os tratamentos</td>
+</tr>
+<tr>
+<td><code>$concat</code></td>
+<td>junta partes como texto</td>
+</tr>
+<tr>
+<td><code>$format</code></td>
+<td>formatação posicional, <code>{0}</code>, <code>{1}</code></td>
+</tr>
+<tr>
+<td><code>$each</code></td>
+<td>repete um sub-template sobre uma lista do registro</td>
+</tr>
+</tbody>
+</table>
+<p>Os caminhos usam a mesma gramática pontilhada dos filtros, incluindo
+índice de lista: <code>case.source_record.extras.0.rotulo</code>, e negativo conta
+do fim.</p>
+<h3 id="tratamentos-de-valor">Tratamentos de valor<a class="headerlink" href="#tratamentos-de-valor" title="Permanent link">&para;</a></h3>
+<p>Aplicados <strong>na ordem declarada</strong>.</p>
+<table>
+<thead>
+<tr>
+<th><code>op</code></th>
+<th>Efeito</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>trim</code>, <code>upper</code>, <code>lower</code></td>
+<td>recorte de espaços e caixa</td>
+</tr>
+<tr>
+<td><code>regex_replace</code>, <code>regex_extract</code></td>
+<td>substituição e extração por expressão regular</td>
+</tr>
+<tr>
+<td><code>keep_digits</code></td>
+<td>mantém só os números</td>
+</tr>
+<tr>
+<td><code>strip_chars</code></td>
+<td>remove os caracteres informados</td>
+</tr>
+<tr>
+<td><code>substring</code>, <code>pad</code>, <code>truncate</code></td>
+<td>recorte, preenchimento e corte</td>
+</tr>
+<tr>
+<td><code>map</code></td>
+<td>dicionário de valores (<code>aberto</code> → <code>OPEN</code>)</td>
+</tr>
+<tr>
+<td><code>date_format</code></td>
+<td>entre <code>iso8601</code>, <code>epoch_ms</code>, <code>epoch_s</code> e formatos com <code>%</code></td>
+</tr>
+<tr>
+<td><code>cast</code></td>
+<td>conversão de tipo</td>
+</tr>
+<tr>
+<td><code>json_encode</code></td>
+<td>objeto vira texto</td>
+</tr>
+<tr>
+<td><code>default</code></td>
+<td>valor quando ausente ou vazio</td>
+</tr>
+</tbody>
+</table>
+<h3 id="quando-o-dado-nao-existe">Quando o dado não existe<a class="headerlink" href="#quando-o-dado-nao-existe" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Declaração</th>
+<th>O que acontece</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>nada</td>
+<td><strong>a chave some</strong> do corpo — nunca vira nulo</td>
+</tr>
+<tr>
+<td><code>$default</code></td>
+<td>usa o valor declarado</td>
+</tr>
+<tr>
+<td><code>$omit_parent</code></td>
+<td><strong>o objeto que contém o campo some inteiro</strong></td>
+</tr>
+<tr>
+<td><code>$required</code></td>
+<td>a entrega termina, com o caminho no erro, e não é repetida</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition tip">
+<p class="admonition-title"><code>$omit_parent</code> existe para o par rótulo-valor</p>
+<p>Omitir só a chave está certo para objeto aninhado e errado para um
+par: deixaria <code>{"fieldLabel": "Observacao"}</code> sem valor, que o
+destino ou recusa ou grava vazio.</p>
+</div>
+<h3 id="fields-continua-sendo-o-controle-de-privacidade"><code>fields</code> continua sendo o controle de privacidade<a class="headerlink" href="#fields-continua-sendo-o-controle-de-privacidade" title="Permanent link">&para;</a></h3>
+<p>O template só enxerga o <code>source_record</code> <strong>já recortado</strong> por <code>fields</code>.
+O que não está declarado ali não sai do serviço, por caminho nenhum.</p>
+<h3 id="success_rule"><code>success_rule</code><a class="headerlink" href="#success_rule" title="Permanent link">&para;</a></h3>
+<p>Por faixa de status e, opcionalmente, por um predicado sobre a resposta
+— com os mesmos operadores dos filtros de conteúdo. Omitida, vale 2xx.</p>
+<div class="admonition warning">
+<p class="admonition-title">Há destino que responde <code>200</code> com erro no corpo</p>
+<p>Sem a regra, essa entrega contaria como feita e o caso sumiria em
+silêncio. Resposta que não é objeto interpretável <strong>não</strong> passa no
+predicado.</p>
+</div>
+<hr />
+<h2 id="4-conferir-antes-de-ligar">4. Conferir antes de ligar<a class="headerlink" href="#4-conferir-antes-de-ligar" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>https://&lt;host&gt;/v1/webhooks/<span class="nv">$SUB</span>/preview<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Authorization: Bearer </span><span class="nv">$TOKEN</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s1">'Content-Type: application/json'</span><span class="w"> </span>-d<span class="w"> </span><span class="s1">'{}'</span>
+</code></pre></div>
+<p>Renderiza contra um caso real e devolve verbo, URL, cabeçalhos e corpo
+— <strong>sem enviar nada e sem registrar entrega</strong>. Sem <code>case_id</code>, usa o
+caso mais recente que casa com as regras.</p>
+<p>Os cabeçalhos vêm <strong>redigidos</strong>: o de autenticação carrega credencial,
+e devolvê-lo aqui seria um jeito de lê-la de volta.</p>
+<p>Um caminho que não resolve aparece nesta resposta, e não como erro do
+destino num registro de segundo plano.</p>
+<hr />
+<h2 id="o-que-esperar-em-operacao">O que esperar em operação<a class="headerlink" href="#o-que-esperar-em-operacao" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Situação</th>
+<th>O que o serviço faz</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>429</code> do destino</td>
+<td>reagenda pelo <code>Retry-After</code> (teto de 1 h) e <strong>não conta falha</strong></td>
+</tr>
+<tr>
+<td><code>401</code>/<code>403</code></td>
+<td>reautentica <strong>uma vez</strong> e repete a mesma tentativa</td>
+</tr>
+<tr>
+<td>destino inalcançável, credencial recusada</td>
+<td>conta falha na <strong>conexão</strong></td>
+</tr>
+<tr>
+<td>destino recusou o conteúdo</td>
+<td>conta falha na <strong>assinatura</strong></td>
+</tr>
+<tr>
+<td>campo obrigatório ausente</td>
+<td>termina a entrega, sem contar falha</td>
+</tr>
+<tr>
+<td><code>3xx</code></td>
+<td>trata como URL errada; <strong>não segue o redirecionamento</strong></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition danger">
+<p class="admonition-title">Redirecionamento não é seguido, e isso é proposital</p>
+<p>Seguir um <code>301</code>/<code>302</code>/<code>303</code> trocaria o verbo para <code>GET</code>,
+<strong>descartaria o corpo</strong> e reenviaria o cabeçalho de autorização
+para o endereço apontado — que pode ser outro host. O resultado
+seria uma leitura vazia respondida com <code>200</code>, registrada como
+entrega bem-sucedida <strong>sem nada ter chegado</strong>. Corrija a URL
+cadastrada; o endereço apontado vem no registro da entrega.</p>
+</div>
+<h3 id="conexao-desativada-pausa-nao-descarta">Conexão desativada pausa, não descarta<a class="headerlink" href="#conexao-desativada-pausa-nao-descarta" title="Permanent link">&para;</a></h3>
+<p>Falhas seguidas de alcance ou credencial desativam a conexão. Isso
+<strong>pausa</strong> as entregas de todas as assinaturas que a usam, sem consumir
+tentativa. <code>PATCH enabled=true</code> religa todas de uma vez e zera o
+contador.</p>
+<p>Foi assim de propósito: uma senha trocada é <strong>uma</strong> coisa quebrada, e
+desativar assinatura por assinatura obrigaria a reativar uma a uma.</p>
+<h3 id="entrega-e-at-least-once">Entrega é at-least-once<a class="headerlink" href="#entrega-e-at-least-once" title="Permanent link">&para;</a></h3>
+<p>Como no webhook. Contra um <code>PUT</code> em recurso conhecido isso é
+inofensivo; contra um <code>POST</code> de criação <strong>sem chave de idempotência, a
+repetição duplica no destino</strong>. Declare um cabeçalho de idempotência a
+partir do identificador da entrega quando o destino suportar.</p>
+<h3 id="diagnostico">Diagnóstico<a class="headerlink" href="#diagnostico" title="Permanent link">&para;</a></h3>
+<p>O registro de entregas guarda status e mensagem curta. Um trecho da
+resposta só é guardado quando a conexão declara <code>capture_response</code> —
+desligado por padrão, porque a resposta pode ecoar o que foi enviado.</p>
+<p>Cabeçalhos e corpo enviados <strong>nunca</strong> vão para registro nenhum.</p>
+<hr />
+<h2 id="rotas">Rotas<a class="headerlink" href="#rotas" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Método</th>
+<th>Rota</th>
+<th>O que faz</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>POST</code></td>
+<td><code>/v1/delivery-connections</code></td>
+<td>cadastra uma conexão</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/v1/delivery-connections</code></td>
+<td>lista as conexões da automação</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/v1/delivery-connections/{id}</code></td>
+<td>consulta uma</td>
+</tr>
+<tr>
+<td><code>PATCH</code></td>
+<td><code>/v1/delivery-connections/{id}</code></td>
+<td>altera, inclusive rotacionar credencial</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/v1/delivery-connections/{id}</code></td>
+<td>remove, se nenhuma assinatura usar</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/v1/delivery-connections/{id}/test</code></td>
+<td>autentica de verdade</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/v1/webhooks/{id}/preview</code></td>
+<td>mostra o que seria enviado</td>
+</tr>
+</tbody>
+</table>
+<p>A conexão pertence à automação do claim <code>azp</code>, como todo o resto: id de
+outra automação responde <code>404</code>, nunca <code>403</code>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Voltar ao topo
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Rodapé" >
+        
+          
+          <a href="../webhooks/" class="md-footer__link md-footer__link--prev" aria-label="Anterior: Webhooks">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Anterior
+              </span>
+              <div class="md-ellipsis">
+                Webhooks
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../erros/" class="md-footer__link md-footer__link--next" aria-label="Próximo: Erros">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Próximo
+              </span>
+              <div class="md-ellipsis">
+                Erros
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["content.code.annotate", "content.tabs.link", "content.code.copy", "navigation.footer", "navigation.sections", "navigation.top"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copiado para \u00e1rea de transfer\u00eancia", "clipboard.copy": "Copiar para \u00e1rea de transfer\u00eancia", "search.result.more.one": "Mais 1 nesta p\u00e1gina", "search.result.more.other": "Mais # nesta p\u00e1gina", "search.result.none": "Nenhum resultado encontrado", "search.result.one": "1 resultado encontrado", "search.result.other": "# resultados encontrados", "search.result.placeholder": "Digite para iniciar a busca", "search.result.term.missing": "Ausente", "select.version": "Selecione a vers\u00e3o"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../../assets/js/pm-i18n.js"></script>
+      
+        <script src="../../assets/js/termynal.js"></script>
+      
+        <script src="../../assets/js/terminal.js"></script>
+      
+        <script src="../../assets/js/logo-animation.js"></script>
+      
+        <script src="../../assets/js/typography.js"></script>
+      
+        <script src="../../assets/js/doc-actions.js"></script>
+      
+        <script src="../../assets/js/filetree.js"></script>
+      
+    
+  </body>
+</html>

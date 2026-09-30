@@ -1,0 +1,130 @@
+# Deploy
+
+## How the service starts
+
+```mermaid
+flowchart TD
+    S["Process starts"] --> V["Validates configuration"]
+    V -->|"auth_mode != oidc"| F1["❌ Does not start"]
+    V -->|"no issuer/JWKS"| F2["❌ Does not start"]
+    V -->|"require_audience with no audience"| F3["❌ Does not start"]
+    V -->|ok| M["Applies migrations<br/><small>entrypoint</small>"]
+    M --> T["Starts telemetry"]
+    T --> R["Starts the in-process schedulers<br/><small>retention and webhooks,<br/>each if enabled</small>"]
+    R --> U["Uvicorn accepts traffic"]
+```
+
+!!! tip "Failing at startup is the desired behaviour"
+    Incomplete configuration kills the process instead of starting in a
+    degraded state. A deploy that does not complete is far cheaper than a
+    service in the air accepting requests it should not.
+
+## Compose profiles
+
+| Profile | What it starts |
+|---|---|
+| `uat` | API + Postgres + Keycloak + nginx — a complete, disposable local stack. |
+| `prod` | The API, nginx — HTTPS only — and the documentation, pointing at infrastructure that already exists. |
+
+The two are **mutually exclusive**, and in both it is **nginx** that
+publishes the port on the host: the API services publish no port at all
+and are only reachable over the compose network. On `uat` nginx publishes
+`CASEHUB_PORT` over HTTP; on `prod`, ports 80 and 443, and only 443 serves
+the API.
+
+!!! warning "`prod` serves HTTPS only (since API 0.5.0)"
+    Port 80 answers `308` to `https://`, and the SDK does not follow
+    redirects: configure the consumer with `https://` (see
+    [What changed](../mudancas.md)). The certificate and key are mounted into
+    the proxy from `certs/`, outside git; without them nginx does not start.
+    Nothing changes on the API side — `X-Forwarded-Proto` starts reading
+    `https` on its own.
+
+### Healthcheck
+
+The API services have a healthcheck on **`/ready`**, not `/health`: that
+is the one that touches the database, so "process up with Postgres down"
+fails it. nginx waits for that `healthy` before starting, and has a
+healthcheck of its own that it answers without touching the upstream — so
+"the proxy is down" and "the API is down" remain two distinct states.
+
+!!! note "The healthcheck restarts nothing"
+    `restart: unless-stopped` reacts to a dead process, not to an
+    `unhealthy` container. The value here is visibility
+    (`docker compose ps`) and start-up ordering. Automatic restart on
+    health would take an orchestrator.
+
+<div class="pm-terminal" data-pm-terminal data-pm-command="docker compose --profile uat up -d">
+<div class="termynal" data-termynal data-ty-startDelay="500" data-ty-typeDelay="45" data-ty-lineDelay="800">
+<span data-ty="input">docker compose --profile uat up -d</span>
+<span data-ty="progress"></span>
+<span data-ty>✔ 3 containers running</span>
+</div>
+</div>
+
+!!! warning "The `.env` has to exist first"
+    Compose reads it through `env_file`. Without the file, the values fall
+    back to development defaults — database credentials included.
+
+## Reproducible build
+
+The image installs from `requirements.lock`, versioned in the repository,
+and only then installs the package with `--no-deps`.
+
+!!! note "Why two steps"
+    Installing straight from `pyproject.toml` would resolve the `>=` ranges
+    at build time — two builds of the same commit would produce different
+    images, and a dependency published in between would reach production
+    without anyone having decided so.
+
+To regenerate the lock, always in a Linux container (which is what the image
+targets):
+
+<div class="pm-terminal" data-pm-terminal data-pm-command="regenerate lock">
+<div class="termynal" data-termynal data-ty-startDelay="500" data-ty-typeDelay="45" data-ty-lineDelay="800">
+<span data-ty="input">docker run --rm -v "$PWD:/src" -w /src python:3.13-slim \</span>
+<span data-ty="input">  sh -c "pip install pip-tools && pip-compile --no-header \</span>
+<span data-ty="input">  --strip-extras --output-file=requirements.lock pyproject.toml"</span>
+<span data-ty="progress"></span>
+</div>
+</div>
+
+!!! danger "Do not regenerate the lock on Windows"
+    The platform markers resolved would be Windows ones, and the Linux image
+    would get the wrong set of packages.
+
+## Migrations
+
+Applied automatically by the image entrypoint, before the process accepts
+traffic. `tables.py` is the source of truth for the DDL: change the table
+there and then generate the Alembic revision — never write the revision by
+hand from the database.
+
+## Variables per environment
+
+| | dev | homolog / prod |
+|---|---|---|
+| `CASEHUB_STORAGE` | `memory` or `postgres` | `postgres` |
+| `CASEHUB_AUTH_MODE` | `oidc` | `oidc` |
+| `CASEHUB_OIDC_*` | from the local Keycloak | from the corporate Keycloak |
+| `CASEHUB_RETENTION_ENABLED` | `false` | `true` |
+| `CASEHUB_WEBHOOK_ENABLED` | `false` | `true` |
+
+!!! danger "Without issuer and JWKS, the service will not start"
+    Deliberate: a half-configured authentication fails at boot instead of
+    turning into an unexplained `401` later. See
+    [Authentication](../api/autenticacao.md).
+
+## Pipeline
+
+| Stage | What runs |
+|---|---|
+| `lint` | `ruff check` and `ruff format --check`. |
+| `test` | The suite against the mock **and** a real Postgres. |
+| `build` | Validates that the image builds. |
+| `security` | `pip-audit` (blocking) and `gitleaks` over the full history. |
+
+!!! note "Why gitleaks needs `GIT_DEPTH: 0`"
+    The default shallow clone only sees recent commits. A secret introduced
+    before that would go unnoticed — the scan is only worth anything over
+    the whole history.
