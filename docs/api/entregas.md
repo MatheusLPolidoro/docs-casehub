@@ -277,6 +277,9 @@ um lugar do registro, sem repetir o par rótulo-valor para cada origem.
 
 `$alert` marca um campo cujo vazio interessa a quem opera. Ele **não**
 muda o que é enviado: a entrega sai igual, com o `$default` declarado.
+E ele só dispara quando o campo fica mesmo sem valor: um `$default`
+que **preenche** o campo não gera aviso; `"$default": null` gera,
+porque `null` é ausência de valor.
 
 ```json
 {"fieldLabel": {"$const": "E-mail"},

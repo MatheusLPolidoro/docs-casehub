@@ -278,7 +278,10 @@ for each source.
 
 `$alert` marks a field whose emptiness matters to whoever operates the
 integration. It does **not** change what is sent: the delivery goes out
-the same, with the declared `$default`.
+the same, with the declared `$default`. And it only fires when the
+field really comes out with no value: a `$default` that **fills** the
+field raises no warning; `"$default": null` does, because `null` is
+the absence of a value.
 
 ```json
 {"fieldLabel": {"$const": "Email"},
