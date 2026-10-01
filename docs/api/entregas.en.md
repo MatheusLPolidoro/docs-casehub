@@ -85,6 +85,14 @@ composite username without storing everything as a single secret, so
 the tenant does not have to be rewritten every time the password
 rotates.
 
+!!! note "One engine, two profiles"
+    The login and the delivery request are built by the **same**
+    template engine, under different profiles. `$secret` only exists in
+    the connection profile — declared inside `request_spec`, it is
+    rejected at registration. The other way round holds too: the login
+    does not see the case, so `$from`, `$each`, `$when` and `$alert` do
+    not exist there. `$first` exists in both.
+
 ### What never leaves
 
 !!! warning "The credential goes in and never comes back"
@@ -190,6 +198,7 @@ and the central idea is one:
 | `$concat` | joins parts as text |
 | `$format` | positional formatting, `{0}`, `{1}` |
 | `$each` | repeats a sub-template over a list in the record |
+| `$first` | uses the first candidate that has a value |
 
 Paths use the same dotted grammar as the filters, including list
 indexes: `case.source_record.extras.0.label`, and a negative index
@@ -220,11 +229,81 @@ Applied **in the declared order**.
 | `$default` | uses the declared value |
 | `$omit_parent` | **the whole object containing the field disappears** |
 | `$required` | the delivery ends, with the path in the error, and is not retried |
+| `$null_as_absent` | treats a `null` stored in the record as missing |
 
 !!! tip "`$omit_parent` exists for the label/value pair"
     Dropping only the key is right for a nested object and wrong for a
     pair: it would leave `{"fieldLabel": "Note"}` with no value, which
     the destination either rejects or stores empty.
+
+Without `$null_as_absent`, a stored `null` is a **value**: it goes
+through the transforms and leaves as `null` in the body. With it, the
+field becomes missing **before** the transforms, and `$default`,
+`$omit_parent` and `$required` start applying to that case as well.
+
+### Picking the first one that has a value
+
+`$first` walks the candidates **in the declared order** and uses the
+first one that has a value. That is what solves a field living in more
+than one place of the record, without repeating the label/value pair
+for each source.
+
+```json
+{"fieldLabel": {"$const": "Email"},
+ "value": {
+   "$first": [
+     {"$from": "case.source_record.email"},
+     {"$from": "case.source_record.contacts.0.email"},
+     {"$when": [{"path": "origem", "op": "eq", "value": "cadastro"}],
+      "$then": {"$from": "case.source_record.email_cadastro"}}
+   ],
+   "$transforms": [{"op": "lower"}],
+   "$default": null}}
+```
+
+- **"Having a value" is the same `present` as the filters**: missing,
+  null, empty and whitespace-only do not count. A candidate resolving
+  to `null` already counts as having no value, with no need for
+  `$null_as_absent`.
+- A candidate may carry a guard: `$when` is a condition over the case,
+  with the same grammar as the content filters, and `$then` is the
+  candidate it unlocks. Both keys **only exist inside `$first`** —
+  anywhere else in the template, registration is rejected.
+- The `$transforms` of the `$first` are applied **to the winner**,
+  once. Each candidate may have its own, applied before.
+- With no winner, `$default`, `$omit_parent` and `$required` apply, as
+  in any other field.
+
+### Warning when a field comes out empty
+
+`$alert` marks a field whose emptiness matters to whoever operates the
+integration. It does **not** change what is sent: the delivery goes out
+the same, with the declared `$default`. And it only fires when the
+field really comes out with no value: a `$default` that **fills** the
+field raises no warning; `"$default": null` does, because `null` is
+the absence of a value.
+
+```json
+{"fieldLabel": {"$const": "Email"},
+ "value": {"$first": ["..."], "$default": null, "$alert": "EMAIL"}}
+```
+
+The warning shows up in two places:
+
+- in the `/preview` response, under `warnings`, as
+  `{"label": "EMAIL", "count": 1}`;
+- in the service log, one record per label and **only on the first
+  attempt** of the delivery — retrying does not multiply the alert, and
+  a redrive warns again.
+
+Warnings are aggregated by label and carry **only the label and the
+count**, never the content of the case. That is what makes it possible
+to alert on them without taking customer data to a dashboard.
+
+!!! tip "The warning follows the part that survived"
+    A warning from an object dropped by `$omit_parent`, or from a
+    candidate that lost the `$first`, is not emitted: it goes away with
+    the part that never reached the body.
 
 ### `fields` is still the privacy control
 
@@ -260,7 +339,11 @@ Headers come back **redacted**: the authentication one carries the
 credential, and returning it here would be a way to read it back.
 
 A path that does not resolve shows up in this response, not as a
-destination error in a background log.
+destination error in a background log. The `$alert`s that fired come
+under `warnings`, with no log record — a preview is not a delivery.
+
+To see the same over a whole page of cases, the listing accepts
+`render_with` — see [Endpoints](endpoints.md#get-list-and-count).
 
 ---
 

@@ -4,9 +4,63 @@ Registro das mudanças de comportamento que afetam quem integra. Não
 substitui o `CHANGELOG.md` de cada repositório — aqui ficam apenas as que
 mudam o **contrato** ou exigem ação de quem consome.
 
-Versões atuais: **API 0.5.0** e **SDK 0.7.2**.
+Versões atuais: **API 0.7.0** e **SDK 0.7.2**.
 
 ---
+
+## Motor único de montagem e condições unificadas — API 0.7.0
+
+Tudo aqui é **aditivo**: assinatura, consulta e especificação de
+requisição cadastradas antes continuam significando o mesmo, sem
+migração. Duas recusas novas no cadastro pedem conferência, e estão no
+aviso ao fim da seção.
+
+- **Dez operadores de conteúdo, e grupos.** `present`, `blank`,
+  `matches`, `not_matches`, `in` e `not_in` se juntam a `eq`, `ne`,
+  `exists` e `not_exists`, em `source_conditions`, em
+  `success_rule.body` e na listagem. Um item pode ser um grupo
+  `{"any": [...]}` (OU) ou `{"all": [...]}` (E), aninhável até 3
+  níveis, e `GET /v1/cases` aceita a gramática inteira em
+  `conditions`. Ver [Endpoints](api/endpoints.md#get-listar-e-contar).
+- **Expressão regular portável.** `matches`/`not_matches` aceitam só o
+  subconjunto que significa o mesmo no serviço e no banco; o que sai
+  dele é recusado com `400`, inclusive as formas que custariam tempo
+  exponencial. A lista está na mesma página.
+- **Escolha ordenada no `request_spec`.** `$first` usa o primeiro
+  candidato que tem valor, com guarda opcional por `$when`/`$then`;
+  `$null_as_absent` trata `null` gravado como ausência; `$alert`
+  registra o rótulo de um campo que ficou vazio, sem derrubar a
+  entrega. Ver [Entregas para outras APIs](api/entregas.md).
+- **Aviso de campo vazio.** O que `$alert` marca aparece em `warnings`
+  no `/preview` e num log do serviço por rótulo, **só na primeira
+  tentativa** de cada entrega. O aviso carrega rótulo e contagem, nunca
+  o conteúdo do caso.
+- **`GET /v1/cases?render_with=<assinatura>`** acrescenta a cada item
+  um `rendered` com o que aquela assinatura enviaria para o caso, na
+  mesma forma do `/preview`. Nada é enviado.
+- **`once_per_case`** na assinatura (padrão `false`): com `true`, o
+  caso é entregue no máximo uma vez, por mais que mude depois. É o que
+  um destino que **inicia um processo** a cada chamada precisa. Ver
+  [Webhooks](api/webhooks.md).
+
+!!! warning "Duas recusas novas no cadastro, e como conferir"
+    As duas valem para especificação **já gravada**, e nenhuma delas
+    muda o que é entregue — elas recusam no `POST`/`PATCH` o que antes
+    era aceito e só quebrava na hora de montar.
+
+    **Substituição de `regex_replace` que não combina com o padrão**
+    (`\9` sem grupo 9, por exemplo) passa a responder `400`. Antes era
+    aceita e derrubava a montagem depois.
+
+    **`$secret` ou `$const` com chave extra no mesmo objeto**, no
+    template de login de uma conexão, passa a ser recusado. Quem já
+    tem conexões cadastradas pode listar as que seriam recusadas com
+    `scripts/auditar_conexoes.py`, sem imprimir segredo nenhum, antes
+    de atualizar o serviço.
+
+!!! note "Quem instala o serviço: `pydantic>=2.12`"
+    Abaixo dessa versão o campo `rendered` aparecia como `null` em
+    todo item de `GET /v1/cases`, mesmo sem `render_with`.
 
 ## Entrega para APIs de terceiros — API 0.6.0
 

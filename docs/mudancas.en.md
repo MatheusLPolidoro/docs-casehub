@@ -4,9 +4,64 @@ A record of the behaviour changes that affect whoever integrates. It does
 not replace each repository's `CHANGELOG.md` — only the ones that change
 the **contract** or require action from a consumer live here.
 
-Current versions: **API 0.5.0** and **SDK 0.7.2**.
+Current versions: **API 0.7.0** and **SDK 0.7.2**.
 
 ---
+
+## One assembly engine and unified conditions — API 0.7.0
+
+Everything here is **additive**: a subscription, a query or a request
+specification stored before means exactly the same, with no migration.
+Two new rejections at registration deserve a check, and they are in the
+warning at the end of this section.
+
+- **Ten content operators, and groups.** `present`, `blank`,
+  `matches`, `not_matches`, `in` and `not_in` join `eq`, `ne`,
+  `exists` and `not_exists`, in `source_conditions`, in
+  `success_rule.body` and in the listing. An item may be a group
+  `{"any": [...]}` (OR) or `{"all": [...]}` (AND), nestable up to 3
+  levels, and `GET /v1/cases` accepts the whole grammar in
+  `conditions`. See [Endpoints](api/endpoints.md#get-list-and-count).
+- **Portable regular expressions.** `matches`/`not_matches` only
+  accept the subset that means the same thing in the service and in
+  the database; anything else is rejected with `400`, including the
+  forms that would cost exponential time. The list is on the same
+  page.
+- **Ordered choice in `request_spec`.** `$first` uses the first
+  candidate that has a value, with an optional `$when`/`$then` guard;
+  `$null_as_absent` treats a stored `null` as missing; `$alert`
+  records the label of a field that came out empty, without dropping
+  the delivery. See [Delivering to other APIs](api/entregas.md).
+- **Empty-field warning.** What `$alert` marks shows up under
+  `warnings` in `/preview` and in one service log per label, **only on
+  the first attempt** of each delivery. The warning carries a label and
+  a count, never the content of the case.
+- **`GET /v1/cases?render_with=<subscription>`** adds a `rendered` to
+  each item with what that subscription would send for the case, in
+  the same shape as `/preview`. Nothing is sent.
+- **`once_per_case`** on the subscription (default `false`): with
+  `true`, the case is delivered at most once, however much it changes
+  afterwards. That is what a destination which **starts a process** on
+  every call needs. See [Webhooks](api/webhooks.md).
+
+!!! warning "Two new rejections at registration, and how to check"
+    Both apply to a specification that is **already stored**, and
+    neither changes what is delivered — they reject at `POST`/`PATCH`
+    what used to be accepted and only broke at assembly time.
+
+    **A `regex_replace` replacement that does not match the pattern**
+    (`\9` with no group 9, for instance) now answers `400`. It used to
+    be accepted and brought the assembly down later.
+
+    **`$secret` or `$const` with an extra key in the same object**, in
+    a connection's login template, is now rejected. If you already have
+    connections registered, `scripts/auditar_conexoes.py` lists the
+    ones that would be rejected, printing no secret, before you update
+    the service.
+
+!!! note "For whoever installs the service: `pydantic>=2.12`"
+    Below that version the `rendered` field showed up as `null` on
+    every item of `GET /v1/cases`, even with no `render_with`.
 
 ## Delivering to third-party APIs — API 0.6.0
 

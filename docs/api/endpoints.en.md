@@ -211,6 +211,9 @@ GET /v1/cases
 | `automation` | Under OIDC the token already restricts it — see below. |
 | `status` | |
 | `filter` / `ne` / `exists` / `not_exists` | Filters over `source_record` — see below. |
+| `present` / `blank` / `matches` / `not_matches` / `in` / `not_in` | Same, since API 0.7.0. |
+| `conditions` | The whole grammar as JSON, with `any`/`all` groups. |
+| `render_with` | Shows, on each item, what a subscription would send — see below. |
 | `batch_ref` | |
 | `source_schema` | |
 | `started_from` / `started_to` | Window over `started_at` — the record's date **at the source**. |
@@ -247,7 +250,7 @@ GET /v1/cases
 
 **Filters over `source_record`**
 
-Four operators, all **repeatable**, combined with `AND`:
+Ten operators, all **repeatable**, combined with `AND`:
 
 | Parameter | Question | Example |
 |---|---|---|
@@ -255,6 +258,20 @@ Four operators, all **repeatable**, combined with `AND`:
 | `ne=key=value` | the field exists and **differs** from the value | `ne=uf=SP` |
 | `exists=path` | the **key exists** | `exists=enriquecimento` |
 | `not_exists=path` | the key **does not exist** | `not_exists=erro` |
+| `present=path` | the key exists **and has a value** | `present=email` |
+| `blank=path` | the key is missing, null or empty | `blank=email` |
+| `matches=key=pattern` | the value matches the regular expression | `matches=email=@example\.com$` |
+| `not_matches=key=pattern` | the value exists and does **not** match | `not_matches=doc=^0+$` |
+| `in=key=value` | the value is among the given ones | `in=uf=SP&in=uf=RJ` |
+| `not_in=key=value` | the value exists and is **not** among them | `not_in=uf=SP` |
+
+!!! note "The last six exist since API 0.7.0"
+    An earlier installation answers `400` for them. The first four did
+    not change: a stored query keeps selecting the same set.
+
+`in` and `not_in` repeated **on the same path** form a single list —
+`in=uf=SP&in=uf=RJ` asks for "SP or RJ", not "SP and RJ". On different
+paths they keep combining with `AND`.
 
 ```
 GET /v1/cases?filter=referencia=REF-12345&filter=uf=SP
@@ -282,16 +299,91 @@ string.
     what the automation writes into the enrichment. `filter=` and `ne=`
     only compare scalars: objects and lists match neither.
 
+!!! tip "`present` is the question `exists` does not answer"
+    `exists` matches `null` and empty text; `present` does not. For
+    "there is an email to send to", use `present=email`. "Empty" is
+    **ASCII** whitespace only — a non-breaking space counts as a value.
+
+    `blank` is the exact complement of `present`, and includes
+    absence: a path that does not exist is `blank`, and is not
+    `present`.
+
+    The `not_*` operators **do not match absence**: `not_matches`,
+    `not_in` and `ne` require the field to exist and be scalar.
+
 !!! note "Filter ceiling"
-    Each filter becomes a predicate in the `WHERE`. All four operators
-    count towards the **same** ceiling, added up — splitting the query
-    between them does not double the limit. Above
-    `CASEHUB_MAX_SOURCE_FILTERS` (default 20) the answer is 400, better
-    than an arbitrarily expensive query with no explanation.
+    Each filter becomes a predicate in the `WHERE`. All operators count
+    towards the **same** ceiling, added up — splitting the query
+    between them does not double the limit, and a condition inside a
+    group counts the same. Above `CASEHUB_MAX_SOURCE_FILTERS`
+    (default 20) the answer is 400, better than an arbitrarily
+    expensive query with no explanation.
+
+**Regular expressions: a portable subset**
+
+`matches` and `not_matches` only accept what means the same thing in the
+service and in the database: literals, `.`, classes `[...]`, `\d \w \s`
+(in **ASCII** — `Ç` is not `\w`), the `^` and `$` anchors, `( )` and
+`(?: )` groups, alternation `|` and greedy repetitions `* + ? {m} {m,n}`
+up to 255.
+
+Anything else is rejected with `400` at registration: `\b`, lookaround,
+backreference, named group, inline flags, lazy quantifier, nested
+quantifier, and a **repeated group whose alternatives can start at the
+same point**. `(?:ab|cd)+` is fine; `(?:a|aa)+` and `(?:[ab]|c)+` are
+not — give each alternative a different literal first character, or use
+a class instead (`[ab]+`).
+
+`.` matches a line break, `$` is the end of the text, the comparison is
+case-sensitive and the text is cut at 10,000 characters before matching.
+
+!!! note "The rejection is about form, not taste"
+    What falls outside the subset would either mean different things on
+    each side — and then the same filter would select different sets,
+    with no error at all — or cost exponential time in a query that
+    runs on every cycle.
+
+**The whole grammar: `conditions`**
+
+The parameters above always combine with `AND`. To ask for "one thing
+**or** another", send the tree as JSON:
+
+```
+GET /v1/cases?conditions=[{"any":[
+  {"path":"uf","op":"eq","value":"SP"},
+  {"all":[{"path":"regiao","op":"eq","value":"sudeste"},
+          {"path":"email","op":"present"}]}]}]
+```
+
+The top-level list is an `AND`; `{"any": [...]}` is OR and
+`{"all": [...]}` is AND, nestable up to 3 levels. Malformed JSON, an
+empty group or an unknown operator answer `400`. `conditions` adds up
+with the simple parameters — and shares the same ceiling.
 
 !!! tip "`source_record` does not come by default in a listing"
     Only with `include=source_record`. A listing of 500 cases with each
     one's full JSON is a large payload and rarely what you want.
+
+**Seeing what a subscription would send: `render_with`**
+
+`render_with=<subscription id>` adds a `rendered` to each item with what
+that subscription would build for that case — verb, URL, redacted
+headers, body and warnings —, in the same shape as
+[`/preview`](entregas.md#4-check-before-turning-it-on). **Nothing is
+sent and no delivery is recorded.**
+
+| Detail | Behaviour |
+|---|---|
+| subscription of another automation | `404`, as everywhere else |
+| subscription with no `request_spec` | `400`: there is nothing to build |
+| disabled subscription | works just the same |
+| a case that fails to build | the item carries the error, and the page goes on |
+| `page_size` | its own ceiling of 100 items |
+
+!!! warning "It does not filter by the subscription's rules"
+    `render_with` answers *"what would go out for this case"*, not
+    *"which cases would go out"*. To see the selection, repeat the
+    subscription's conditions in the listing parameters.
 
 **The response**
 

@@ -211,6 +211,9 @@ GET /v1/cases
 | `automation` | Em OIDC, o token já restringe — ver abaixo. |
 | `status` | |
 | `filter` / `ne` / `exists` / `not_exists` | Filtros sobre `source_record` — ver abaixo. |
+| `present` / `blank` / `matches` / `not_matches` / `in` / `not_in` | Idem, desde a API 0.7.0. |
+| `conditions` | A gramática inteira em JSON, com grupos `any`/`all`. |
+| `render_with` | Mostra, em cada item, o que uma assinatura enviaria — ver abaixo. |
 | `batch_ref` | |
 | `source_schema` | |
 | `started_from` / `started_to` | Janela sobre `started_at` — a data do registro **na origem**. |
@@ -246,7 +249,7 @@ GET /v1/cases
 
 **Filtros sobre `source_record`**
 
-Quatro operadores, todos **repetíveis** e somando com `AND` entre si:
+Dez operadores, todos **repetíveis** e somando com `AND` entre si:
 
 | Parâmetro | Pergunta | Exemplo |
 |---|---|---|
@@ -254,6 +257,21 @@ Quatro operadores, todos **repetíveis** e somando com `AND` entre si:
 | `ne=chave=valor` | o campo existe e **difere** do valor | `ne=uf=SP` |
 | `exists=caminho` | a **chave existe** | `exists=enriquecimento` |
 | `not_exists=caminho` | a chave **não existe** | `not_exists=erro` |
+| `present=caminho` | a chave existe **e tem valor** | `present=email` |
+| `blank=caminho` | falta a chave, ou ela está nula ou vazia | `blank=email` |
+| `matches=chave=padrão` | o valor casa a expressão regular | `matches=email=@exemplo\.com$` |
+| `not_matches=chave=padrão` | o valor existe e **não** casa | `not_matches=doc=^0+$` |
+| `in=chave=valor` | o valor está entre os informados | `in=uf=SP&in=uf=RJ` |
+| `not_in=chave=valor` | o valor existe e **não** está entre eles | `not_in=uf=SP` |
+
+!!! note "Os seis últimos existem desde a API 0.7.0"
+    Uma instalação anterior responde `400` para eles. Os quatro
+    primeiros não mudaram: consulta gravada continua selecionando o
+    mesmo conjunto.
+
+`in` e `not_in` repetidos **no mesmo caminho** formam uma lista só —
+`in=uf=SP&in=uf=RJ` pergunta "SP ou RJ", e não "SP e RJ". Em caminhos
+diferentes, continuam somando com `AND`.
 
 ```
 GET /v1/cases?filter=referencia=REF-12345&filter=uf=SP
@@ -280,16 +298,88 @@ número ou string — sem ambiguidade de tipo na query string.
     automação grava no enriquecimento. Já `filter=` e `ne=` só comparam
     escalares: objeto e lista não casam com nenhum dos dois.
 
+!!! tip "`present` é a pergunta que `exists` não responde"
+    `exists` casa com `null` e com texto vazio; `present` não. Para
+    "tem e-mail para onde mandar", use `present=email`. "Vazio" é só
+    espaço **ASCII** — um espaço não separável conta como valor.
+
+    `blank` é o complemento exato de `present`, e inclui a ausência:
+    um caminho que não existe é `blank`, e não é `present`.
+
+    Os operadores `not_*` **não casam com ausência**: `not_matches`,
+    `not_in` e `ne` exigem que o campo exista e seja escalar.
+
 !!! note "Teto de filtros"
-    Cada filtro vira um predicado no `WHERE`. Os quatro operadores contam
+    Cada filtro vira um predicado no `WHERE`. Todos os operadores contam
     para o **mesmo** teto, somados — dividir a consulta entre eles não
-    dobra o limite. Acima de `CASEHUB_MAX_SOURCE_FILTERS` (default 20) a
-    resposta é 400, melhor que uma consulta arbitrariamente cara sem
-    explicação.
+    dobra o limite, e condição dentro de grupo conta igual. Acima de
+    `CASEHUB_MAX_SOURCE_FILTERS` (default 20) a resposta é 400, melhor
+    que uma consulta arbitrariamente cara sem explicação.
+
+**Expressão regular: um subconjunto portável**
+
+`matches` e `not_matches` aceitam só o que significa a mesma coisa no
+serviço e no banco: literais, `.`, classes `[...]`, `\d \w \s` (em
+**ASCII** — `Ç` não é `\w`), âncoras `^` e `$`, grupos `( )` e `(?: )`,
+alternância `|` e repetições `* + ? {m} {m,n}` até 255.
+
+Fora disso o cadastro responde `400`: `\b`, lookaround, retrovisor,
+grupo nomeado, flags, quantificador preguiçoso, quantificador aninhado
+e **grupo repetido cujas alternativas podem começar no mesmo ponto**.
+`(?:ab|cd)+` vale; `(?:a|aa)+` e `(?:[ab]|c)+` não — dê a cada
+alternativa um primeiro caractere literal diferente, ou troque por uma
+classe (`[ab]+`).
+
+`.` casa quebra de linha, `$` é o fim do texto, a comparação distingue
+maiúsculas e o texto é recortado em 10 000 caracteres antes de casar.
+
+!!! note "A recusa é de forma, não de gosto"
+    O que sai do subconjunto ou significaria coisas diferentes nos dois
+    lados — e aí o mesmo filtro selecionaria conjuntos diferentes, sem
+    erro nenhum — ou custaria tempo exponencial numa consulta que roda
+    a cada ciclo.
+
+**A gramática inteira: `conditions`**
+
+Os parâmetros acima sempre somam com `AND`. Para perguntar "uma coisa
+**ou** outra", mande a árvore em JSON:
+
+```
+GET /v1/cases?conditions=[{"any":[
+  {"path":"uf","op":"eq","value":"SP"},
+  {"all":[{"path":"regiao","op":"eq","value":"sudeste"},
+          {"path":"email","op":"present"}]}]}]
+```
+
+A lista de nível superior é um `AND`; `{"any": [...]}` é OU e
+`{"all": [...]}` é E, aninháveis até 3 níveis. JSON malformado, grupo
+vazio ou operador desconhecido respondem `400`. O `conditions` soma
+com os parâmetros simples — e com o mesmo teto.
 
 !!! tip "`source_record` não vem por padrão na listagem"
     Só com `include=source_record`. Uma listagem de 500 casos com o JSON
     completo de cada um é um payload grande e raramente é o que se quer.
+
+**Ver o que uma assinatura enviaria: `render_with`**
+
+`render_with=<id da assinatura>` acrescenta a cada item um `rendered`
+com o que aquela assinatura montaria para aquele caso — verbo, URL,
+cabeçalhos redigidos, corpo e avisos —, na mesma forma do
+[`/preview`](entregas.md#4-conferir-antes-de-ligar). **Nada é enviado e
+nenhuma entrega é registrada.**
+
+| Detalhe | Comportamento |
+|---|---|
+| assinatura de outra automação | `404`, como em todo o resto |
+| assinatura sem `request_spec` | `400`: não há o que montar |
+| assinatura desligada | funciona do mesmo jeito |
+| caso que falha ao montar | o item traz o erro, e a página continua |
+| `page_size` | teto próprio de 100 itens |
+
+!!! warning "Ele não filtra pelas regras da assinatura"
+    `render_with` responde *"o que sairia para este caso"*, não *"quais
+    casos sairiam"*. Para ver o recorte, repita as condições da
+    assinatura nos parâmetros da listagem.
 
 **A resposta**
 
