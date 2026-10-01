@@ -90,11 +90,12 @@ curl -sX POST https://casehub.internal/v1/webhooks \
 | `batch_ref` | string | all | Rule. |
 | `source_schema` | string | all | Rule. |
 | `source_filters` | object | `{}` | Equalities over `source_record` — the same as `filter=key=value`. |
-| `source_conditions` | list | `[]` | `exists`, `not_exists`, `eq`, `ne` over `source_record`. |
+| `source_conditions` | list | `[]` | Conditions over `source_record`, with `any`/`all` groups. |
 | `events` | list | all | `case.created`, `case.updated`. |
 | `fields` | list | everything | Paths of `source_record` to deliver. Up to 100. |
 | `include_source` | bool | `true` | `false` delivers the case with no `source_record` at all. |
 | `cursor_field` | enum | `updated` | `updated` or `created` — which stamp discovery follows. |
+| `once_per_case` | bool | `false` | Deliver **at most once** per case. Since API 0.7.0. |
 | `enabled` | bool | `true` | Starting paused is possible. |
 
 Every omitted rule means **all**: a subscription with no rules receives
@@ -150,14 +151,38 @@ the creation delivery **without** excluding the changes that follow.
 | `not_exists` | the key does not exist | rejected |
 | `eq` | the value is equal | required |
 | `ne` | the value exists and differs | required |
+| `present` | the key exists **and has a value** | rejected |
+| `blank` | the key is missing, null or empty | rejected |
+| `matches` | the value matches the regular expression | pattern |
+| `not_matches` | the value exists and does **not** match | pattern |
+| `in` | the value is among the given ones | list |
+| `not_in` | the value exists and is **not** among them | list |
+
+The last six exist since API 0.7.0, with the same semantics as the
+listing — including the portable subset of regular expressions, which is
+described in [Endpoints](endpoints.md#get-list-and-count).
 
 `value` is compared as a scalar. Objects, lists and `null` are rejected
 at registration with a 400 — they would never match, and the subscription
 would go silent.
 
+**Groups.** An item of the list may be `{"any": [...]}` (OR) or
+`{"all": [...]}` (AND), holding conditions or other groups, up to 3
+levels. The top-level list is still an AND, so a subscription stored
+before groups existed means exactly the same.
+
+```json
+{"source_conditions": [
+  {"path": "enriquecimento.confirmado", "op": "exists"},
+  {"any": [{"path": "email", "op": "present"},
+           {"path": "celular", "op": "present"}]}
+]}
+```
+
 An empty list does not restrict, and conditions **add up** with
 `source_filters`: both count towards the same cap
-(`CASEHUB_MAX_SOURCE_FILTERS`, default 20).
+(`CASEHUB_MAX_SOURCE_FILTERS`, default 20), and each condition inside a
+group counts as one.
 
 !!! danger "A content rule requires `cursor_field: updated`"
     With `created`, a case that did not match the rule at the instant it
@@ -302,6 +327,30 @@ the subscription never re-fires. See
 (`CASEHUB_WEBHOOK_POLL_INTERVAL_SECONDS`, default 30s) plus the safety
 window — the same mechanism as the incremental cursor, which exists so
 no case is lost.
+
+### One delivery per case: `once_per_case`
+
+The usual deduplication is per **version** of the case: with
+`cursor_field: updated`, every change produces a new delivery. For a
+destination that only stores the current state, that is what you want.
+For a destination that **starts a process** on every call — opens a
+ticket, triggers a contact —, every change would start one more.
+
+`once_per_case: true` delivers at most once per case, and the guarantee
+comes from the database: a unique index stops the second delivery even
+when two dispatcher cycles enqueue at the same time.
+
+| Situation | With `once_per_case: true` |
+|---|---|
+| the case changes after the delivery | nothing goes out |
+| the delivery ended in `abandoned` | discovery does **not** bring it back |
+| you redrive that delivery | it goes out, because the request was explicit |
+| the mode is turned on by `PATCH` | it applies from then on; what already went out does not come back |
+
+!!! tip "Turn it on before the first delivery"
+    Turning it on later does not undo the repetitions already sent —
+    and a destination that started a process per call will already have
+    started all of them.
 
 ---
 

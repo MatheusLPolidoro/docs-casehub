@@ -87,11 +87,12 @@ curl -sX POST https://casehub.interno/v1/webhooks \
 | `batch_ref` | string | todos | Regra. |
 | `source_schema` | string | todos | Regra. |
 | `source_filters` | objeto | `{}` | Igualdades sobre `source_record` — o mesmo que `filter=chave=valor`. |
-| `source_conditions` | lista | `[]` | `exists`, `not_exists`, `eq`, `ne` sobre `source_record`. |
+| `source_conditions` | lista | `[]` | Condições sobre `source_record`, com grupos `any`/`all`. |
 | `events` | lista | todos | `case.created`, `case.updated`. |
 | `fields` | lista | tudo | Caminhos do `source_record` a entregar. Máximo 100. |
 | `include_source` | bool | `true` | `false` entrega o caso sem `source_record` nenhum. |
 | `cursor_field` | enum | `updated` | `updated` ou `created` — qual carimbo a descoberta acompanha. |
+| `once_per_case` | bool | `false` | Entregar **no máximo uma vez** por caso. Desde a API 0.7.0. |
 | `enabled` | bool | `true` | Começar pausada é possível. |
 
 Toda regra omitida significa **todos**: uma assinatura sem regra nenhuma
@@ -146,12 +147,36 @@ entrega da criação **sem** excluir as alterações seguintes.
 | `not_exists` | a chave não existe | recusado |
 | `eq` | o valor é igual | obrigatório |
 | `ne` | o valor existe e difere | obrigatório |
+| `present` | a chave existe **e tem valor** | recusado |
+| `blank` | falta a chave, ou ela está nula ou vazia | recusado |
+| `matches` | o valor casa a expressão regular | padrão |
+| `not_matches` | o valor existe e **não** casa | padrão |
+| `in` | o valor está entre os informados | lista |
+| `not_in` | o valor existe e **não** está entre eles | lista |
+
+Os seis últimos existem desde a API 0.7.0, com a mesma semântica da
+listagem — inclusive o subconjunto portável de expressão regular, que
+está descrito em [Endpoints](endpoints.md#get-listar-e-contar).
 
 `value` é comparado como escalar. Objeto, lista e `null` são recusados no
 cadastro com 400 — eles nunca casariam, e a assinatura ficaria muda.
 
+**Grupos.** Um item da lista pode ser `{"any": [...]}` (OU) ou
+`{"all": [...]}` (E), com condições ou outros grupos dentro, até 3
+níveis. A lista de nível superior continua sendo um E, então a
+assinatura gravada antes dos grupos significa exatamente o mesmo.
+
+```json
+{"source_conditions": [
+  {"path": "enriquecimento.confirmado", "op": "exists"},
+  {"any": [{"path": "email", "op": "present"},
+           {"path": "celular", "op": "present"}]}
+]}
+```
+
 Vazio não restringe, e as condições **somam** com `source_filters`: as
-duas contam para o mesmo teto (`CASEHUB_MAX_SOURCE_FILTERS`, default 20).
+duas contam para o mesmo teto (`CASEHUB_MAX_SOURCE_FILTERS`, default
+20), e cada condição dentro de um grupo conta como uma.
 
 !!! danger "Regra que depende de conteúdo exige `cursor_field: updated`"
     Com `created`, um caso que não casava com a regra no instante em que
@@ -292,6 +317,29 @@ não re-dispara. Ver [Endpoints](endpoints.md#post-upsert-em-lote).
 **A latência mínima é o intervalo do ciclo** (`CASEHUB_WEBHOOK_POLL_INTERVAL_SECONDS`,
 default 30s) mais a janela de segurança — o mesmo mecanismo do cursor
 incremental, que existe para não perder caso.
+
+### Uma entrega por caso: `once_per_case`
+
+A deduplicação de sempre é por **versão** do caso: com
+`cursor_field: updated`, cada alteração gera uma entrega nova. Para um
+destino que só grava o estado atual, isso é o esperado. Para um destino
+que **inicia um processo** a cada chamada — abre um atendimento, dispara
+um contato —, cada alteração abriria um processo a mais.
+
+`once_per_case: true` entrega no máximo uma vez por caso, e a garantia é
+do banco: um índice único impede a segunda entrega mesmo que dois ciclos
+do despachante enfileirem ao mesmo tempo.
+
+| Situação | Com `once_per_case: true` |
+|---|---|
+| o caso é alterado depois da entrega | nada sai |
+| a entrega terminou em `abandoned` | a descoberta **não** a repõe |
+| você faz redrive dessa entrega | ela sai, porque o pedido foi explícito |
+| o modo é ligado por `PATCH` | vale para o que vier depois; o que já saiu não volta |
+
+!!! tip "Ligue antes da primeira entrega"
+    Ligar depois não desfaz as repetições que já saíram — e o destino
+    que iniciou um processo por chamada já terá iniciado todos eles.
 
 ---
 

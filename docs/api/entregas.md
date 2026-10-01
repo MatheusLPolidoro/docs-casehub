@@ -84,6 +84,14 @@ composição — `$secret`, `$const` e `$concat`. É o que permite um
 usuário em formato composto sem guardar tudo num segredo só, para o
 tenant não precisar ser reescrito toda vez que a senha girar.
 
+!!! note "Mesmo motor, dois perfis"
+    O login e a requisição da entrega são montados pelo **mesmo**
+    motor de template, em perfis diferentes. `$secret` só existe no
+    perfil da conexão — declarado dentro de `request_spec`, ele é
+    recusado no cadastro. E o caminho inverso vale igual: o login não
+    enxerga o caso, então `$from`, `$each`, `$when` e `$alert` não
+    existem lá. `$first` existe nos dois.
+
 ### O que não sai daqui
 
 !!! warning "A credencial entra e nunca volta"
@@ -190,6 +198,7 @@ As regras de filtro são as mesmas do webhook. O que muda é
 | `$concat` | junta partes como texto |
 | `$format` | formatação posicional, `{0}`, `{1}` |
 | `$each` | repete um sub-template sobre uma lista do registro |
+| `$first` | usa o primeiro candidato que tiver valor |
 
 Os caminhos usam a mesma gramática pontilhada dos filtros, incluindo
 índice de lista: `case.source_record.extras.0.rotulo`, e negativo conta
@@ -220,11 +229,76 @@ Aplicados **na ordem declarada**.
 | `$default` | usa o valor declarado |
 | `$omit_parent` | **o objeto que contém o campo some inteiro** |
 | `$required` | a entrega termina, com o caminho no erro, e não é repetida |
+| `$null_as_absent` | trata o `null` gravado no registro como ausência |
 
 !!! tip "`$omit_parent` existe para o par rótulo-valor"
     Omitir só a chave está certo para objeto aninhado e errado para um
     par: deixaria `{"fieldLabel": "Observacao"}` sem valor, que o
     destino ou recusa ou grava vazio.
+
+Sem `$null_as_absent`, um `null` gravado é **valor**: ele atravessa os
+tratamentos e sai `null` no corpo. Com ele, o campo vira ausente
+**antes** dos tratamentos, e aí `$default`, `$omit_parent` e
+`$required` passam a valer também para esse caso.
+
+### Escolher o primeiro que tiver valor
+
+`$first` percorre os candidatos **na ordem declarada** e usa o
+primeiro que tiver valor. É o que resolve o campo que mora em mais de
+um lugar do registro, sem repetir o par rótulo-valor para cada origem.
+
+```json
+{"fieldLabel": {"$const": "E-mail"},
+ "value": {
+   "$first": [
+     {"$from": "case.source_record.email"},
+     {"$from": "case.source_record.contatos.0.email"},
+     {"$when": [{"path": "origem", "op": "eq", "value": "cadastro"}],
+      "$then": {"$from": "case.source_record.email_cadastro"}}
+   ],
+   "$transforms": [{"op": "lower"}],
+   "$default": null}}
+```
+
+- **"Ter valor" é o mesmo `present` dos filtros**: ausente, nulo,
+  vazio e só espaço não contam. Candidato que resolve para `null` já
+  entra como sem valor, sem precisar de `$null_as_absent`.
+- Um candidato pode vir com guarda: `$when` é uma condição sobre o
+  caso, com a mesma gramática dos filtros de conteúdo, e `$then` é o
+  candidato que ela libera. As duas chaves **só existem dentro de
+  `$first`** — em qualquer outro lugar do template o cadastro é
+  recusado.
+- Os `$transforms` do `$first` são aplicados **no vencedor**, uma vez.
+  Cada candidato pode ter os seus, aplicados antes.
+- Sem vencedor, valem `$default`, `$omit_parent` e `$required`, como
+  em qualquer outro campo.
+
+### Avisar quando o campo sai vazio
+
+`$alert` marca um campo cujo vazio interessa a quem opera. Ele **não**
+muda o que é enviado: a entrega sai igual, com o `$default` declarado.
+
+```json
+{"fieldLabel": {"$const": "E-mail"},
+ "value": {"$first": ["..."], "$default": null, "$alert": "E-MAIL"}}
+```
+
+O aviso aparece em dois lugares:
+
+- na resposta do `/preview`, em `warnings`, como
+  `{"label": "E-MAIL", "count": 1}`;
+- no log do serviço, um registro por rótulo e **só na primeira
+  tentativa** da entrega — a repetição não multiplica o alerta, e o
+  redrive avisa de novo.
+
+Os avisos são agregados por rótulo e carregam **só o rótulo e a
+contagem**, nunca o conteúdo do caso. É o que permite ligar um alerta
+sobre eles sem levar dado do cliente para o painel.
+
+!!! tip "O aviso acompanha o trecho que sobreviveu"
+    Aviso de objeto descartado por `$omit_parent`, ou de candidato que
+    perdeu o `$first`, não é emitido: ele sai junto com o trecho que
+    não foi para o corpo.
 
 ### `fields` continua sendo o controle de privacidade
 
@@ -259,7 +333,12 @@ Os cabeçalhos vêm **redigidos**: o de autenticação carrega credencial,
 e devolvê-lo aqui seria um jeito de lê-la de volta.
 
 Um caminho que não resolve aparece nesta resposta, e não como erro do
-destino num registro de segundo plano.
+destino num registro de segundo plano. Os `$alert` que dispararam vêm
+em `warnings`, sem gerar registro no log — a pré-visualização não é
+uma entrega.
+
+Para ver o mesmo sobre uma página inteira de casos, a listagem aceita
+`render_with` — veja [Endpoints](endpoints.md#get-listar-e-contar).
 
 ---
 

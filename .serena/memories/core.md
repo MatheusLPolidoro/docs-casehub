@@ -258,6 +258,43 @@ flag. O cursor atravessa em runtime (`**params` repassa o que nao e
 `None`), mas nao esta em `ListCasesParams` — verificado rodando
 `_build_list_query`.
 
+### Motor único e condições unificadas (2026-10-01, na `desenv`)
+
+Escrito **antes do corte da versão**, e por isso **não promovido**: o
+texto descreve o que está implementado na `desenv` do `fast-casehub`
+(change `unificar-motor-de-montagem`), e a API publicada continua na
+0.6.0. Promover para a `main` publicaria documentação de comportamento
+que nenhuma instalação tem.
+
+O que entrou, nos dois idiomas:
+
+- **`api/entregas`**: `$first` com `$when`/`$then`, `$null_as_absent`,
+  `$alert` com os avisos agregados por rótulo, a nota de "mesmo motor,
+  dois perfis" (`$secret` só na conexão) e os avisos no `/preview`.
+- **`api/endpoints`**: os seis operadores novos (`present`, `blank`,
+  `matches`, `not_matches`, `in`, `not_in`), o subconjunto portável de
+  regex **e o que ele recusa**, `conditions` com grupos `any`/`all`, e
+  `render_with`.
+- **`api/webhooks`**: os mesmos operadores e grupos em
+  `source_conditions`, e `once_per_case`.
+
+**Três coisas ficaram para o corte da versão**, e nenhuma é opcional:
+
+1. os quatro "desde a API 0.7.0" são uma **suposição** do número —
+   conferir contra a versão que for cortada de fato;
+2. `mudancas.md` (pt+en) e o `VERSION` do site não foram tocados;
+3. `fast-casehub/mkdocs/sincronizar.sh` **não** foi rodado: ele leva o
+   texto para o site servido pela VM de produção, que também só deve
+   receber depois da versão no ar.
+
+A conferência do render foi feita com o Chrome headless, e vale a
+receita: **ele não captura nada depois de um scroll programático nem de
+âncora** — a imagem sai em branco. O que funciona é montar uma página
+temporária com só o trecho novo no topo (o `<head>` original mais a
+fatia do `<article>` dentro de `md-typeset`), capturar e apagar. A
+comparação estrutural pt/en (contagem de `##`, `###`, admoestações,
+tabelas e fences) bateu nas três páginas.
+
 ### Conferir o render, não só o build
 
 `mkdocs build --strict` fica verde com a página quebrada. Sem extensão de
