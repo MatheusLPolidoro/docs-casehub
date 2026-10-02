@@ -1628,8 +1628,11 @@ Without <code>include='source_record'</code>, the items come without the JSON.</
 <p><code>ListCasesParams</code> declares <code>environment</code>, <code>automation</code>, <code>status</code>,
 <code>batch_ref</code>, <code>source_schema</code>, <code>started_from</code>, <code>started_to</code>,
 <code>include</code>, <code>page</code> and <code>page_size</code>.</p>
-<p>The cursor parameters (<code>created_since</code>, <code>updated_since</code>) and the
-<code>exists</code>/<code>not_exists</code>/<code>ne</code> operators are <strong>not</strong> declared. They go
+<p>The cursor parameters (<code>created_since</code>, <code>updated_since</code>), the
+content operators — <code>exists</code>, <code>not_exists</code>, <code>ne</code> and, since API
+0.7.0, <code>present</code>, <code>blank</code>, <code>matches</code>, <code>not_matches</code>, <code>in</code> and
+<code>not_in</code> —, the JSON <code>conditions</code> and <code>render_with</code> are <strong>not</strong>
+declared. They go
 through anyway — anything that is not <code>None</code> reaches the query string
 as given — but a type checker will complain, and the CLI does not
 expose them. See

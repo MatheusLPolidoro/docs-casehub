@@ -1482,8 +1482,11 @@ and the Bearer token travel in plain text over the network.</p>
 <code>--client-id</code>, <code>--token-url</code>, ...) without relying on the file.</p>
 <div class="admonition note">
 <p class="admonition-title">The CLI covers neither webhooks nor the incremental cursor</p>
-<p><code>/v1/webhooks*</code>, <code>created_since</code>/<code>updated_since</code> and the
-<code>exists</code>/<code>not_exists</code>/<code>ne</code> operators have no command and no flag.
+<p><code>/v1/webhooks*</code>, <code>created_since</code>/<code>updated_since</code>, the content
+operators — <code>exists</code>, <code>not_exists</code>, <code>ne</code> and, since API 0.7.0,
+<code>present</code>, <code>blank</code>, <code>matches</code>, <code>not_matches</code>, <code>in</code> and <code>not_in</code> —,
+the JSON <code>conditions</code> and <code>render_with</code> have no command and no
+flag.
 They are direct HTTP calls — see <a href="../../api/webhooks/">Webhooks</a> and
 <a href="../../api/endpoints/#get-list-and-count">Endpoints</a>.</p>
 </div>

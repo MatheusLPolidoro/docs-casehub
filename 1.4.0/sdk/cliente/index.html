@@ -1626,8 +1626,11 @@ Sem <code>include='source_record'</code>, os itens vêm sem o JSON.</p>
 <p><code>ListCasesParams</code> declara <code>environment</code>, <code>automation</code>, <code>status</code>,
 <code>batch_ref</code>, <code>source_schema</code>, <code>started_from</code>, <code>started_to</code>,
 <code>include</code>, <code>page</code> e <code>page_size</code>.</p>
-<p>Os parâmetros de cursor (<code>created_since</code>, <code>updated_since</code>) e os
-operadores <code>exists</code>/<code>not_exists</code>/<code>ne</code> <strong>não</strong> estão declarados. Eles
+<p>Os parâmetros de cursor (<code>created_since</code>, <code>updated_since</code>), os
+operadores de conteúdo — <code>exists</code>, <code>not_exists</code>, <code>ne</code> e, desde a
+API 0.7.0, <code>present</code>, <code>blank</code>, <code>matches</code>, <code>not_matches</code>, <code>in</code> e
+<code>not_in</code> —, o <code>conditions</code> em JSON e o <code>render_with</code> <strong>não</strong> estão
+declarados. Eles
 atravessam mesmo assim — o que não é <code>None</code> vai para a query string
 como veio —, mas um verificador de tipos vai reclamar, e a CLI não
 os expõe. Ver <a href="../../api/endpoints/#get-listar-e-contar">Endpoints</a>.</p>

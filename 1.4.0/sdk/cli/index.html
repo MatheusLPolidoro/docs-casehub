@@ -1482,8 +1482,10 @@ credenciais e o Bearer token trafegam em texto puro pela rede.</p>
 <code>--client-id</code>, <code>--token-url</code>, ...) sem depender do arquivo.</p>
 <div class="admonition note">
 <p class="admonition-title">A CLI não cobre webhooks nem o cursor incremental</p>
-<p><code>/v1/webhooks*</code>, <code>created_since</code>/<code>updated_since</code> e os operadores
-<code>exists</code>/<code>not_exists</code>/<code>ne</code> não têm comando nem flag. São chamadas
+<p><code>/v1/webhooks*</code>, <code>created_since</code>/<code>updated_since</code>, os operadores de
+conteúdo — <code>exists</code>, <code>not_exists</code>, <code>ne</code> e, desde a API 0.7.0,
+<code>present</code>, <code>blank</code>, <code>matches</code>, <code>not_matches</code>, <code>in</code> e <code>not_in</code> —, o
+<code>conditions</code> e o <code>render_with</code> não têm comando nem flag. São chamadas
 HTTP diretas — ver <a href="../../api/webhooks/">Webhooks</a> e
 <a href="../../api/endpoints/#get-listar-e-contar">Endpoints</a>.</p>
 </div>

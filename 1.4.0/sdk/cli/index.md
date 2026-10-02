@@ -67,8 +67,10 @@ Todos aceitam sobrescrever a conexão por flag (`--base-url`,
 `--client-id`, `--token-url`, ...) sem depender do arquivo.
 
 !!! note "A CLI não cobre webhooks nem o cursor incremental"
-    `/v1/webhooks*`, `created_since`/`updated_since` e os operadores
-    `exists`/`not_exists`/`ne` não têm comando nem flag. São chamadas
+    `/v1/webhooks*`, `created_since`/`updated_since`, os operadores de
+    conteúdo — `exists`, `not_exists`, `ne` e, desde a API 0.7.0,
+    `present`, `blank`, `matches`, `not_matches`, `in` e `not_in` —, o
+    `conditions` e o `render_with` não têm comando nem flag. São chamadas
     HTTP diretas — ver [Webhooks](../api/webhooks.md) e
     [Endpoints](../api/endpoints.md#get-listar-e-contar).
 
