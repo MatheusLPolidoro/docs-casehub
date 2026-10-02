@@ -4,7 +4,7 @@ A record of the behaviour changes that affect whoever integrates. It does
 not replace each repository's `CHANGELOG.md` — only the ones that change
 the **contract** or require action from a consumer live here.
 
-Current versions: **API 0.7.0** and **SDK 0.7.2**.
+Current versions: **API 0.7.1** and **SDK 0.7.2**.
 
 ---
 
