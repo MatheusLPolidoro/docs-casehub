@@ -67,8 +67,11 @@ All of them accept overriding the connection by flag (`--base-url`,
 `--client-id`, `--token-url`, ...) without relying on the file.
 
 !!! note "The CLI covers neither webhooks nor the incremental cursor"
-    `/v1/webhooks*`, `created_since`/`updated_since` and the
-    `exists`/`not_exists`/`ne` operators have no command and no flag.
+    `/v1/webhooks*`, `created_since`/`updated_since`, the content
+    operators — `exists`, `not_exists`, `ne` and, since API 0.7.0,
+    `present`, `blank`, `matches`, `not_matches`, `in` and `not_in` —,
+    the JSON `conditions` and `render_with` have no command and no
+    flag.
     They are direct HTTP calls — see [Webhooks](../api/webhooks.md) and
     [Endpoints](../api/endpoints.md#get-list-and-count).
 

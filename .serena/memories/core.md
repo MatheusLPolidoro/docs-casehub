@@ -258,13 +258,14 @@ flag. O cursor atravessa em runtime (`**params` repassa o que nao e
 `None`), mas nao esta em `ListCasesParams` — verificado rodando
 `_build_list_query`.
 
-### Motor único e condições unificadas (2026-10-01, na `desenv`)
+### Motor único e condições unificadas — API 0.7.0 (2026-10-01)
 
-Escrito **antes do corte da versão**, e por isso **não promovido**: o
-texto descreve o que está implementado na `desenv` do `fast-casehub`
-(change `unificar-motor-de-montagem`), e a API publicada continua na
-0.6.0. Promover para a `main` publicaria documentação de comportamento
-que nenhuma instalação tem.
+**Promovido e publicado** no mesmo dia, depois de a 0.7.0 ser cortada
+no `fast-casehub` (tag `v0.7.0`). O texto tinha sido escrito antes do
+corte, com o número 0.7.0 **suposto**; o corte confirmou a suposição, e
+os quatro "desde a API 0.7.0" ficaram certos sem edição. `VERSION`
+1.3.0 → 1.4.0, e `fast-casehub/mkdocs/sincronizar.sh` rodado depois da
+promoção (origem `docs-casehub@93a10f7`).
 
 O que entrou, nos dois idiomas:
 
@@ -278,14 +279,10 @@ O que entrou, nos dois idiomas:
 - **`api/webhooks`**: os mesmos operadores e grupos em
   `source_conditions`, e `once_per_case`.
 
-**Três coisas ficaram para o corte da versão**, e nenhuma é opcional:
-
-1. os quatro "desde a API 0.7.0" são uma **suposição** do número —
-   conferir contra a versão que for cortada de fato;
-2. `mudancas.md` (pt+en) e o `VERSION` do site não foram tocados;
-3. `fast-casehub/mkdocs/sincronizar.sh` **não** foi rodado: ele leva o
-   texto para o site servido pela VM de produção, que também só deve
-   receber depois da versão no ar.
+Entrou junto, no corte: a seção da 0.7.0 em `mudancas.md` (pt+en), com
+as duas recusas novas no cadastro que valem para especificação já
+gravada e a nota do `pydantic>=2.12` para quem instala; e a precisão
+do `$alert`, que só dispara quando o campo fica mesmo sem valor.
 
 A conferência do render foi feita com o Chrome headless, e vale a
 receita: **ele não captura nada depois de um scroll programático nem de

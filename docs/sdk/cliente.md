@@ -201,8 +201,11 @@ Sem `include='source_record'`, os itens vêm sem o JSON.
     `batch_ref`, `source_schema`, `started_from`, `started_to`,
     `include`, `page` e `page_size`.
 
-    Os parâmetros de cursor (`created_since`, `updated_since`) e os
-    operadores `exists`/`not_exists`/`ne` **não** estão declarados. Eles
+    Os parâmetros de cursor (`created_since`, `updated_since`), os
+    operadores de conteúdo — `exists`, `not_exists`, `ne` e, desde a
+    API 0.7.0, `present`, `blank`, `matches`, `not_matches`, `in` e
+    `not_in` —, o `conditions` em JSON e o `render_with` **não** estão
+    declarados. Eles
     atravessam mesmo assim — o que não é `None` vai para a query string
     como veio —, mas um verificador de tipos vai reclamar, e a CLI não
     os expõe. Ver [Endpoints](../api/endpoints.md#get-listar-e-contar).

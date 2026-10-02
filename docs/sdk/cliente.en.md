@@ -203,8 +203,11 @@ Without `include='source_record'`, the items come without the JSON.
     `batch_ref`, `source_schema`, `started_from`, `started_to`,
     `include`, `page` and `page_size`.
 
-    The cursor parameters (`created_since`, `updated_since`) and the
-    `exists`/`not_exists`/`ne` operators are **not** declared. They go
+    The cursor parameters (`created_since`, `updated_since`), the
+    content operators — `exists`, `not_exists`, `ne` and, since API
+    0.7.0, `present`, `blank`, `matches`, `not_matches`, `in` and
+    `not_in` —, the JSON `conditions` and `render_with` are **not**
+    declared. They go
     through anyway — anything that is not `None` reaches the query string
     as given — but a type checker will complain, and the CLI does not
     expose them. See
