@@ -30,6 +30,14 @@ failures too — an internal bug does not escape in another format.
 | `connection_not_found` | 404 | The connection does not exist, or belongs to another automation. |
 | `connection_in_use` | 409 | A subscription points at the connection — it is not removed, and nothing was changed. |
 | `webhook_not_found` | 404 | The subscription (or the delivery) does not exist, or belongs to another automation. |
+| `attachment_not_found` | 404 | The case has no attachment by that name. |
+| `invalid_attachment_name` | 400 | The attachment name strays from `[A-Za-z0-9][A-Za-z0-9._-]*` or is longer than 200 characters. |
+| `unsupported_attachment_type` | 415 | The attachment type is not accepted by the service, or the content lacks the signature of the declared type. |
+| `attachment_too_large` | 413 | The attachment is over the size limit (25 MB by default). |
+| `checksum_mismatch` | 400 | The received content does not match the `X-Content-SHA256` sent. Nothing was stored. |
+| `attachment_limit_exceeded` | 507 | The case already holds the maximum number of attachments (50 by default) and the name is new. |
+| `attachment_quota_exceeded` | 507 | Storing it would exceed the automation's attachment space quota in that environment. |
+| `attachment_store_unavailable` | 503 | The attachment storage is down or switched off in this environment. Comes with `Retry-After`; try again after that time. |
 | `internal_error` | 500 | Unexpected service failure. |
 
 !!! note "409 shows up in two places, with different meanings"
@@ -39,6 +47,12 @@ failures too — an internal bug does not escape in another format.
     delivered (`succeeded`) — the guard that keeps an accidental resend
     from becoming a duplicate. See
     [Webhooks](webhooks.md#re-sending-a-delivery-redrive).
+
+!!! note "507 is an attachment limit, not the server running out of disk"
+    `attachment_limit_exceeded` and `attachment_quota_exceeded` say that
+    **your** automation reached its own limit. Retrying does not help: you
+    need to remove attachments (or wait for their term) before storing
+    others.
 
 !!! note "Payload validation is a 400, not a 422"
     FastAPI would use 422 by default; the contract converts it to 400 with

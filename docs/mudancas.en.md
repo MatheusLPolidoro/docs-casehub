@@ -8,6 +8,29 @@ Current versions: **API 0.7.1** and **SDK 0.7.2**.
 
 ---
 
+## Case attachments and a protected purge — API 0.8.0
+
+- **Case attachments.** Four new routes under the case, to store (with
+  replacement under the same name), list, download and remove binary
+  documents, such as the PDF of a receipt. Raw content in the `PUT`
+  body, streamed download with an `ETag` equal to the sha256. By
+  default, only `application/pdf`, up to 25 MB, 50 per case. No
+  published model changes. See [Endpoints](api/endpoints.md#case-attachments)
+  and the new codes in [Errors](api/erros.md).
+- **An attachment term of its own**, separate from the case's:
+  `ATTACHMENT_RETENTION_DAYS_<AUTOMATION>[_<ENVIRONMENT>]`, 15-day
+  default. An attachment never outlives its case. See
+  [Retention](api/retencao.md#case-attachments).
+
+!!! danger "Mandatory action for operators: the purge sentinel"
+    Purging by term, **case purging included**, now requires the
+    `CASEHUB_RETENTION_CANARY` parameter in the service's ParamManager
+    namespace. Without it, nothing is removed by term and
+    `casehub.retention.skipped` goes up. Register it (value `ok`)
+    **before** upgrading. See [Retention](api/retencao.md#without-the-sentinel-nothing-leaves-by-term).
+
+---
+
 ## One assembly engine and unified conditions — API 0.7.0
 
 Everything here is **additive**: a subscription, a query or a request
