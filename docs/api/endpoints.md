@@ -14,6 +14,15 @@ obter a credencial.
 | `GET` | `/v1/cases/{environment}/{automation}/{case_id}` | Consulta um caso. |
 | `GET` | `/v1/cases` | Lista e conta casos. |
 
+**Anexos de caso** (desde a API 0.8.0)
+
+| Método | Rota | O que faz |
+|---|---|---|
+| `PUT` | `/v1/cases/{environment}/{automation}/{case_id}/attachments/{name}` | Grava ou substitui um anexo. |
+| `GET` | `/v1/cases/{environment}/{automation}/{case_id}/attachments` | Lista os anexos do caso. |
+| `GET` | `/v1/cases/{environment}/{automation}/{case_id}/attachments/{name}` | Baixa um anexo. |
+| `DELETE` | `/v1/cases/{environment}/{automation}/{case_id}/attachments/{name}` | Remove um anexo. |
+
 **Token, webhooks e saúde**
 
 | Método | Rota | O que faz |
@@ -405,6 +414,128 @@ nenhuma entrega é registrada.**
 automações simplesmente omitindo o filtro: o claim do token **é** o
 filtro quando ele não é informado, e um filtro explícito divergente
 responde 403.
+
+---
+
+## Anexos de caso
+
+Desde a API 0.8.0, um caso pode guardar documentos binários junto dele —
+o PDF de um comprovante, por exemplo — que qualquer fluxo que lê o caso
+recupera depois. O conteúdo fica num storage de objetos próprio do
+serviço, atrás da API: **nenhuma automação recebe endereço nem
+credencial dele**, só fala com estas rotas. A autorização é a do caso:
+token de outra automação recebe `403 forbidden`.
+
+### `PUT` — gravar ou substituir
+
+```
+PUT /v1/cases/{environment}/{automation}/{case_id}/attachments/{name}
+Content-Type: application/pdf
+X-Content-SHA256: <sha256 em hex>     (opcional)
+
+<o conteúdo cru>
+```
+
+O corpo é o conteúdo **cru**, não JSON nem `multipart`. A resposta é
+sempre `200`:
+
+```json
+{
+  "name": "comprovante.pdf",
+  "content_type": "application/pdf",
+  "size_bytes": 48213,
+  "sha256": "9f2c...",
+  "created_at": "2026-10-27T12:00:00Z",
+  "updated_at": "2026-10-27T12:00:00Z",
+  "created": true,
+  "changed": true
+}
+```
+
+| Situação | `created` | `changed` |
+|---|:---:|:---:|
+| Nome novo no caso | `true` | `true` |
+| Mesmo nome, conteúdo diferente: **substitui** | `false` | `true` |
+| Mesmo nome, mesmo conteúdo: nada é gravado, `updated_at` não muda | `false` | `false` |
+
+!!! tip "Retentativa é barata e segura"
+    Reenviar o mesmo conteúdo com o mesmo nome não grava de novo nem
+    reinicia o prazo do anexo. Uma automação pode repetir o `PUT` depois
+    de um timeout sem medo.
+
+**Regras:**
+
+- **Nome**: `[A-Za-z0-9][A-Za-z0-9._-]*`, até 200 caracteres. Fora disso,
+  `400 invalid_attachment_name` (`..` e espaço incluídos).
+- **Tipo**: só os aceitos pelo serviço (por padrão, `application/pdf`),
+  ignorando maiúsculas e parâmetros como `; charset=`. O conteúdo
+  precisa ter a assinatura do tipo declarado (PDF, PNG, JPEG, TIFF, ZIP
+  e Office). Senão, `415 unsupported_attachment_type`.
+- **Tamanho**: até 25 MB por padrão; acima, `413 attachment_too_large`.
+  Corpo vazio é `400 invalid_request`.
+- **Integridade**: com `X-Content-SHA256`, um corpo que chegue diferente
+  é recusado com `400 checksum_mismatch`, e o anexo anterior fica
+  intacto.
+- **Limites**: até 50 anexos por caso (`507 attachment_limit_exceeded`
+  para um nome novo; substituir continua permitido) e uma cota de espaço
+  por automação e ambiente (`507 attachment_quota_exceeded`; na
+  substituição, conta só a diferença de tamanho).
+- **Caso inexistente**: `404 case_not_found`, e nada é gravado.
+
+### `GET` — listar
+
+```
+GET /v1/cases/{environment}/{automation}/{case_id}/attachments
+```
+
+`200` com `{"items": [...]}`: os anexos vigentes, em ordem de `name`,
+cada um com os campos acima (sem `created`/`changed`) e **sem o
+conteúdo**. Caso sem anexos devolve a lista vazia. Sem paginação: o
+limite por caso a dispensa.
+
+### `GET` — baixar
+
+```
+GET /v1/cases/{environment}/{automation}/{case_id}/attachments/{name}
+```
+
+O conteúdo em streaming, com:
+
+| Header | Valor |
+|---|---|
+| `Content-Type` | o tipo gravado |
+| `Content-Length` | o tamanho |
+| `Content-Disposition` | `attachment; filename="<name>"` |
+| `ETag` | `"<sha256>"` |
+| `X-Content-Type-Options` | `nosniff` |
+| `Cache-Control` | `private, no-store` |
+
+!!! warning "Confira o `ETag` contra o que chegou"
+    A API confere o conteúdo enquanto envia, mas os bytes já saíram
+    quando a conta fecha. A conferência final é do cliente: o sha256 do
+    que você recebeu tem de bater com o `ETag`.
+
+`404 attachment_not_found` se o caso não tem anexo com o nome.
+
+### `DELETE` — remover
+
+`204`. O anexo some da listagem e do download na hora; o conteúdo sai
+do storage na hora ou, se o storage estiver fora do ar, no primeiro
+ciclo de limpeza com ele de volta. `404 attachment_not_found` se não
+existir.
+
+### Storage fora do ar ou desligado
+
+As rotas de anexo respondem `503 attachment_store_unavailable` com o
+header `Retry-After`, **sem** detalhe nenhum do storage. As rotas de
+caso e o `/ready` não dependem dele. A listagem e a remoção continuam
+funcionando com o storage fora; a gravação e o download não.
+
+No mock em memória (o backend que as automações usam nos testes), os
+anexos funcionam sem configuração nenhuma.
+
+O prazo do anexo é próprio, separado do do caso, e o anexo nunca
+sobrevive ao caso dele. Ver [Retenção](retencao.md#anexos-de-caso).
 
 ---
 

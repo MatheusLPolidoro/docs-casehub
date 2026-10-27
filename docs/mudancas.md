@@ -8,6 +8,29 @@ Versões atuais: **API 0.7.1** e **SDK 0.7.2**.
 
 ---
 
+## Anexos de caso e expurgo protegido — API 0.8.0
+
+- **Anexos de caso.** Quatro rotas novas sob o caso, para gravar (com
+  substituição pelo mesmo nome), listar, baixar e remover documentos
+  binários, como o PDF de um comprovante. Conteúdo cru no corpo do
+  `PUT`, download em streaming com `ETag` igual ao sha256. Por padrão,
+  só `application/pdf`, até 25 MB, 50 por caso. Nenhum modelo publicado
+  muda. Ver [Endpoints](api/endpoints.md#anexos-de-caso) e os códigos
+  novos em [Erros](api/erros.md).
+- **Prazo próprio do anexo**, separado do prazo do caso:
+  `ATTACHMENT_RETENTION_DAYS_<AUTOMATION>[_<ENVIRONMENT>]`, padrão de 15
+  dias. O anexo nunca sobrevive ao caso. Ver
+  [Retenção](api/retencao.md#anexos-de-caso).
+
+!!! danger "Ação obrigatória para quem opera: a sentinela do expurgo"
+    O expurgo por prazo, **inclusive o de casos**, passa a exigir o
+    parâmetro `CASEHUB_RETENTION_CANARY` no namespace do serviço no
+    ParamManager. Sem ele, nada é removido por prazo e
+    `casehub.retention.skipped` sobe. Cadastre-o (valor `ok`) **antes**
+    de atualizar. Ver [Retenção](api/retencao.md#sem-a-sentinela-nada-sai-por-prazo).
+
+---
+
 ## Motor único de montagem e condições unificadas — API 0.7.0
 
 Tudo aqui é **aditivo**: assinatura, consulta e especificação de
