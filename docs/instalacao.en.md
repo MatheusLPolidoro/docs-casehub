@@ -17,13 +17,15 @@ Requires **Python 3.11+**. The runtime dependencies are `httpx`, `typer`,
 `toml` and `rich`.
 
 !!! warning "Pin the version"
-    The current SDK version is **0.7.2**, and the API is at **0.7.1**.
-    Prefer `pip install "casehub==0.7.2"` over installing with no floor, so
+    The current SDK version is **0.8.1**, and the API is at **0.8.0**.
+    Prefer `pip install "casehub==0.8.1"` over installing with no floor, so
     that an environment does not wake up on an incompatible version.
 
-    Do not install **0.7.0**: it shipped with `casehub.__version__` stuck
-    at `'0.6.1'` while the distribution already said `0.7.0`, so anyone
-    reading `__version__` gets the wrong version. 0.7.1 fixes it.
+    Two versions to avoid. **0.8.0** has two defects in case
+    attachments: a `.` or `..` name sent the request to another
+    resource, and a download without an `ETag` came back unchecked.
+    **0.7.0** shipped with `casehub.__version__` stuck at `'0.6.1'`. The
+    next version of each fixes it.
 
     What each version changed for consumers is in
     [What changed](mudancas.md).
@@ -110,10 +112,12 @@ infrastructure.
 | `CASEHUB_OIDC_AUDIENCE` | empty | Empty = `aud` is not validated. See the warning in [Authentication](api/autenticacao.md). |
 | `CASEHUB_DB` | — | Full Postgres URL. Takes precedence over `CASEHUB_DB_*`. |
 | `CASEHUB_MAX_BATCH_ITEMS` | `1000` | Ceiling of items per batch. |
-| `CASEHUB_MAX_SOURCE_RECORD_BYTES` | `262144` | Ceiling per `source_record`. |
+| `CASEHUB_MAX_SOURCE_RECORD_BYTES` | `10485760` | Ceiling per `source_record`, measured as UTF-8 JSON (10 MB; it was 256 KB up to API 0.7.x). |
+| `CASEHUB_MAX_LIST_SOURCE_BYTES` | `104857600` | Byte budget of `source_record` per listing page, with `include=source_record` or `render_with` (100 MB). |
 | `CASEHUB_MAX_SOURCE_FILTERS` | `20` | Ceiling of `source_record` filters per query — and per webhook subscription. |
 | `CASEHUB_RETENTION_ENABLED` | `true` | Turns the purge job on. |
 | `CASEHUB_WEBHOOK_ENABLED` | `true` | Turns the webhook dispatcher on. The other `CASEHUB_WEBHOOK_*` are in [Webhooks](api/webhooks.md#operations). |
+| `CASEHUB_LOG_CONSOLE` | `true` | Also writes the logs to the process's stdout, besides OTLP. See [Observability](operacao/observabilidade.md#correlation). |
 | `CASEHUB_NGINX_MAX_BODY` | `300m` | Maximum body the reverse proxy accepts. |
 | `CASEHUB_HOST` | `127.0.0.1` | Interface Uvicorn listens on. |
 | `CASEHUB_PORT` | `8080` | Service port. |

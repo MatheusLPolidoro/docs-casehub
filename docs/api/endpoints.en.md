@@ -14,6 +14,15 @@ way to obtain the credential.
 | `GET` | `/v1/cases/{environment}/{automation}/{case_id}` | Fetches one case. |
 | `GET` | `/v1/cases` | Lists and counts cases. |
 
+**Case attachments** (since API 0.8.0)
+
+| Method | Route | What it does |
+|---|---|---|
+| `PUT` | `/v1/cases/{environment}/{automation}/{case_id}/attachments/{name}` | Stores or replaces an attachment. |
+| `GET` | `/v1/cases/{environment}/{automation}/{case_id}/attachments` | Lists the case's attachments. |
+| `GET` | `/v1/cases/{environment}/{automation}/{case_id}/attachments/{name}` | Downloads an attachment. |
+| `DELETE` | `/v1/cases/{environment}/{automation}/{case_id}/attachments/{name}` | Removes an attachment. |
+
 **Token, webhooks and health**
 
 | Method | Route | What it does |
@@ -364,6 +373,14 @@ with the simple parameters — and shares the same ceiling.
     Only with `include=source_record`. A listing of 500 cases with each
     one's full JSON is a large payload and rarely what you want.
 
+!!! warning "A page with `source_record` has a byte budget"
+    Since API 0.8.0, a `source_record` can be up to 10 MB. So that the
+    service's memory holds, a page that returns or renders the records
+    (`include=source_record` or `render_with`) adds up their size against
+    `CASEHUB_MAX_LIST_SOURCE_BYTES` (100 MB by default). Past it, the
+    response is `400 invalid_request`: ask for a smaller `page_size`. A
+    one-item page always fits.
+
 **Seeing what a subscription would send: `render_with`**
 
 `render_with=<subscription id>` adds a `rendered` to each item with what
@@ -409,6 +426,132 @@ sent and no delivery is recorded.**
 **Authorization on listings** — an OIDC client cannot see other automations
 by simply omitting the filter: the token's claim **is** the filter when none
 is given, and an explicit filter that disagrees answers 403.
+
+---
+
+## Case attachments
+
+Since API 0.8.0, a case can keep binary documents alongside it — the PDF
+of a receipt, for example — that any flow reading the case retrieves
+later. The content lives in the service's own object storage, behind the
+API: **no automation ever gets its address or credential**, it only talks
+to these routes. Authorization is the case's: a token from another
+automation gets `403 forbidden`.
+
+In the SDK, since 0.8.1: `upsert_attachment`, `list_attachments`,
+`download_attachment` and `delete_attachment`, which send and check the
+sha256 on their own. See [Synchronous client](../sdk/cliente.md#case-attachments).
+
+### `PUT` — store or replace
+
+```
+PUT /v1/cases/{environment}/{automation}/{case_id}/attachments/{name}
+Content-Type: application/pdf
+X-Content-SHA256: <hex sha256>     (optional)
+
+<the raw content>
+```
+
+The body is the **raw** content, neither JSON nor `multipart`. The
+response is always `200`:
+
+```json
+{
+  "name": "receipt.pdf",
+  "content_type": "application/pdf",
+  "size_bytes": 48213,
+  "sha256": "9f2c...",
+  "created_at": "2026-10-27T12:00:00Z",
+  "updated_at": "2026-10-27T12:00:00Z",
+  "created": true,
+  "changed": true
+}
+```
+
+| Situation | `created` | `changed` |
+|---|:---:|:---:|
+| New name in the case | `true` | `true` |
+| Same name, different content: **replaces** | `false` | `true` |
+| Same name, same content: nothing is stored, `updated_at` does not change | `false` | `false` |
+
+!!! tip "Retrying is cheap and safe"
+    Sending the same content again under the same name neither stores it
+    again nor restarts the attachment's term. An automation can repeat the
+    `PUT` after a timeout without worry.
+
+**Rules:**
+
+- **Name**: `[A-Za-z0-9][A-Za-z0-9._-]*`, up to 200 characters. Otherwise,
+  `400 invalid_attachment_name` (`..` and spaces included).
+- **Type**: only the ones the service accepts (by default,
+  `application/pdf`), ignoring case and parameters such as `; charset=`.
+  The content must carry the signature of the declared type (PDF, PNG,
+  JPEG, TIFF, ZIP and Office). Otherwise, `415 unsupported_attachment_type`.
+- **Size**: up to 25 MB by default; above that, `413 attachment_too_large`.
+  An empty body is `400 invalid_request`.
+- **Integrity**: with `X-Content-SHA256`, a body that arrives different is
+  refused with `400 checksum_mismatch`, and the previous attachment stays
+  intact.
+- **Limits**: up to 50 attachments per case (`507 attachment_limit_exceeded`
+  for a new name; replacing is still allowed) and a space quota per
+  automation and environment (`507 attachment_quota_exceeded`; on a
+  replacement, only the size difference counts).
+- **Missing case**: `404 case_not_found`, and nothing is stored.
+
+### `GET` — list
+
+```
+GET /v1/cases/{environment}/{automation}/{case_id}/attachments
+```
+
+`200` with `{"items": [...]}`: the current attachments, ordered by `name`,
+each with the fields above (without `created`/`changed`) and **without the
+content**. A case with no attachments returns an empty list. No
+pagination: the per-case limit makes it unnecessary.
+
+### `GET` — download
+
+```
+GET /v1/cases/{environment}/{automation}/{case_id}/attachments/{name}
+```
+
+The content, streamed, with:
+
+| Header | Value |
+|---|---|
+| `Content-Type` | the stored type |
+| `Content-Length` | the size |
+| `Content-Disposition` | `attachment; filename="<name>"` |
+| `ETag` | `"<sha256>"` |
+| `X-Content-Type-Options` | `nosniff` |
+| `Cache-Control` | `private, no-store` |
+
+!!! warning "Check the `ETag` against what arrived"
+    The API checks the content while sending it, but the bytes are already
+    gone when the sum closes. The final check is the client's: the sha256
+    of what you received must match the `ETag`.
+
+`404 attachment_not_found` if the case has no attachment by that name.
+
+### `DELETE` — remove
+
+`204`. The attachment disappears from the listing and the download right
+away; the content leaves the storage right away or, if the storage is
+down, on the first cleanup cycle after it comes back.
+`404 attachment_not_found` if it does not exist.
+
+### Storage down or switched off
+
+The attachment routes answer `503 attachment_store_unavailable` with a
+`Retry-After` header, **without** any detail about the storage. The case
+routes and `/ready` do not depend on it. Listing and removal keep working
+with the storage down; storing and downloading do not.
+
+In the in-memory mock (the backend automations use in their tests),
+attachments work with no configuration at all.
+
+An attachment has its own term, separate from the case's, and never
+outlives its case. See [Retention](retencao.md#case-attachments).
 
 ---
 

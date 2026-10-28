@@ -4,7 +4,102 @@ Registro das mudanças de comportamento que afetam quem integra. Não
 substitui o `CHANGELOG.md` de cada repositório — aqui ficam apenas as que
 mudam o **contrato** ou exigem ação de quem consome.
 
-Versões atuais: **API 0.7.1** e **SDK 0.7.2**.
+Versões atuais: **API 0.8.0** e **SDK 0.8.1**.
+
+---
+
+## Anexos de caso, expurgo protegido e observabilidade — API 0.8.0 e SDK 0.8.1
+
+=== "Anexos de caso"
+
+    **O que mudou.** Quatro rotas novas sob o caso, para gravar (com
+    substituição pelo mesmo nome), listar, baixar e remover documentos
+    binários, como o PDF de um comprovante. Conteúdo cru no corpo do
+    `PUT`, download em streaming com `ETag` igual ao sha256. Por padrão,
+    só `application/pdf`, até 25 MB, 50 por caso. Nenhum modelo publicado
+    muda. Ver [Endpoints](api/endpoints.md#anexos-de-caso) e os códigos
+    novos em [Erros](api/erros.md).
+
+    O anexo tem **prazo próprio**, separado do prazo do caso:
+    `ATTACHMENT_RETENTION_DAYS_<AUTOMATION>[_<ENVIRONMENT>]`, padrão de 15
+    dias. Ele nunca sobrevive ao caso. Ver
+    [Retenção](api/retencao.md#anexos-de-caso).
+
+    **O que fazer.** Nada, para quem não usa anexos: a mudança é
+    aditiva.
+
+=== "SDK: anexos"
+
+    **O que mudou.** `upsert_attachment`, `list_attachments`,
+    `download_attachment` e `delete_attachment`, nos dois clientes, e os
+    comandos correspondentes na CLI. O SDK manda o sha256 do conteúdo no
+    upload e confere o download contra o sha256 anunciado pela API; um
+    download que não confere levanta `AttachmentChecksumError`, nova, e
+    não devolve o conteúdo.
+
+    **O que fazer.** Fixe `casehub>=0.8.1` (não a 0.8.0, ver
+    [Versões do SDK a evitar](#versoes-do-sdk-a-evitar)) e a API a partir
+    da 0.8.0: contra uma API anterior, as chamadas de anexo respondem
+    404. Ver [Cliente síncrono](sdk/cliente.md#anexos-de-caso).
+
+=== "Métricas e logs com nomes novos"
+
+    **O que mudou.** As métricas e os atributos HTTP passaram para a
+    convenção semântica **estável** do OpenTelemetry.
+
+    | Antes | Agora |
+    |---|---|
+    | `http_server_duration_milliseconds_*` | `http_server_request_duration_seconds_*` |
+    | rótulo `http_target` | `http_route`, sem o `/v1` (`/cases`) |
+    | rótulo `http_status_code` | `http_response_status_code` |
+    | rótulo `http_method` | `http_request_method` |
+    | span `net.peer.ip` | `client.address` |
+
+    Nos logs, os campos `otelTraceID`, `otelSpanID`, `otelServiceName` e
+    `otelTraceSampled` saíram: eram cópias de `trace_id`, `span_id` e
+    `service_name`, que continuam chegando.
+
+    **O que fazer.** Painel, alerta ou query salva que use os nomes
+    antigos precisa trocar para os novos. Para voltar à convenção antiga
+    sem trocar de versão, defina `OTEL_SEMCONV_STABILITY_OPT_IN=` (vazio)
+    no ambiente do serviço; com `http/dup`, ele emite as duas. Ver
+    [Observabilidade](operacao/observabilidade.md).
+
+=== "Erros e recusas de credencial com rastro"
+
+    **O que mudou.** Toda resposta de erro (4xx e 5xx), em qualquer
+    rota, gera um log com o código do erro, a rota e, com token válido,
+    a automação; e conta na métrica nova `casehub.api.errors`. Toda
+    recusa de credencial (401, 403) sai no log com a etapa e o
+    **motivo** — token vencido, assinatura inválida, automação errada —
+    e conta em `casehub.auth.failures`.
+
+    **O que fazer.** Nada: nenhuma resposta muda, e o motivo não vai
+    para o corpo. É o que responde "por que este client novo recebe
+    401?" sem depurar às cegas. Ver
+    [Observabilidade](operacao/observabilidade.md#quando-algo-e-recusado).
+
+=== "`source_record` de até 10 MB"
+
+    **O que mudou.** O teto por registro subiu de 256 KB para **10 MB**
+    (`CASEHUB_MAX_SOURCE_RECORD_BYTES`). A página que devolve ou monta
+    os registros (`include=source_record` ou `render_with`) ganhou um
+    orçamento de bytes, `CASEHUB_MAX_LIST_SOURCE_BYTES`, padrão 100 MB:
+    passou dele, a resposta é `400 invalid_request`, e basta pedir um
+    `page_size` menor.
+
+    **O que fazer.** Um ambiente que fixe
+    `CASEHUB_MAX_SOURCE_RECORD_BYTES=262144` mantém o limite antigo:
+    troque por `10485760` ou remova a variável. Quem pagina com
+    `include=source_record` e registros grandes deve estar pronto para
+    o 400 e reduzir a página.
+
+!!! danger "Ação obrigatória para quem opera: a sentinela do expurgo"
+    O expurgo por prazo, **inclusive o de casos**, passa a exigir o
+    parâmetro `CASEHUB_RETENTION_CANARY` no namespace do serviço no
+    ParamManager. Sem ele, nada é removido por prazo e
+    `casehub.retention.skipped` sobe. Cadastre-o (valor `ok`) **antes**
+    de atualizar. Ver [Retenção](api/retencao.md#sem-a-sentinela-nada-sai-por-prazo).
 
 ---
 
@@ -406,6 +501,13 @@ identidade: o token se pede à própria API do CaseHub.
 ---
 
 ## Versões do SDK a evitar
+
+!!! danger "Não use a 0.8.0 para anexos"
+    Dois defeitos, corrigidos na **0.8.1**. Um nome de anexo (ou um
+    `case_id`) igual a `.` ou `..` levava a requisição a outro recurso:
+    `..` num upload mandava o PDF para a rota de gravação **do caso**. E
+    um download sem `ETag` — removido por um proxy no caminho — voltava
+    **sem conferência** do sha256. Use a **0.8.1** ou superior.
 
 !!! danger "Não instale a 0.7.0"
     Ela saiu com `casehub.__version__` parado em `'0.6.1'` enquanto a

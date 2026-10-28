@@ -2,7 +2,7 @@
 
 Documentação central do ecossistema CaseHub (a API `fast-casehub` e o SDK
 `casehub`). mkdocs-material, **português e inglês**, versionada por `mike` — a versão
-do site é própria (`VERSION`, hoje `1.2.0`), **não** a da API nem a do SDK, porque ele
+do site é própria (`VERSION`, hoje `1.5.0`), **não** a da API nem a do SDK, porque ele
 documenta os dois com números diferentes.
 
 **Publicada em dois lugares, a partir do mesmo `main`** (2026-08-21):
@@ -257,6 +257,38 @@ cursor e os operadores `exists`/`not_exists`/`ne` nao tem metodo nem
 flag. O cursor atravessa em runtime (`**params` repassa o que nao e
 `None`), mas nao esta em `ListCasesParams` — verificado rodando
 `_build_list_query`.
+
+### Anexos, observabilidade e SDK 0.8.1 — API 0.8.0 (2026-10-28)
+
+`VERSION` 1.4.0 → 1.5.0. Os anexos e a sentinela tinham entrado antes
+(`4a9dd45`); este corte completou a 0.8.0 com o que tinha ficado de
+fora, nos dois idiomas:
+
+- **`operacao/observabilidade`**: a convenção HTTP estável (nomes e
+  rótulos novos, rollback por `OTEL_SEMCONV_STABILITY_OPT_IN`), as
+  métricas `casehub.api.errors`, `casehub.auth.failures` e
+  `casehub.retention.skipped`, a seção "Quando algo é recusado" com a
+  tabela fechada de etapa × motivo, logs no stdout
+  (`CASEHUB_LOG_CONSOLE`), os campos `otel*` que saíram e o trace do
+  expurgo.
+- **Afirmação que a 0.8.0 tornou falsa, corrigida em dois lugares**:
+  "ParamManager fora → tudo cai no default de 90 dias", em
+  `observabilidade` ("O que observar") e no diagrama de `arquitetura`.
+  Com a sentinela, ParamManager fora **para** o expurgo. Ao realinhar
+  com uma versão nova, procure as frases que ela desmente, não só as
+  que ela acrescenta.
+- **`instalacao`**: `CASEHUB_MAX_SOURCE_RECORD_BYTES` em 10 MB (a tabela
+  dizia 256 KB), `CASEHUB_MAX_LIST_SOURCE_BYTES` e `CASEHUB_LOG_CONSOLE`.
+- **SDK 0.8.1**: anexos em `sdk/cliente`, `sdk/cli` e `sdk/assincrono`,
+  a sexta exceção (`AttachmentChecksumError`), `render_with` agora
+  declarado, e a **0.8.0 do SDK em "Versões a evitar"** (segmento `..`
+  ia para a rota do caso; download sem `ETag` passava sem conferência).
+- `mudancas`: a seção da 0.8.0 virou cinco abas, no formato das outras.
+
+Conferido: estrutura pt/en idêntica nos 9 pares, `--strict` verde, as
+14 âncoras novas existindo no HTML, nenhum markdown cru no `<article>`,
+e captura do Chrome headless de `mudancas` (pt) e `observabilidade`
+(en).
 
 ### Motor único e condições unificadas — API 0.7.0 (2026-10-01)
 

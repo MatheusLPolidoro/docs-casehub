@@ -4,7 +4,102 @@ A record of the behaviour changes that affect whoever integrates. It does
 not replace each repository's `CHANGELOG.md` — only the ones that change
 the **contract** or require action from a consumer live here.
 
-Current versions: **API 0.7.1** and **SDK 0.7.2**.
+Current versions: **API 0.8.0** and **SDK 0.8.1**.
+
+---
+
+## Case attachments, a protected purge and observability — API 0.8.0 and SDK 0.8.1
+
+=== "Case attachments"
+
+    **What changed.** Four new routes under the case, to store (with
+    replacement under the same name), list, download and remove binary
+    documents, such as the PDF of a receipt. Raw content in the `PUT`
+    body, streamed download with an `ETag` equal to the sha256. By
+    default, only `application/pdf`, up to 25 MB, 50 per case. No
+    published model changes. See [Endpoints](api/endpoints.md#case-attachments)
+    and the new codes in [Errors](api/erros.md).
+
+    An attachment has **a term of its own**, separate from the case's:
+    `ATTACHMENT_RETENTION_DAYS_<AUTOMATION>[_<ENVIRONMENT>]`, 15-day
+    default. It never outlives its case. See
+    [Retention](api/retencao.md#case-attachments).
+
+    **What to do.** Nothing, if you do not use attachments: the change is
+    additive.
+
+=== "SDK: attachments"
+
+    **What changed.** `upsert_attachment`, `list_attachments`,
+    `download_attachment` and `delete_attachment`, on both clients, and
+    the matching CLI commands. The SDK sends the content's sha256 on
+    upload and checks the download against the sha256 the API announces;
+    a download that does not match raises `AttachmentChecksumError`, a
+    new exception, and the content is not returned.
+
+    **What to do.** Pin `casehub>=0.8.1` (not 0.8.0, see
+    [SDK versions to avoid](#sdk-versions-to-avoid)) and the API from
+    0.8.0 on: against an older API, the attachment calls answer 404. See
+    [Synchronous client](sdk/cliente.md#case-attachments).
+
+=== "New names for metrics and logs"
+
+    **What changed.** HTTP metrics and attributes moved to the **stable**
+    OpenTelemetry semantic convention.
+
+    | Before | Now |
+    |---|---|
+    | `http_server_duration_milliseconds_*` | `http_server_request_duration_seconds_*` |
+    | label `http_target` | `http_route`, without `/v1` (`/cases`) |
+    | label `http_status_code` | `http_response_status_code` |
+    | label `http_method` | `http_request_method` |
+    | span `net.peer.ip` | `client.address` |
+
+    In the logs, the fields `otelTraceID`, `otelSpanID`,
+    `otelServiceName` and `otelTraceSampled` are gone: they were copies of
+    `trace_id`, `span_id` and `service_name`, which still arrive.
+
+    **What to do.** A dashboard, alert or saved query using the old names
+    has to switch to the new ones. To go back to the old convention
+    without changing versions, set `OTEL_SEMCONV_STABILITY_OPT_IN=`
+    (empty) in the service's environment; with `http/dup`, it emits both.
+    See [Observability](operacao/observabilidade.md).
+
+=== "A trail for errors and refused credentials"
+
+    **What changed.** Every error response (4xx and 5xx), on any route,
+    produces a log with the error code, the route and, with a valid
+    token, the automation; and counts in the new metric
+    `casehub.api.errors`. Every refused credential (401, 403) is logged
+    with the stage and the **reason** — expired token, invalid
+    signature, wrong automation — and counts in `casehub.auth.failures`.
+
+    **What to do.** Nothing: no response changes, and the reason does not
+    go into the body. It is what answers "why does this new client get
+    401?" without debugging blind. See
+    [Observability](operacao/observabilidade.md#when-something-is-refused).
+
+=== "`source_record` up to 10 MB"
+
+    **What changed.** The ceiling per record went from 256 KB to **10 MB**
+    (`CASEHUB_MAX_SOURCE_RECORD_BYTES`). A page that returns or renders
+    the records (`include=source_record` or `render_with`) got a byte
+    budget, `CASEHUB_MAX_LIST_SOURCE_BYTES`, 100 MB by default: past it,
+    the response is `400 invalid_request`, and a smaller `page_size` is
+    all it takes.
+
+    **What to do.** An environment that pins
+    `CASEHUB_MAX_SOURCE_RECORD_BYTES=262144` keeps the old limit: change
+    it to `10485760` or remove the variable. Whoever pages with
+    `include=source_record` and large records should be ready for the
+    400 and shrink the page.
+
+!!! danger "Mandatory action for operators: the purge sentinel"
+    Purging by term, **case purging included**, now requires the
+    `CASEHUB_RETENTION_CANARY` parameter in the service's ParamManager
+    namespace. Without it, nothing is removed by term and
+    `casehub.retention.skipped` goes up. Register it (value `ok`)
+    **before** upgrading. See [Retention](api/retencao.md#without-the-sentinel-nothing-leaves-by-term).
 
 ---
 
@@ -411,6 +506,13 @@ address: the token is requested from the CaseHub API itself.
 ---
 
 ## SDK versions to avoid
+
+!!! danger "Do not use 0.8.0 for attachments"
+    Two defects, fixed in **0.8.1**. An attachment name (or a `case_id`)
+    equal to `.` or `..` sent the request to another resource: `..` on an
+    upload sent the PDF to the **case's** store route. And a download
+    without an `ETag` — removed by a proxy along the way — came back
+    **without** the sha256 check. Use **0.8.1** or later.
 
 !!! danger "Do not install 0.7.0"
     It shipped with `casehub.__version__` stuck at `'0.6.1'` while the

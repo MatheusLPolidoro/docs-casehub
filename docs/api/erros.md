@@ -30,6 +30,14 @@ inesperadas — um bug interno não escapa em outro formato.
 | `connection_not_found` | 404 | A conexão não existe, ou é de outra automação. |
 | `connection_in_use` | 409 | Há assinatura apontando para a conexão — ela não é removida, e nada foi alterado. |
 | `webhook_not_found` | 404 | A assinatura (ou a entrega) não existe, ou é de outra automação. |
+| `attachment_not_found` | 404 | O caso não tem anexo com esse nome. |
+| `invalid_attachment_name` | 400 | O nome do anexo foge de `[A-Za-z0-9][A-Za-z0-9._-]*` ou passa de 200 caracteres. |
+| `unsupported_attachment_type` | 415 | O tipo do anexo não é aceito pelo serviço, ou o conteúdo não tem a assinatura do tipo declarado. |
+| `attachment_too_large` | 413 | O anexo passa do limite de tamanho (25 MB por padrão). |
+| `checksum_mismatch` | 400 | O conteúdo recebido não confere com o `X-Content-SHA256` enviado. Nada foi gravado. |
+| `attachment_limit_exceeded` | 507 | O caso já tem o máximo de anexos (50 por padrão) e o nome é novo. |
+| `attachment_quota_exceeded` | 507 | A gravação passaria da cota de espaço de anexos da automação naquele ambiente. |
+| `attachment_store_unavailable` | 503 | O storage de anexos está fora do ar ou desligado neste ambiente. Vem com `Retry-After`; tente de novo depois desse tempo. |
 | `internal_error` | 500 | Falha inesperada do serviço. |
 
 !!! note "409 aparece em dois lugares, com sentidos diferentes"
@@ -38,6 +46,12 @@ inesperadas — um bug interno não escapa em outro formato.
     entrega de webhook é uma entrega que ainda está `pending` ou já
     chegou (`succeeded`) — a guarda que impede um reenvio por engano de
     virar duplicata. Ver [Webhooks](webhooks.md#reenviar-uma-entrega-redrive).
+
+!!! note "507 é limite de anexo, não falta de disco do servidor"
+    `attachment_limit_exceeded` e `attachment_quota_exceeded` dizem que a
+    **sua** automação chegou ao limite dela. Repetir não resolve: é
+    preciso remover anexos (ou esperar o prazo deles) antes de gravar
+    outros.
 
 !!! note "Validação de payload é 400, não 422"
     O FastAPI usaria 422 por padrão; o contrato converte para 400 com

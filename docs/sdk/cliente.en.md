@@ -61,9 +61,15 @@ forwards to the identity provider.
 | `upsert_cases_batch(...)` | `POST /v1/cases/batch` |
 | `get_case(...)` | `GET /v1/cases/{env}/{automation}/{case_id}` |
 | `list_cases(...)` | `GET /v1/cases` |
+| `upsert_attachment(...)` | `PUT /v1/cases/{env}/{automation}/{case_id}/attachments/{name}` |
+| `list_attachments(...)` | `GET /v1/cases/{env}/{automation}/{case_id}/attachments` |
+| `download_attachment(...)` | `GET /v1/cases/{env}/{automation}/{case_id}/attachments/{name}` |
+| `delete_attachment(...)` | `DELETE /v1/cases/{env}/{automation}/{case_id}/attachments/{name}` |
 | `close()` | Closes the HTTP session. |
 
-All of them return the response JSON as a `dict`.
+They return the response JSON as a `dict`, with two exceptions:
+`download_attachment` returns the attachment's `bytes`, and
+`delete_attachment` returns `None`.
 
 !!! info "The webhook routes have no SDK method"
     `/v1/webhooks*` is called over plain HTTP, with the same `Bearer`. See
@@ -201,21 +207,77 @@ Without `include='source_record'`, the items come without the JSON.
 !!! note "What the typed signature declares, and what it does not"
     `ListCasesParams` declares `environment`, `automation`, `status`,
     `batch_ref`, `source_schema`, `started_from`, `started_to`,
-    `include`, `page` and `page_size`.
+    `include`, `page`, `page_size` and, since SDK 0.8.0, `render_with`.
 
     The cursor parameters (`created_since`, `updated_since`), the
     content operators — `exists`, `not_exists`, `ne` and, since API
     0.7.0, `present`, `blank`, `matches`, `not_matches`, `in` and
-    `not_in` —, the JSON `conditions` and `render_with` are **not**
+    `not_in` — and the JSON `conditions` are **not**
     declared. They go
     through anyway — anything that is not `None` reaches the query string
     as given — but a type checker will complain, and the CLI does not
     expose them. See
     [Endpoints](../api/endpoints.md#get-list-and-count).
 
+### Case attachments
+
+Since SDK 0.8.1, with API 0.8.0 or later. The case has to exist.
+
+```python
+from pathlib import Path
+
+response = client.upsert_attachment(
+    environment='prod',
+    automation='my-automation',
+    case_id='a1b2c3',
+    name='receipt.pdf',
+    content=Path('receipt.pdf').read_bytes(),
+    content_type='application/pdf',   # the default
+)
+# response['created']: the case had no attachment under that name
+# response['changed']: False when the content equals what is stored
+
+client.list_attachments('prod', 'my-automation', 'a1b2c3')
+# {'items': [{'name': ..., 'content_type': ..., 'size_bytes': ...,
+#             'sha256': ..., 'created_at': ..., 'updated_at': ...}]}
+
+pdf = client.download_attachment('prod', 'my-automation', 'a1b2c3', 'receipt.pdf')
+
+client.delete_attachment('prod', 'my-automation', 'a1b2c3', 'receipt.pdf')
+```
+
+The same name replaces the attachment. Sending the same content again
+answers `changed: False` without storing anything, so retrying is safe —
+which is why the retry on 401 applies here too.
+
+The SDK checks integrity at both ends, with nothing to do on the
+caller's side:
+
+- **On upload**, it computes the content's sha256 and sends it in
+  `X-Content-SHA256`. A body that reaches the API altered is rejected
+  (`400 checksum_mismatch`) instead of stored.
+- **On download**, it checks the bytes against the sha256 the API
+  announces in the `ETag`. If a proxy along the way removes or replaces
+  the `ETag`, the hash comes from the case's listing, at the cost of one
+  more call. Bytes that do not match raise `AttachmentChecksumError`,
+  and the content is **not** returned.
+
+!!! warning "The limits are the API's, and arrive as `APIHTTPError`"
+    A type outside the list (`415`), an attachment that is too large
+    (`413`), too many attachments on the case or the automation's quota
+    used up (`507`), a missing case or attachment (`404`) and the
+    storage down (`503`, with `Retry-After`). The SDK does not replicate
+    these limits: they are configurable in the service. See
+    [Endpoints](../api/endpoints.md#case-attachments).
+
+!!! note "The content stays in memory"
+    `content` is `bytes`, and the download returns `bytes`. With the
+    default limit of 25 MB per attachment that is the simple path; the
+    SDK has no streaming upload or download.
+
 ## Error handling
 
-The SDK normalizes failures into five exceptions:
+The SDK normalizes failures into six exceptions:
 
 ```python
 from casehub.exceptions import (
@@ -223,6 +285,7 @@ from casehub.exceptions import (
     APIHTTPError,
     APITimeoutError,
     APIUnexpectedError,
+    AttachmentChecksumError,
     OidcTokenError,
 )
 
@@ -245,6 +308,7 @@ except OidcTokenError:
 | `APIConnectionError` | The API was not reached. |
 | `APITimeoutError` | No answer in time. |
 | `OidcTokenError` | Failure obtaining the token. |
+| `AttachmentChecksumError` | The downloaded attachment does not match the API's sha256. Exposes `expected` (`None` if the API announced none) and `received`. Not an HTTP error: the response was 200. |
 | `APIUnexpectedError` | Anything else. |
 
 ## Token renewal and the retry on 401
