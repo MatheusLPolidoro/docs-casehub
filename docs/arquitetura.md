@@ -110,9 +110,11 @@ comum, e o cursor continua sendo a recuperação quando algo se perde. Ver
 ```mermaid
 flowchart LR
     T["Scheduler in-process<br/><small>a cada N horas</small>"] --> L["Lista pares<br/>(automation, environment)"]
-    L --> R["Resolve o prazo<br/>no ParamManager"]
+    L --> C{"Leitura traz a<br/>sentinela?"}
+    C -.->|"não"| N["Nada sai por prazo"]
+    C -->|sim| R["Resolve o prazo<br/>no ParamManager"]
     R --> D["DELETE onde<br/>started_at < corte"]
-    R -.->|"sem parâmetro,<br/>ou ParamManager fora"| DF["Default: 90 dias"]
+    R -.->|"sem parâmetro"| DF["Default: 90 dias"]
     DF --> D
 ```
 
@@ -121,6 +123,11 @@ O prazo é resolvido nesta ordem, e a primeira que existir vence:
 1. `RETENTION_DAYS_<AUTOMATION>_<ENVIRONMENT>`
 2. `RETENTION_DAYS_<AUTOMATION>`
 3. Default de 90 dias
+
+Desde a API 0.8.0, o expurgo por prazo só roda se a leitura do
+ParamManager trouxer a sentinela `CASEHUB_RETENTION_CANARY`. Com o
+ParamManager fora do ar, ou sem a sentinela cadastrada, **nada sai por
+prazo** naquele ciclo — antes, tudo caía no default de 90 dias.
 
 !!! warning "O expurgo é sempre escopado por ambiente"
     Mesmo quando só o prazo genérico está cadastrado. Sem esse escopo,

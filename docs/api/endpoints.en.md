@@ -373,6 +373,14 @@ with the simple parameters — and shares the same ceiling.
     Only with `include=source_record`. A listing of 500 cases with each
     one's full JSON is a large payload and rarely what you want.
 
+!!! warning "A page with `source_record` has a byte budget"
+    Since API 0.8.0, a `source_record` can be up to 10 MB. So that the
+    service's memory holds, a page that returns or renders the records
+    (`include=source_record` or `render_with`) adds up their size against
+    `CASEHUB_MAX_LIST_SOURCE_BYTES` (100 MB by default). Past it, the
+    response is `400 invalid_request`: ask for a smaller `page_size`. A
+    one-item page always fits.
+
 **Seeing what a subscription would send: `render_with`**
 
 `render_with=<subscription id>` adds a `rendered` to each item with what
@@ -429,6 +437,10 @@ later. The content lives in the service's own object storage, behind the
 API: **no automation ever gets its address or credential**, it only talks
 to these routes. Authorization is the case's: a token from another
 automation gets `403 forbidden`.
+
+In the SDK, since 0.8.1: `upsert_attachment`, `list_attachments`,
+`download_attachment` and `delete_attachment`, which send and check the
+sha256 on their own. See [Synchronous client](../sdk/cliente.md#case-attachments).
 
 ### `PUT` — store or replace
 

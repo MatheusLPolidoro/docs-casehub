@@ -49,6 +49,11 @@ Rule of thumb:
 Nothing else changes: method names, parameters and exceptions are
 identical.
 
+Attachments have one detail that is specific to this side: the
+content's sha256, which the SDK computes on upload and on download,
+runs in a thread (`asyncio.to_thread`). A 25 MB attachment does not
+stall the other coroutines while the hash is computed.
+
 ## Sharing between concurrent tasks
 
 `httpx.AsyncClient` is *task-safe*, so a single instance can be shared by

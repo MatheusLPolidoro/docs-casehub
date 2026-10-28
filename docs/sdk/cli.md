@@ -62,6 +62,10 @@ vence:
 | `upsert-case` | Cria/atualiza um caso. |
 | `patch-case-status` | Troca só o status de um caso. |
 | `upsert-cases-batch` | Publica um lote a partir de JSON. |
+| `upsert-attachment` | Grava ou substitui um anexo do caso a partir de um arquivo. |
+| `list-attachments` | Lista os anexos do caso, sem o conteúdo. |
+| `download-attachment` | Baixa um anexo, conferido contra o sha256 da API. |
+| `delete-attachment` | Remove um anexo do caso. |
 
 Todos aceitam sobrescrever a conexão por flag (`--base-url`,
 `--client-id`, `--token-url`, ...) sem depender do arquivo.
@@ -134,3 +138,24 @@ Omitido, nada é enviado e o servidor decide o default (`update`).
 !!! warning "A CLI não valida o conteúdo do arquivo"
     Ela envia o JSON como está. Um item malformado só é recusado pela
     API, e aparece em `errors[]` — não como erro da CLI.
+
+### Anexando e baixando um documento
+
+```bash
+casehub upsert-attachment --environment prod --automation minha-automacao   --case-id a1b2c3 --file comprovante.pdf
+
+casehub download-attachment --environment prod --automation minha-automacao   --case-id a1b2c3 --name comprovante.pdf --output ./copia.pdf
+```
+
+Os comandos de anexo existem desde o SDK 0.8.1, e exigem a API 0.8.0.
+
+`upsert-attachment` usa o nome do arquivo como nome do anexo e deduz o
+tipo pela extensão; `--name` e `--content-type` trocam os dois. A API só
+aceita nomes em `[A-Za-z0-9][A-Za-z0-9._-]*`: um arquivo com espaço ou
+acento no nome é recusado **antes** do envio, com o pedido de um
+`--name`.
+
+`download-attachment` grava em `--output` (padrão: o nome do anexo, no
+diretório atual) e não sobrescreve um arquivo que já existe sem
+`--force`. Se o conteúdo não conferir com o sha256 da API, nada é
+gravado.

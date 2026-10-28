@@ -369,6 +369,14 @@ com os parâmetros simples — e com o mesmo teto.
     Só com `include=source_record`. Uma listagem de 500 casos com o JSON
     completo de cada um é um payload grande e raramente é o que se quer.
 
+!!! warning "A página com `source_record` tem orçamento de bytes"
+    Desde a API 0.8.0, um `source_record` pode ter até 10 MB. Para a
+    memória do serviço aguentar, a página que devolve ou monta os
+    registros (`include=source_record` ou `render_with`) soma o tamanho
+    deles contra `CASEHUB_MAX_LIST_SOURCE_BYTES` (100 MB por padrão).
+    Passou, a resposta é `400 invalid_request`: peça um `page_size`
+    menor. Uma página de um item sempre cabe.
+
 **Ver o que uma assinatura enviaria: `render_with`**
 
 `render_with=<id da assinatura>` acrescenta a cada item um `rendered`
@@ -425,6 +433,10 @@ recupera depois. O conteúdo fica num storage de objetos próprio do
 serviço, atrás da API: **nenhuma automação recebe endereço nem
 credencial dele**, só fala com estas rotas. A autorização é a do caso:
 token de outra automação recebe `403 forbidden`.
+
+No SDK, desde a 0.8.1: `upsert_attachment`, `list_attachments`,
+`download_attachment` e `delete_attachment`, que mandam e conferem o
+sha256 sozinhos. Ver [Cliente síncrono](../sdk/cliente.md#anexos-de-caso).
 
 ### `PUT` — gravar ou substituir
 

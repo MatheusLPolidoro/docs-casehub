@@ -62,6 +62,10 @@ exists wins:
 | `upsert-case` | Creates/updates a case. |
 | `patch-case-status` | Changes only a case's status. |
 | `upsert-cases-batch` | Publishes a batch from JSON. |
+| `upsert-attachment` | Stores or replaces a case attachment from a file. |
+| `list-attachments` | Lists the case's attachments, without the content. |
+| `download-attachment` | Downloads an attachment, checked against the API's sha256. |
+| `delete-attachment` | Removes a case attachment. |
 
 All of them accept overriding the connection by flag (`--base-url`,
 `--client-id`, `--token-url`, ...) without relying on the file.
@@ -137,3 +141,26 @@ default (`update`).
 !!! warning "The CLI does not validate the file's content"
     It sends the JSON as it is. A malformed item is rejected only by the
     API, and shows up in `errors[]` — not as a CLI error.
+
+### Attaching and downloading a document
+
+```bash
+casehub upsert-attachment --environment prod --automation my-automation \
+  --case-id a1b2c3 --file receipt.pdf
+
+casehub download-attachment --environment prod --automation my-automation \
+  --case-id a1b2c3 --name receipt.pdf --output ./copy.pdf
+```
+
+The attachment commands exist since SDK 0.8.1, and require API 0.8.0.
+
+`upsert-attachment` uses the file name as the attachment name and
+guesses the type from the extension; `--name` and `--content-type`
+change both. The API only accepts names in `[A-Za-z0-9][A-Za-z0-9._-]*`:
+a file with a space or an accent in its name is refused **before**
+sending, with a request for `--name`.
+
+`download-attachment` writes to `--output` (default: the attachment's
+name, in the current directory) and does not overwrite an existing file
+without `--force`. If the content does not match the API's sha256,
+nothing is written.

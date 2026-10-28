@@ -110,9 +110,11 @@ lost. See [Webhooks](api/webhooks.md).
 ```mermaid
 flowchart LR
     T["In-process scheduler<br/><small>every N hours</small>"] --> L["Lists pairs<br/>(automation, environment)"]
-    L --> R["Resolves the term<br/>in ParamManager"]
+    L --> C{"Read brings the<br/>sentinel?"}
+    C -.->|"no"| N["Nothing leaves by term"]
+    C -->|yes| R["Resolves the term<br/>in ParamManager"]
     R --> D["DELETE where<br/>started_at < cutoff"]
-    R -.->|"no parameter,<br/>or ParamManager down"| DF["Default: 90 days"]
+    R -.->|"no parameter"| DF["Default: 90 days"]
     DF --> D
 ```
 
@@ -121,6 +123,11 @@ The term is resolved in this order, and the first one that exists wins:
 1. `RETENTION_DAYS_<AUTOMATION>_<ENVIRONMENT>`
 2. `RETENTION_DAYS_<AUTOMATION>`
 3. A default of 90 days
+
+Since API 0.8.0, purging by term only runs if the ParamManager read
+brings the `CASEHUB_RETENTION_CANARY` sentinel. With ParamManager down,
+or without the sentinel registered, **nothing leaves by term** in that
+cycle — before, everything fell back to the 90-day default.
 
 !!! warning "The purge is always scoped by environment"
     Even when only the generic term is configured. Without that scope, a

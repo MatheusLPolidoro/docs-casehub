@@ -60,9 +60,15 @@ repassa ao provedor de identidade.
 | `upsert_cases_batch(...)` | `POST /v1/cases/batch` |
 | `get_case(...)` | `GET /v1/cases/{env}/{automation}/{case_id}` |
 | `list_cases(...)` | `GET /v1/cases` |
+| `upsert_attachment(...)` | `PUT /v1/cases/{env}/{automation}/{case_id}/attachments/{name}` |
+| `list_attachments(...)` | `GET /v1/cases/{env}/{automation}/{case_id}/attachments` |
+| `download_attachment(...)` | `GET /v1/cases/{env}/{automation}/{case_id}/attachments/{name}` |
+| `delete_attachment(...)` | `DELETE /v1/cases/{env}/{automation}/{case_id}/attachments/{name}` |
 | `close()` | Fecha a sessão HTTP. |
 
-Todos devolvem o JSON da resposta como `dict`.
+Devolvem o JSON da resposta como `dict`, com duas exceções:
+`download_attachment` devolve os `bytes` do anexo, e `delete_attachment`
+devolve `None`.
 
 !!! info "As rotas de webhook não têm método no SDK"
     `/v1/webhooks*` se chama por HTTP direto, com o mesmo `Bearer`. Ver
@@ -199,20 +205,76 @@ Sem `include='source_record'`, os itens vêm sem o JSON.
 !!! note "O que a assinatura tipada declara, e o que ela não declara"
     `ListCasesParams` declara `environment`, `automation`, `status`,
     `batch_ref`, `source_schema`, `started_from`, `started_to`,
-    `include`, `page` e `page_size`.
+    `include`, `page`, `page_size` e, desde o SDK 0.8.0, `render_with`.
 
     Os parâmetros de cursor (`created_since`, `updated_since`), os
     operadores de conteúdo — `exists`, `not_exists`, `ne` e, desde a
     API 0.7.0, `present`, `blank`, `matches`, `not_matches`, `in` e
-    `not_in` —, o `conditions` em JSON e o `render_with` **não** estão
+    `not_in` — e o `conditions` em JSON **não** estão
     declarados. Eles
     atravessam mesmo assim — o que não é `None` vai para a query string
     como veio —, mas um verificador de tipos vai reclamar, e a CLI não
     os expõe. Ver [Endpoints](../api/endpoints.md#get-listar-e-contar).
 
+### Anexos de caso
+
+Desde o SDK 0.8.1, com a API 0.8.0 ou superior. O caso precisa existir.
+
+```python
+from pathlib import Path
+
+resposta = client.upsert_attachment(
+    environment='prod',
+    automation='minha-automacao',
+    case_id='a1b2c3',
+    name='comprovante.pdf',
+    content=Path('comprovante.pdf').read_bytes(),
+    content_type='application/pdf',   # o padrão
+)
+# resposta['created']: o caso não tinha anexo com esse nome
+# resposta['changed']: False quando o conteúdo é igual ao já gravado
+
+client.list_attachments('prod', 'minha-automacao', 'a1b2c3')
+# {'items': [{'name': ..., 'content_type': ..., 'size_bytes': ...,
+#             'sha256': ..., 'created_at': ..., 'updated_at': ...}]}
+
+pdf = client.download_attachment(
+    'prod', 'minha-automacao', 'a1b2c3', 'comprovante.pdf'
+)
+
+client.delete_attachment('prod', 'minha-automacao', 'a1b2c3', 'comprovante.pdf')
+```
+
+Mesmo nome substitui o anexo. Reenviar o mesmo conteúdo responde
+`changed: False` sem gravar nada, então a retentativa é segura — e é
+por isso que o retry em 401 também vale aqui.
+
+O SDK confere a integridade nas duas pontas, sem nada a fazer do lado
+de quem chama:
+
+- **No envio**, calcula o sha256 do conteúdo e o manda em
+  `X-Content-SHA256`. Um corpo que chegue diferente à API é recusado
+  (`400 checksum_mismatch`) em vez de gravado.
+- **No download**, confere os bytes contra o sha256 que a API anuncia no
+  `ETag`. Se um proxy no caminho remover ou trocar o `ETag`, o hash vem
+  da listagem do caso, com uma chamada a mais. Bytes que não conferem
+  levantam `AttachmentChecksumError`, e o conteúdo **não** é devolvido.
+
+!!! warning "Os limites são da API, e chegam como `APIHTTPError`"
+    Tipo fora da lista (`415`), anexo grande demais (`413`), anexos
+    demais no caso ou cota da automação esgotada (`507`), caso ou anexo
+    inexistente (`404`) e storage fora do ar (`503`, com `Retry-After`).
+    O SDK não replica esses limites: eles são configuráveis no serviço.
+    Ver [Endpoints](../api/endpoints.md#anexos-de-caso).
+
+!!! note "O conteúdo fica na memória"
+    `content` é `bytes`, e o download devolve `bytes`. Com o limite
+    padrão de 25 MB por anexo isso é o caminho simples; o SDK não tem
+    envio nem download em streaming.
+
 ## Tratamento de erro
 
-O SDK normaliza as falhas em cinco exceções:
+O SDK normaliza as falhas em seis exceções:
 
 ```python
 from casehub.exceptions import (
@@ -220,6 +282,7 @@ from casehub.exceptions import (
     APIHTTPError,
     APITimeoutError,
     APIUnexpectedError,
+    AttachmentChecksumError,
     OidcTokenError,
 )
 
@@ -242,6 +305,7 @@ except OidcTokenError:
 | `APIConnectionError` | Não alcançou a API. |
 | `APITimeoutError` | Sem resposta no tempo. |
 | `OidcTokenError` | Falha ao obter o token. |
+| `AttachmentChecksumError` | O anexo baixado não confere com o sha256 da API. Expõe `expected` (`None` se a API não anunciou nenhum) e `received`. Não é erro HTTP: a resposta foi 200. |
 | `APIUnexpectedError` | Qualquer outra. |
 
 ## Renovação de token e o retry em 401

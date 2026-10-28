@@ -50,6 +50,11 @@ Regra prática:
 Nada mais muda: os nomes dos métodos, os parâmetros e as exceções são
 idênticos.
 
+Os anexos têm um detalhe só deste lado: o sha256 do conteúdo, que o SDK
+calcula no envio e no download, roda numa thread
+(`asyncio.to_thread`). Um anexo de 25 MB não para as outras corrotinas
+enquanto o hash é calculado.
+
 ## Compartilhando entre tarefas concorrentes
 
 `httpx.AsyncClient` é *task-safe*, então uma única instância pode ser
