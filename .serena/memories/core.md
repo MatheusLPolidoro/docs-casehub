@@ -23,6 +23,21 @@ GitLab Pages publica um artefato (o job extrai a árvore da `gh-pages` para
 `git push gitlab main`. Branches `main` e `desenv`, promoção por merge
 `--no-ff`.
 
+**O deploy interno falha em silêncio quando o site passa do limite do
+Pages** (descoberto em 2026-10-28). O `mike` acumula versões na
+`gh-pages` (~23 MB cada, metade disso o `LogoAnimation.js` e um
+`logo_animation_casehub.gif` que nenhuma página usa), e o GitLab Pages
+recusa o artefato acima de `max_pages_size`. Os jobs `build` e `pages`
+ficam **verdes**; só o pipeline fica `failed`, e o site interno segue
+servindo a versão antiga. Foi assim da 1.4.0 à 1.5.0: o interno ficou
+parado na 1.3.0 por quase um mês, com 114 MB contra o limite padrão de
+100 MB. O limite da instância foi para **500 MB** (Admin → Settings →
+Preferences → Pages, ou `PUT application/settings max_pages_size`). Ao
+publicar, confira o **conteúdo** servido (`versions.json` e a frase de
+versão da capa), não a cor dos jobs; o GitHub (1 GB) não tem o problema.
+O Pages manda `Cache-Control: max-age=600`, então releia depois de uns
+minutos antes de concluir que não atualizou.
+
 ### Bilinguismo — o que ele impõe
 
 `mkdocs-static-i18n`, `docs_structure: suffix`: `pagina.md` é o português,
