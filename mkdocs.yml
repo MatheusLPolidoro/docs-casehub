@@ -47,6 +47,7 @@ nav:
   - API (fast-casehub):
       - Autenticação: api/autenticacao.md
       - Endpoints: api/endpoints.md
+      - Schemas do registro: api/schemas.md
       - Webhooks: api/webhooks.md
       - Entregas para outras APIs: api/entregas.md
       - Erros: api/erros.md
@@ -136,6 +137,7 @@ plugins:
             Erros: Errors
             Retenção: Retention
             Entregas para outras APIs: Delivering to other APIs
+            Schemas do registro: Record schemas
             Cliente síncrono: Synchronous client
             Cliente assíncrono: Asynchronous client
             Operação: Operations

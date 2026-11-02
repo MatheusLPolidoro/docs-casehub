@@ -78,6 +78,12 @@ enviar `source_record: {}` limpa o objeto.
 `status`, sem precisar reenviar o `source_record` inteiro — e é o que
 faz uma recaptura preservar o `started_at` original.
 
+Enviado, o `source_record` substitui o gravado por inteiro. Desde a API
+0.9.0, `on_conflict: "merge"` troca isso por uma **fusão**: chave
+gravada que não vem permanece, e objetos se fundem em qualquer nível —
+é o que um enriquecimento usa para mandar só o que é novo. Ver
+[Endpoints](api/endpoints.md#merge-do-source_record).
+
 ## Consumo: puxar ou receber
 
 Há dois caminhos, e eles respondem a perguntas diferentes.
@@ -104,6 +110,11 @@ Os dois entregam o **estado atual** do caso, não cada transição. O
 webhook não substitui o cursor: ele evita o laço de polling no caso
 comum, e o cursor continua sendo a recuperação quando algo se perde. Ver
 [Webhooks](api/webhooks.md).
+
+Quem só precisa dos **números** — um painel com casos por status, por
+exemplo — não precisa de nenhum dos dois: `GET /v1/cases/totals` conta
+direto no banco, com os mesmos filtros da listagem. Ver
+[Endpoints](api/endpoints.md#get-totais).
 
 ## Retenção
 

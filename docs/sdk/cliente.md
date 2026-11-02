@@ -64,6 +64,13 @@ repassa ao provedor de identidade.
 | `list_attachments(...)` | `GET /v1/cases/{env}/{automation}/{case_id}/attachments` |
 | `download_attachment(...)` | `GET /v1/cases/{env}/{automation}/{case_id}/attachments/{name}` |
 | `delete_attachment(...)` | `DELETE /v1/cases/{env}/{automation}/{case_id}/attachments/{name}` |
+| `count_cases(...)` | `GET /v1/cases/totals` (API 0.9.0+) |
+| `upsert_source_schema(...)` | `PUT /v1/source-schemas/{name}` (API 0.9.0+) |
+| `get_source_schema(...)` | `GET /v1/source-schemas/{name}` |
+| `list_source_schemas()` | `GET /v1/source-schemas` |
+| `delete_source_schema(...)` | `DELETE /v1/source-schemas/{name}` |
+| `infer_source_schema(...)` | `GET /v1/source-schemas/{name}/inferred` |
+| `validate_source_record(...)` | `POST /v1/source-schemas/{name}/validate` |
 | `close()` | Fecha a sessão HTTP. |
 
 Devolvem o JSON da resposta como `dict`, com duas exceções:
@@ -135,6 +142,38 @@ falha. Ver [Endpoints](../api/endpoints.md).
     A API aceita itens sem `case_id` e gera um `auto-<hex>`, mas isso
     abre mão de idempotência: reprocessar duplica. Calcule uma chave
     natural estável a partir da fonte e envie sempre.
+
+### Fundindo em vez de substituir
+
+Desde o SDK 0.9.0, com a API 0.9.0 ou superior. `on_conflict='merge'` em
+`upsert_case` — e em `upsert_cases_batch` — pede à API que **funda** o
+`source_record` enviado no gravado, em vez de substituí-lo. É o que um
+enriquecimento precisa: mandar só o que é novo, sem ler o caso antes.
+
+```python
+client.upsert_case(
+    environment='prod',
+    automation='minha-automacao',
+    case_id='a1b2c3',
+    status='em_andamento',
+    started_at='2026-08-20T09:00:00-03:00',
+    source_record={'enriquecimento': {'etapa_b': {'ok': True}}},
+    on_conflict='merge',
+)
+```
+
+Nenhuma chave gravada é apagada; objetos se fundem em qualquer nível, e
+lista, texto, número, booleano e `None` enviados substituem. A regra
+completa está em [Endpoints](../api/endpoints.md#merge-do-source_record).
+
+!!! tip "Seguro de repetir"
+    A fusão é atômica e idempotente: reenviar o mesmo corpo deixa o mesmo
+    registro. Por isso o retry automático em 401 continua valendo.
+
+!!! warning "Contra uma API anterior à 0.9.0, é 400"
+    `on_conflict` no `PUT` é campo novo, e o corpo do contrato é estrito:
+    a API antiga recusa com `400` em vez de substituir em silêncio. Sem o
+    parâmetro, nada vai no corpo, e a escrita é a de sempre.
 
 ### Trocando só o status
 
@@ -215,6 +254,51 @@ Sem `include='source_record'`, os itens vêm sem o JSON.
     atravessam mesmo assim — o que não é `None` vai para a query string
     como veio —, mas um verificador de tipos vai reclamar, e a CLI não
     os expõe. Ver [Endpoints](../api/endpoints.md#get-listar-e-contar).
+
+### Contando casos
+
+Desde o SDK 0.9.0, com a API 0.9.0 ou superior. `count_cases` conta direto
+no banco, sem buscar página de casos — é o caminho de um painel.
+
+```python
+totais = client.count_cases(
+    environment='prod',
+    group_by=['source_schema', 'status'],
+    source_filters={'referencia': 'REF-12345'},
+)
+# {'total': 1520, 'group_by': ['source_schema', 'status'],
+#  'groups': [{'source_schema': 'registro.v1', 'status': 'aberto',
+#              'count': 1000}, ...],
+#  'truncated': False}
+```
+
+Aceita os mesmos filtros de `list_cases`. `group_by` aceita
+`environment`, `status` e `source_schema`, como texto ou lista, e
+`conditions` em lista ou dicionário é serializado em JSON pela lib. Ver
+[Endpoints](../api/endpoints.md#get-totais).
+
+### Schemas do registro
+
+Desde o SDK 0.9.0, com a API 0.9.0 ou superior.
+
+```python
+client.upsert_source_schema('registro.v1', {
+    'type': 'object',
+    'properties': {'referencia': {'type': 'integer'}},
+    'required': ['referencia'],
+})
+client.get_source_schema('registro.v1')          # schema + 'fields'
+client.list_source_schemas()                     # {'items': [...]}
+client.infer_source_schema('registro.v1', sample_size=200)
+client.validate_source_record('registro.v1', {'referencia': 'sete'})
+client.delete_source_schema('registro.v1')       # {'ok': True}
+```
+
+Com schema cadastrado para o `source_schema` que você envia,
+`upsert_case` e `upsert_cases_batch` devolvem também `schema_check`, com
+os alertas de conformidade — **o caso é gravado de qualquer jeito**. O
+nome do schema vai escapado como segmento de caminho. Ver
+[Schemas do registro](../api/schemas.md).
 
 ### Anexos de caso
 

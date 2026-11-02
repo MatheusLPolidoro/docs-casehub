@@ -55,6 +55,15 @@ calcula no envio e no download, roda numa thread
 (`asyncio.to_thread`). Um anexo de 25 MB não para as outras corrotinas
 enquanto o hash é calculado.
 
+Os recursos da API 0.9.0 existem nos dois clientes, com os mesmos
+nomes: `on_conflict='merge'` em `upsert_case` e `upsert_cases_batch`,
+`count_cases` e os seis métodos de schema
+(`upsert_source_schema`, `get_source_schema`, `list_source_schemas`,
+`delete_source_schema`, `infer_source_schema` e
+`validate_source_record`). Aqui, com `await` — por exemplo,
+`await client.count_cases(group_by='status')`. Ver
+[Cliente síncrono](cliente.md#contando-casos).
+
 ## Compartilhando entre tarefas concorrentes
 
 `httpx.AsyncClient` é *task-safe*, então uma única instância pode ser

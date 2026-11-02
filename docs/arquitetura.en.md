@@ -78,6 +78,12 @@ It is what lets an automation republish a case only to update `status`,
 without re-sending the whole `source_record` — and what makes a re-capture
 preserve the original `started_at`.
 
+When sent, `source_record` replaces the stored one entirely. Since API
+0.9.0, `on_conflict: "merge"` turns that into a **merge**: a stored key
+that is not sent stays, and objects merge at any depth — it is what an
+enrichment uses to send only what is new. See
+[Endpoints](api/endpoints.md#merging-source_record).
+
 ## Consuming: pull or receive
 
 There are two paths, and they answer different questions.
@@ -104,6 +110,11 @@ Both deliver the **current state** of the case, not every transition. The
 webhook does not replace the cursor: it removes the polling loop in the
 common case, and the cursor remains the recovery path when something is
 lost. See [Webhooks](api/webhooks.md).
+
+A consumer that only needs the **numbers** — a dashboard with cases per
+status, say — needs neither: `GET /v1/cases/totals` counts straight in
+the database, with the listing's filters. See
+[Endpoints](api/endpoints.md#get-totals).
 
 ## Retention
 
