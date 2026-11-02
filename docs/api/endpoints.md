@@ -60,6 +60,7 @@ Idempotente: repetir o mesmo payload deixa o mesmo estado.
 | `source_record` | objeto | — | JSON livre com o dado da automação. |
 | `temporal_workflow_id` | string | — | Correlação, sem chave estrangeira. |
 | `temporal_run_id` | string | — | Correlação, sem chave estrangeira. |
+| `on_conflict` | enum | — | `update` (default) ou `merge`, desde a API 0.9.0. Ver [Merge do `source_record`](#merge-do-source_record). |
 
 **Resposta** `200` — `{"created": true}` na primeira vez, `false` nas
 seguintes.
@@ -84,6 +85,66 @@ seguintes.
     em texto e JSONB. É comum em dado vindo de arquivo de largura fixa
     de mainframe, que às vezes carrega lixo binário — e no lote a recusa
     é **daquele item**, sem derrubar os demais.
+
+---
+
+## Merge do `source_record`
+
+Desde a API 0.9.0. Por padrão, o `PUT` e o lote **substituem** o
+`source_record` inteiro. Quem só acrescenta dado a um caso que já existe
+— um enriquecimento, por exemplo — pede a fusão com
+`on_conflict: "merge"` e manda só o que é novo:
+
+```json
+{
+  "status": "em_andamento",
+  "started_at": "2026-11-02T09:00:00-03:00",
+  "on_conflict": "merge",
+  "source_record": {"enriquecimento": {"etapa_b": {"ok": true}}}
+}
+```
+
+Com o caso gravado como
+`{"referencia": 7, "enriquecimento": {"etapa_a": {"ok": true}}}`, o
+resultado é
+`{"referencia": 7, "enriquecimento": {"etapa_a": {"ok": true}, "etapa_b": {"ok": true}}}`.
+
+| Gravado | Enviado | Resultado |
+|---|---|---|
+| chave que não vem no envio | — | permanece |
+| — | chave nova | é acrescentada |
+| objeto | objeto | os dois se fundem, pela mesma regra, em qualquer nível |
+| qualquer valor | lista, texto, número, booleano ou `null` | o enviado substitui |
+| objeto | valor de outro tipo | o enviado substitui |
+
+!!! tip "Lista substitui, `null` grava"
+    Lista não é concatenada: concatenar faria o mesmo `PUT`, reenviado,
+    duplicar itens. E `null` enviado é **gravado** — ele não apaga a
+    chave, porque `null` vindo da fonte é dado. Para remover uma chave,
+    use o `update` com o registro inteiro.
+
+- **Atômico e idempotente.** A leitura, a fusão e a escrita são uma
+  operação só: duas fusões simultâneas no mesmo caso terminam com as
+  duas contribuições. Reenviar o mesmo corpo deixa o mesmo registro.
+- **Os outros campos seguem o `update`**: `status`, `started_at`,
+  `batch_ref` e `finished_at` enviados substituem; `source_schema` e
+  `temporal_*` omitidos mantêm o gravado.
+- **Caso inexistente** é criado com o registro enviado, e a resposta é
+  `{"created": true}`. `source_record` omitido mantém o gravado, e `{}`
+  não muda nada — no `update`, `{}` limpa.
+- **No lote**, `on_conflict: "merge"` vale para todos os itens; os
+  gravados, criados ou fundidos, contam em `upserted`.
+
+!!! warning "O teto vale para o registro fundido"
+    O resultado da fusão respeita `CASEHUB_MAX_SOURCE_RECORD_BYTES`, como
+    qualquer escrita. Passou, o `PUT` responde
+    `413 source_record_too_large` e o lote põe o item em `errors[]` com
+    esse código. Nos dois casos o caso fica exatamente como estava.
+
+!!! note "`skip` só existe no lote"
+    No `PUT`, `on_conflict` aceita `update` e `merge`. `skip` responde
+    `400 invalid_request`: a resposta do `PUT` não distinguiria "pulei"
+    de "atualizei".
 
 ---
 
@@ -137,7 +198,7 @@ POST /v1/cases/batch
 | `environment` | enum | ✅ | Vale para todos os itens. |
 | `automation` | string | ✅ | Vale para todos os itens. |
 | `source_schema` | string | — | Default do lote; cada item pode sobrescrever. |
-| `on_conflict` | enum | — | `update` (default) ou `skip`. O que fazer com um `case_id` que já existe. |
+| `on_conflict` | enum | — | `update` (default), `skip` ou `merge` (desde a API 0.9.0). O que fazer com um `case_id` que já existe. |
 | `cases` | lista | ✅ | 1 a `CASEHUB_MAX_BATCH_ITEMS` itens (default 1000). |
 
 Cada item aceita os mesmos campos do `PUT`, mais `case_id` — que aqui é
@@ -160,14 +221,15 @@ Cada item aceita os mesmos campos do `PUT`, mais `case_id` — que aqui é
 |---|---|
 | `upserted` | Itens efetivamente **gravados** — criados mais atualizados. O que foi pulado não entra: nada foi escrito. |
 | `created` | Os `case_id` criados **nesta chamada**. É o que permite agir só sobre o que é novo — disparar um enriquecimento, por exemplo — sem uma consulta antes. Vem como lista, não contagem, porque a contagem não diz *quais*. |
-| `skipped` | Quantos já existiam e foram deixados como estavam. Sempre `0` com `on_conflict=update`. |
+| `skipped` | Quantos já existiam e foram deixados como estavam. Sempre `0` com `on_conflict` `update` ou `merge`. |
 
 !!! tip "`on_conflict=skip` para fontes relidas periodicamente"
-    O upsert substitui os campos enviados, **sem merge**. Quem
+    Com `update`, o upsert substitui os campos enviados. Quem
     republica a mesma fonte a cada ciclo — uma tela de estoque relida
     de dez em dez minutos, por exemplo — regrava o caso inteiro toda
     vez e apaga o que outro processo tenha acrescentado depois, sem
-    erro e sem log.
+    erro e sem log. (Quem quer **acrescentar** sem apagar usa `merge`:
+    ver [Merge do `source_record`](#merge-do-source_record).)
 
     `skip` não escreve **nada** no caso que já existe: nem `status`,
     nem `started_at`, nem `source_record`. Ele continua criando o que

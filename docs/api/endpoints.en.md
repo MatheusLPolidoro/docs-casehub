@@ -59,6 +59,7 @@ Idempotent: repeating the same payload leaves the same state.
 | `source_record` | object | — | Free JSON with the automation's data. |
 | `temporal_workflow_id` | string | — | Correlation, with no foreign key. |
 | `temporal_run_id` | string | — | Correlation, with no foreign key. |
+| `on_conflict` | enum | — | `update` (default) or `merge`, since API 0.9.0. See [Merging `source_record`](#merging-source_record). |
 
 **Response** `200` — `{"created": true}` the first time, `false`
 afterwards.
@@ -83,6 +84,68 @@ afterwards.
     and JSONB. It is common in data coming from mainframe fixed-width
     files, which sometimes carry binary junk — and in a batch the
     rejection is **for that item**, without taking the others down.
+
+---
+
+## Merging `source_record`
+
+Since API 0.9.0. By default, the `PUT` and the batch **replace** the
+whole `source_record`. A publisher that only adds data to a case that
+already exists — an enrichment, say — asks for the merge with
+`on_conflict: "merge"` and sends only what is new:
+
+```json
+{
+  "status": "em_andamento",
+  "started_at": "2026-11-02T09:00:00-03:00",
+  "on_conflict": "merge",
+  "source_record": {"enriquecimento": {"etapa_b": {"ok": true}}}
+}
+```
+
+With the case stored as
+`{"referencia": 7, "enriquecimento": {"etapa_a": {"ok": true}}}`, the
+result is
+`{"referencia": 7, "enriquecimento": {"etapa_a": {"ok": true}, "etapa_b": {"ok": true}}}`.
+
+| Stored | Sent | Result |
+|---|---|---|
+| a key not in the request | — | stays |
+| — | a new key | is added |
+| object | object | the two merge, by the same rule, at any depth |
+| any value | list, text, number, boolean or `null` | the sent value replaces it |
+| object | a value of another type | the sent value replaces it |
+
+!!! tip "A list replaces, `null` is stored"
+    Lists are not concatenated: concatenating would make the same `PUT`,
+    resent, duplicate items. And a `null` you send is **stored** — it
+    does not delete the key, because a `null` coming from the source is
+    data. To remove a key, use `update` with the whole record.
+
+- **Atomic and idempotent.** The read, the merge and the write are a
+  single operation: two simultaneous merges on the same case end with
+  both contributions. Resending the same body leaves the same record.
+- **The other fields follow `update`**: `status`, `started_at`,
+  `batch_ref` and `finished_at` replace the stored values when sent;
+  `source_schema` and `temporal_*` keep the stored value when omitted.
+- **A case that does not exist** is created with the record you sent,
+  and the response is `{"created": true}`. An omitted `source_record`
+  keeps the stored one, and `{}` changes nothing — under `update`, `{}`
+  clears it.
+- **In a batch**, `on_conflict: "merge"` applies to every item; the
+  items written, created or merged, count in `upserted`.
+
+!!! warning "The ceiling applies to the merged record"
+    The result of the merge honours `CASEHUB_MAX_SOURCE_RECORD_BYTES`, as
+    any write does. Above it, the `PUT` answers
+    `413 source_record_too_large` and the batch puts the item in
+    `errors[]` with that code. Either way the case stays exactly as it
+    was.
+
+!!! note "`skip` only exists in the batch"
+    On the `PUT`, `on_conflict` accepts `update` and `merge`. `skip`
+    answers `400 invalid_request`: the `PUT` response could not tell
+    "skipped" from "updated".
 
 ---
 
@@ -136,7 +199,7 @@ POST /v1/cases/batch
 | `environment` | enum | ✅ | Applies to every item. |
 | `automation` | string | ✅ | Applies to every item. |
 | `source_schema` | string | — | Batch default; each item may override it. |
-| `on_conflict` | enum | — | `update` (default) or `skip`. What to do with a `case_id` that already exists. |
+| `on_conflict` | enum | — | `update` (default), `skip` or `merge` (since API 0.9.0). What to do with a `case_id` that already exists. |
 | `cases` | list | ✅ | 1 to `CASEHUB_MAX_BATCH_ITEMS` items (default 1000). |
 
 Each item accepts the same fields as the `PUT`, plus `case_id` — which here
@@ -159,14 +222,16 @@ is **optional**.
 |---|---|
 | `upserted` | Items actually **written** — created plus updated. What was skipped does not count: nothing was written. |
 | `created` | The `case_id`s created **in this call**. It is what lets a publisher act only on what is new — kicking off an enrichment, say — without a prior query. It is a list, not a count, because a count does not say *which*. |
-| `skipped` | How many already existed and were left as they were. Always `0` with `on_conflict=update`. |
+| `skipped` | How many already existed and were left as they were. Always `0` with `on_conflict` `update` or `merge`. |
 
 !!! tip "`on_conflict=skip` for periodically re-read sources"
-    The upsert replaces the fields you send, **without merging**. A
+    Under `update`, the upsert replaces the fields you send. A
     publisher that republishes the same source every cycle — an
     inventory screen re-read every ten minutes, say — rewrites the
     whole case each time and wipes whatever another process added to
-    it afterwards, with no error and no log.
+    it afterwards, with no error and no log. (A publisher that wants to
+    **add** without erasing uses `merge`: see
+    [Merging `source_record`](#merging-source_record).)
 
     `skip` writes **nothing** to a case that already exists: not
     `status`, not `started_at`, not `source_record`. It still creates
