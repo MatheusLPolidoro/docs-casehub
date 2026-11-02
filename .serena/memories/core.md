@@ -2,7 +2,7 @@
 
 Documentação central do ecossistema CaseHub (a API `fast-casehub` e o SDK
 `casehub`). mkdocs-material, **português e inglês**, versionada por `mike` — a versão
-do site é própria (`VERSION`, hoje `1.5.0`), **não** a da API nem a do SDK, porque ele
+do site é própria (`VERSION`, hoje `1.6.0`), **não** a da API nem a do SDK, porque ele
 documenta os dois com números diferentes.
 
 **Publicada em dois lugares, a partir do mesmo `main`** (2026-08-21):
@@ -272,6 +272,35 @@ cursor e os operadores `exists`/`not_exists`/`ne` nao tem metodo nem
 flag. O cursor atravessa em runtime (`**params` repassa o que nao e
 `None`), mas nao esta em `ListCasesParams` — verificado rodando
 `_build_list_query`.
+
+### Merge, totais e schemas do registro — API 0.9.0 e SDK 0.9.0 (2026-11-02)
+
+`VERSION` 1.5.0 → 1.6.0, escrito junto com a implementação (change
+`adicionar-merge-schemas-e-totais` do `fast-casehub`), nos dois idiomas:
+
+- **`api/endpoints`**: o merge do `source_record` (`on_conflict` no
+  `PUT` e `merge` no lote, a regra da fusão, atomicidade, teto do
+  fundido) e a rota `GET /v1/cases/totals`, com linhas novas na tabela
+  de rotas.
+- **`api/schemas`**, página nova no nav ("Schemas do registro" /
+  "Record schemas"): o subconjunto de JSON Schema aceito, a lista plana
+  `fields` para o front, a conferência que só alerta (`schema_check`),
+  a inferência, a validação avulsa e o alerta de troca incompatível.
+- **`api/erros`**: `source_schema_not_found`, `invalid_source_schema` e
+  `invalid_source_schema_name`.
+- **SDK**: `sdk/cliente` (merge, `count_cases`, os seis métodos de
+  schema), `sdk/assincrono` e `sdk/cli` (comandos novos e exemplos), e
+  a nota de que a CLI pergunta a `base_url` sem `--base-url` — sem
+  terminal ela para em `Aborted.` (achado no teste de fumaça).
+- `mudancas` (seção da 0.9.0 em quatro abas, versões atuais 0.9.0),
+  selos e aviso da capa, `instalacao` e `arquitetura`.
+
+Conferido: `--strict` verde, estrutura pt/en idêntica nos 19 pares, e
+captura do Chrome headless de `api/schemas`, `api/endpoints`,
+`mudancas` e `sdk/cli`. Para o trecho do meio de uma página, também
+funciona janela alta (`--window-size=1280,3400`) e recorte com Pillow,
+que a venv do `param-manager` tem — a âncora não rola no headless, e a
+imagem sai do topo.
 
 ### Anexos, observabilidade e SDK 0.8.1 — API 0.8.0 (2026-10-28)
 
