@@ -77,6 +77,12 @@ exists wins:
 All of them accept overriding the connection by flag (`--base-url`,
 `--client-id`, `--token-url`, ...) without relying on the file.
 
+!!! tip "In a script, pass `--base-url`"
+    Without the flag, every command asks for the URL, even with
+    `CASEHUB_BASE_URL` set: it shows the value in brackets, and Enter
+    accepts it. Without a terminal — a script, a CI job — nobody answers:
+    the command stops at `Aborted.` without calling the API.
+
 !!! note "The CLI covers neither webhooks nor the incremental cursor"
     `/v1/webhooks*`, `created_since`/`updated_since`, the content
     operators — `exists`, `not_exists`, `ne` and, since API 0.7.0,

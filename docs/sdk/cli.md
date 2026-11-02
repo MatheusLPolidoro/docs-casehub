@@ -77,6 +77,12 @@ vence:
 Todos aceitam sobrescrever a conexão por flag (`--base-url`,
 `--client-id`, `--token-url`, ...) sem depender do arquivo.
 
+!!! tip "Em script, passe `--base-url`"
+    Sem a flag, todo comando pergunta a URL, mesmo com `CASEHUB_BASE_URL`
+    definida: mostra o valor entre colchetes, e Enter aceita. Sem
+    terminal — um script, um job de CI — não há quem responda: o comando
+    para em `Aborted.` sem chamar a API.
+
 !!! note "A CLI não cobre webhooks nem o cursor incremental"
     `/v1/webhooks*`, `created_since`/`updated_since`, os operadores de
     conteúdo — `exists`, `not_exists`, `ne` e, desde a API 0.7.0,
