@@ -4,7 +4,68 @@ A record of the behaviour changes that affect whoever integrates. It does
 not replace each repository's `CHANGELOG.md` — only the ones that change
 the **contract** or require action from a consumer live here.
 
-Current versions: **API 0.8.0** and **SDK 0.8.1**.
+Current versions: **API 0.9.0** and **SDK 0.9.0**.
+
+---
+
+## Merging, totals and record schemas — API 0.9.0 and SDK 0.9.0
+
+=== "Merging `source_record`"
+
+    **What changed.** The case `PUT` gained `on_conflict` (`update`, the
+    default, or `merge`) and the batch now accepts `merge`. With `merge`,
+    the `source_record` you send is **merged** into the stored one:
+    objects merge at any depth, a list, text, number, boolean or `null`
+    you send replaces the stored value, and no stored key is deleted. The
+    merge is atomic and idempotent, and the merged record honours the
+    same size limit (`413 source_record_too_large`, storing nothing). See
+    [Endpoints](api/endpoints.md#merging-source_record).
+
+    **What to do.** Nothing, if you do not use it: without `on_conflict`,
+    the `PUT` and the batch replace the whole record, as always. A
+    publisher that today reads the case, merges on the client side and
+    writes it back can start sending only what is new, with `merge`.
+
+=== "Case totals"
+
+    **What changed.** A new route, `GET /v1/cases/totals`: how many cases
+    match the filters, and how many in each group, without fetching a
+    page or reading `source_record`. It accepts the listing's filters,
+    and `group_by` by `environment`, `status` and `source_schema`. See
+    [Endpoints](api/endpoints.md#get-totals).
+
+    **What to do.** Nothing: the listing does not change. On the first
+    start of 0.9.0, the service creates a new index on `case_import`
+    before serving — 2.3 s measured with 1 million cases.
+
+=== "Record schemas"
+
+    **What changed.** Six routes under `/v1/source-schemas`: register,
+    fetch (with the flat `fields` list), list, remove, infer from the
+    stored cases and validate a record without storing it. With a schema
+    registered for the `source_schema` you send, the `PUT` and the batch
+    start carrying `schema_check` with the warnings — **nothing is
+    rejected**. Three new error codes: `source_schema_not_found`,
+    `invalid_source_schema` and `invalid_source_schema_name`. See
+    [Record schemas](api/schemas.md).
+
+    **What to do.** Nothing: with no schema registered, the write
+    response is the one from before, byte for byte. A client that
+    validates the response with a strict model needs to accept the
+    optional `schema_check` key before registering its first schema.
+
+=== "SDK 0.9.0"
+
+    **What changed.** `on_conflict` on `upsert_case` (and `merge` on the
+    batch), `count_cases` and the six schema methods, in both clients,
+    with the matching CLI commands. No existing method changed its
+    signature, and no new parameter has an SDK-side default.
+
+    **What to do.** To use the new features, `casehub>=0.9.0` and the API
+    from 0.9.0 onwards. Against an older API, the new calls answer `400`
+    (the `on_conflict` in the strict body) or `404` (the new routes);
+    everything else works as before. See
+    [Synchronous client](sdk/cliente.md#merging-instead-of-replacing).
 
 ---
 

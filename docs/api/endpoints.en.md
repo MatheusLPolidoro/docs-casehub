@@ -13,6 +13,7 @@ way to obtain the credential.
 | `POST` | `/v1/cases/batch` | Creates or updates several cases. |
 | `GET` | `/v1/cases/{environment}/{automation}/{case_id}` | Fetches one case. |
 | `GET` | `/v1/cases` | Lists and counts cases. |
+| `GET` | `/v1/cases/totals` | Counts cases by environment, status and `source_schema`, since API 0.9.0. |
 
 **Case attachments** (since API 0.8.0)
 
@@ -30,6 +31,7 @@ way to obtain the credential.
 | `POST` | `/v1/auth/token` | Issues the token — relayed to the identity provider. See [Authentication](autenticacao.md). |
 | `POST` | `/v1/auth/refresh` | Renews the token. |
 | — | `/v1/webhooks*` | Seven routes for subscriptions and the delivery log. See [Webhooks](webhooks.md). |
+| — | `/v1/source-schemas*` | Six record-schema routes, since API 0.9.0. See [Record schemas](schemas.md). |
 | `GET` | `/health` | Liveness — does not touch the database. |
 | `GET` | `/ready` | Readiness — `SELECT 1`, answers 503 if the database is down. |
 
@@ -59,6 +61,7 @@ Idempotent: repeating the same payload leaves the same state.
 | `source_record` | object | — | Free JSON with the automation's data. |
 | `temporal_workflow_id` | string | — | Correlation, with no foreign key. |
 | `temporal_run_id` | string | — | Correlation, with no foreign key. |
+| `on_conflict` | enum | — | `update` (default) or `merge`, since API 0.9.0. See [Merging `source_record`](#merging-source_record). |
 
 **Response** `200` — `{"created": true}` the first time, `false`
 afterwards.
@@ -83,6 +86,68 @@ afterwards.
     and JSONB. It is common in data coming from mainframe fixed-width
     files, which sometimes carry binary junk — and in a batch the
     rejection is **for that item**, without taking the others down.
+
+---
+
+## Merging `source_record`
+
+Since API 0.9.0. By default, the `PUT` and the batch **replace** the
+whole `source_record`. A publisher that only adds data to a case that
+already exists — an enrichment, say — asks for the merge with
+`on_conflict: "merge"` and sends only what is new:
+
+```json
+{
+  "status": "em_andamento",
+  "started_at": "2026-11-02T09:00:00-03:00",
+  "on_conflict": "merge",
+  "source_record": {"enriquecimento": {"etapa_b": {"ok": true}}}
+}
+```
+
+With the case stored as
+`{"referencia": 7, "enriquecimento": {"etapa_a": {"ok": true}}}`, the
+result is
+`{"referencia": 7, "enriquecimento": {"etapa_a": {"ok": true}, "etapa_b": {"ok": true}}}`.
+
+| Stored | Sent | Result |
+|---|---|---|
+| a key not in the request | — | stays |
+| — | a new key | is added |
+| object | object | the two merge, by the same rule, at any depth |
+| any value | list, text, number, boolean or `null` | the sent value replaces it |
+| object | a value of another type | the sent value replaces it |
+
+!!! tip "A list replaces, `null` is stored"
+    Lists are not concatenated: concatenating would make the same `PUT`,
+    resent, duplicate items. And a `null` you send is **stored** — it
+    does not delete the key, because a `null` coming from the source is
+    data. To remove a key, use `update` with the whole record.
+
+- **Atomic and idempotent.** The read, the merge and the write are a
+  single operation: two simultaneous merges on the same case end with
+  both contributions. Resending the same body leaves the same record.
+- **The other fields follow `update`**: `status`, `started_at`,
+  `batch_ref` and `finished_at` replace the stored values when sent;
+  `source_schema` and `temporal_*` keep the stored value when omitted.
+- **A case that does not exist** is created with the record you sent,
+  and the response is `{"created": true}`. An omitted `source_record`
+  keeps the stored one, and `{}` changes nothing — under `update`, `{}`
+  clears it.
+- **In a batch**, `on_conflict: "merge"` applies to every item; the
+  items written, created or merged, count in `upserted`.
+
+!!! warning "The ceiling applies to the merged record"
+    The result of the merge honours `CASEHUB_MAX_SOURCE_RECORD_BYTES`, as
+    any write does. Above it, the `PUT` answers
+    `413 source_record_too_large` and the batch puts the item in
+    `errors[]` with that code. Either way the case stays exactly as it
+    was.
+
+!!! note "`skip` only exists in the batch"
+    On the `PUT`, `on_conflict` accepts `update` and `merge`. `skip`
+    answers `400 invalid_request`: the `PUT` response could not tell
+    "skipped" from "updated".
 
 ---
 
@@ -136,7 +201,7 @@ POST /v1/cases/batch
 | `environment` | enum | ✅ | Applies to every item. |
 | `automation` | string | ✅ | Applies to every item. |
 | `source_schema` | string | — | Batch default; each item may override it. |
-| `on_conflict` | enum | — | `update` (default) or `skip`. What to do with a `case_id` that already exists. |
+| `on_conflict` | enum | — | `update` (default), `skip` or `merge` (since API 0.9.0). What to do with a `case_id` that already exists. |
 | `cases` | list | ✅ | 1 to `CASEHUB_MAX_BATCH_ITEMS` items (default 1000). |
 
 Each item accepts the same fields as the `PUT`, plus `case_id` — which here
@@ -159,14 +224,16 @@ is **optional**.
 |---|---|
 | `upserted` | Items actually **written** — created plus updated. What was skipped does not count: nothing was written. |
 | `created` | The `case_id`s created **in this call**. It is what lets a publisher act only on what is new — kicking off an enrichment, say — without a prior query. It is a list, not a count, because a count does not say *which*. |
-| `skipped` | How many already existed and were left as they were. Always `0` with `on_conflict=update`. |
+| `skipped` | How many already existed and were left as they were. Always `0` with `on_conflict` `update` or `merge`. |
 
 !!! tip "`on_conflict=skip` for periodically re-read sources"
-    The upsert replaces the fields you send, **without merging**. A
+    Under `update`, the upsert replaces the fields you send. A
     publisher that republishes the same source every cycle — an
     inventory screen re-read every ten minutes, say — rewrites the
     whole case each time and wipes whatever another process added to
-    it afterwards, with no error and no log.
+    it afterwards, with no error and no log. (A publisher that wants to
+    **add** without erasing uses `merge`: see
+    [Merging `source_record`](#merging-source_record).)
 
     `skip` writes **nothing** to a case that already exists: not
     `status`, not `started_at`, not `source_record`. It still creates
@@ -426,6 +493,76 @@ sent and no delivery is recorded.**
 **Authorization on listings** — an OIDC client cannot see other automations
 by simply omitting the filter: the token's claim **is** the filter when none
 is given, and an explicit filter that disagrees answers 403.
+
+---
+
+## `GET` — totals
+
+```
+GET /v1/cases/totals
+```
+
+Since API 0.9.0. How many cases match the filters, and how many in each
+group — without fetching a page of cases or reading `source_record`. It is
+the route for a dashboard: the listing counts one set per call and returns
+a page along with it; the totals return every combination in a single
+query.
+
+```
+GET /v1/cases/totals?environment=prod&group_by=source_schema&group_by=status
+```
+
+```json
+{
+  "total": 1520,
+  "group_by": ["source_schema", "status"],
+  "groups": [
+    {"source_schema": "registro.v1", "status": "aberto", "count": 1000},
+    {"source_schema": "registro.v1", "status": "concluido", "count": 500},
+    {"source_schema": null, "status": "aberto", "count": 20}
+  ],
+  "truncated": false
+}
+```
+
+**Parameters**
+
+| Parameter | Note |
+|---|---|
+| The listing's filters | All of `GET /v1/cases` — `environment`, `automation`, `status`, `batch_ref`, `source_schema`, the dates, the cursor, `filter` and the operators over `source_record`, and `conditions` —, optional, with the same semantics and the same errors. |
+| `group_by` | Repeatable: `environment`, `status` and `source_schema`, without repetition. Without it, only `total`. |
+
+**The response**
+
+| Field | Meaning |
+|---|---|
+| `total` | How many cases match the filters — the same `total` the listing would give with them. |
+| `group_by` | The requested dimensions, in the requested order. |
+| `groups` | One entry per combination that has cases, with the requested dimensions and `count`. |
+| `truncated` | `true` when `groups` was cut at the ceiling of 1000 groups. |
+
+!!! tip "Order and the null group"
+    Groups come sorted by the dimensions, in `group_by` order, by code
+    point (`A` before `a`, which comes before `b`), with `null` last. A
+    case without `source_schema` lands in the `"source_schema": null`
+    group, and a combination with no cases does not appear — the
+    dashboard fills in zero for whatever it needs to show.
+
+!!! note "Cutting does not change `total`"
+    Beyond 1000 groups, the response carries the first 1000 and
+    `truncated: true`; `total` is still that of the whole set. With the
+    three dimensions, only an automation with many `source_schema` values
+    gets near that.
+
+!!! warning "An unknown or repeated dimension is 400"
+    `group_by=batch_ref`, `group_by=automation` and
+    `group_by=status&group_by=status` answer `400 invalid_request`. The
+    automation is always the token's, as in the listing.
+
+**Performance** — with fixed filters (`environment`, `status`,
+`source_schema`...), the count comes from a dedicated index, without
+reading the table. A filter over `source_record` or by date forces a read
+of the table: the result is still correct, it just costs more.
 
 ---
 

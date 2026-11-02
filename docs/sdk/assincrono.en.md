@@ -54,6 +54,14 @@ content's sha256, which the SDK computes on upload and on download,
 runs in a thread (`asyncio.to_thread`). A 25 MB attachment does not
 stall the other coroutines while the hash is computed.
 
+The API 0.9.0 features exist in both clients, under the same names:
+`on_conflict='merge'` on `upsert_case` and `upsert_cases_batch`,
+`count_cases` and the six schema methods (`upsert_source_schema`,
+`get_source_schema`, `list_source_schemas`, `delete_source_schema`,
+`infer_source_schema` and `validate_source_record`). Here, with
+`await` — for instance, `await client.count_cases(group_by='status')`.
+See [Synchronous client](cliente.md#counting-cases).
+
 ## Sharing between concurrent tasks
 
 `httpx.AsyncClient` is *task-safe*, so a single instance can be shared by

@@ -4,7 +4,68 @@ Registro das mudanças de comportamento que afetam quem integra. Não
 substitui o `CHANGELOG.md` de cada repositório — aqui ficam apenas as que
 mudam o **contrato** ou exigem ação de quem consome.
 
-Versões atuais: **API 0.8.0** e **SDK 0.8.1**.
+Versões atuais: **API 0.9.0** e **SDK 0.9.0**.
+
+---
+
+## Merge, totais e schemas do registro — API 0.9.0 e SDK 0.9.0
+
+=== "Merge do `source_record`"
+
+    **O que mudou.** O `PUT` de caso ganhou `on_conflict` (`update`, o
+    padrão, ou `merge`) e o lote passou a aceitar `merge`. Com `merge`, o
+    `source_record` enviado é **fundido** no gravado: objetos se fundem em
+    qualquer nível, lista, texto, número, booleano e `null` enviados
+    substituem, e nenhuma chave gravada é apagada. A fusão é atômica e
+    idempotente, e o registro fundido respeita o mesmo limite de tamanho
+    (`413 source_record_too_large`, sem gravar nada). Ver
+    [Endpoints](api/endpoints.md#merge-do-source_record).
+
+    **O que fazer.** Nada, para quem não usa: sem `on_conflict`, o `PUT`
+    e o lote substituem o registro inteiro, como sempre. Quem hoje lê o
+    caso, mescla no cliente e regrava pode passar a mandar só o que é
+    novo, com `merge`.
+
+=== "Totais de casos"
+
+    **O que mudou.** Rota nova, `GET /v1/cases/totals`: quantos casos
+    casam com os filtros, e quantos em cada grupo, sem buscar página nem
+    ler o `source_record`. Aceita os mesmos filtros da listagem, e
+    `group_by` por `environment`, `status` e `source_schema`. Ver
+    [Endpoints](api/endpoints.md#get-totais).
+
+    **O que fazer.** Nada: a listagem não muda. Na primeira subida da
+    0.9.0, o serviço cria um índice novo em `case_import` antes de
+    atender — 2,3 s medidos com 1 milhão de casos.
+
+=== "Schemas do registro"
+
+    **O que mudou.** Seis rotas em `/v1/source-schemas`: cadastrar,
+    consultar (com a lista plana `fields`), listar, remover, inferir dos
+    casos gravados e validar um registro sem gravar. Com schema
+    cadastrado para o `source_schema` enviado, o `PUT` e o lote passam a
+    trazer `schema_check` com os alertas — **nada é recusado**. Três
+    códigos de erro novos: `source_schema_not_found`,
+    `invalid_source_schema` e `invalid_source_schema_name`. Ver
+    [Schemas do registro](api/schemas.md).
+
+    **O que fazer.** Nada: sem schema cadastrado, a resposta da gravação é
+    a de antes, byte por byte. Quem valida a resposta com um modelo
+    estrito precisa aceitar a chave opcional `schema_check` antes de
+    cadastrar o primeiro schema.
+
+=== "SDK 0.9.0"
+
+    **O que mudou.** `on_conflict` em `upsert_case` (e `merge` no lote),
+    `count_cases` e os seis métodos de schema, nos dois clientes, com os
+    comandos correspondentes na CLI. Nenhum método que já existia mudou
+    de assinatura, e nenhum parâmetro novo tem padrão do lado do SDK.
+
+    **O que fazer.** Para usar os recursos novos, `casehub>=0.9.0` e a API
+    a partir da 0.9.0. Contra uma API anterior, as chamadas novas
+    respondem `400` (o `on_conflict` no corpo estrito) ou `404` (as rotas
+    novas); todo o resto funciona como antes. Ver
+    [Cliente síncrono](sdk/cliente.md#fundindo-em-vez-de-substituir).
 
 ---
 

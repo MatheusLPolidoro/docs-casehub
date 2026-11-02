@@ -38,6 +38,9 @@ inesperadas — um bug interno não escapa em outro formato.
 | `attachment_limit_exceeded` | 507 | O caso já tem o máximo de anexos (50 por padrão) e o nome é novo. |
 | `attachment_quota_exceeded` | 507 | A gravação passaria da cota de espaço de anexos da automação naquele ambiente. |
 | `attachment_store_unavailable` | 503 | O storage de anexos está fora do ar ou desligado neste ambiente. Vem com `Retry-After`; tente de novo depois desse tempo. |
+| `source_schema_not_found` | 404 | A automação do token não cadastrou schema com esse nome. Desde a API 0.9.0. Ver [Schemas do registro](schemas.md). |
+| `invalid_source_schema` | 400 | O schema foge do formato aceito; a mensagem aponta o local do problema (`/properties/itens/items`). |
+| `invalid_source_schema_name` | 400 | O nome do schema foge de `[A-Za-z0-9][A-Za-z0-9._-]*` ou passa de 200 caracteres. |
 | `internal_error` | 500 | Falha inesperada do serviço. |
 
 !!! note "409 aparece em dois lugares, com sentidos diferentes"
