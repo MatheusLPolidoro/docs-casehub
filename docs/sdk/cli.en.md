@@ -66,6 +66,13 @@ exists wins:
 | `list-attachments` | Lists the case's attachments, without the content. |
 | `download-attachment` | Downloads an attachment, checked against the API's sha256. |
 | `delete-attachment` | Removes a case attachment. |
+| `count-cases` | Counts cases by environment, status and `source_schema`, without fetching a page (API 0.9.0+). |
+| `upsert-source-schema` | Registers or replaces a schema, from a file or inline JSON (API 0.9.0+). |
+| `get-source-schema` | Shows a schema's fields (`--json` prints the schema). |
+| `list-source-schemas` | Lists the automation's schemas. |
+| `delete-source-schema` | Removes a schema; no case changes. |
+| `infer-source-schema` | Infers the schema from the stored cases (`--output` writes it to a file). |
+| `validate-source-record` | Checks a record against the schema, without storing anything. |
 
 All of them accept overriding the connection by flag (`--base-url`,
 `--client-id`, `--token-url`, ...) without relying on the file.
@@ -164,3 +171,48 @@ sending, with a request for `--name`.
 name, in the current directory) and does not overwrite an existing file
 without `--force`. If the content does not match the API's sha256,
 nothing is written.
+
+### Merging instead of replacing
+
+```bash
+casehub upsert-case --environment prod --automation my-automation \
+  --case-id a1b2c3 --status em_andamento \
+  --started-at 2026-08-20T09:00:00-03:00 \
+  --source-record '{"enrichment": {"step_b": {"ok": true}}}' \
+  --on-conflict merge
+```
+
+With `--on-conflict merge` (API 0.9.0+), the `source_record` you send is
+merged into the stored one, without deleting any key. Without the flag,
+nothing goes in the body and the record is replaced, as always. In a
+batch, `upsert-cases-batch --on-conflict merge` does the same for every
+item.
+
+### Counting cases
+
+<div class="pm-terminal" data-pm-terminal data-pm-command="casehub count-cases --environment prod --group-by status">
+<div class="termynal" data-termynal data-ty-startDelay="500" data-ty-typeDelay="45" data-ty-lineDelay="800">
+<span data-ty="input">casehub count-cases --environment prod --group-by status</span>
+<span data-ty>Total: 42</span>
+<span data-ty>aberto 30 · concluido 12</span>
+</div>
+</div>
+
+`--group-by` accepts `environment`, `status` and `source_schema`, and can
+be repeated; `--filter` works as in the listing. Without `--group-by`,
+only the total comes out.
+
+### Registering a schema from the cases
+
+```bash
+casehub infer-source-schema --name record.v1 --output record.json
+# adjust record.json: titles, stricter types, required
+casehub upsert-source-schema --name record.v1 --schema-file record.json
+casehub get-source-schema --name record.v1
+casehub validate-source-record --name record.v1 --record-json '{"reference": 7}'
+```
+
+`infer-source-schema` infers the schema from the cases already stored, and
+the file it writes is accepted by `upsert-source-schema` as it is.
+Re-registering a schema with an incompatible change is accepted, and the
+CLI lists the changes.

@@ -66,6 +66,13 @@ vence:
 | `list-attachments` | Lista os anexos do caso, sem o conteúdo. |
 | `download-attachment` | Baixa um anexo, conferido contra o sha256 da API. |
 | `delete-attachment` | Remove um anexo do caso. |
+| `count-cases` | Conta casos por ambiente, status e `source_schema`, sem buscar página (API 0.9.0+). |
+| `upsert-source-schema` | Cadastra ou substitui um schema, de arquivo ou JSON inline (API 0.9.0+). |
+| `get-source-schema` | Mostra os campos de um schema (`--json` imprime o schema). |
+| `list-source-schemas` | Lista os schemas da automação. |
+| `delete-source-schema` | Remove um schema; nenhum caso muda. |
+| `infer-source-schema` | Deduz o schema dos casos gravados (`--output` grava em arquivo). |
+| `validate-source-record` | Confere um registro contra o schema, sem gravar. |
 
 Todos aceitam sobrescrever a conexão por flag (`--base-url`,
 `--client-id`, `--token-url`, ...) sem depender do arquivo.
@@ -159,3 +166,46 @@ acento no nome é recusado **antes** do envio, com o pedido de um
 diretório atual) e não sobrescreve um arquivo que já existe sem
 `--force`. Se o conteúdo não conferir com o sha256 da API, nada é
 gravado.
+
+### Fundindo em vez de substituir
+
+```bash
+casehub upsert-case --environment prod --automation minha-automacao \
+  --case-id a1b2c3 --status em_andamento \
+  --started-at 2026-08-20T09:00:00-03:00 \
+  --source-record '{"enriquecimento": {"etapa_b": {"ok": true}}}' \
+  --on-conflict merge
+```
+
+Com `--on-conflict merge` (API 0.9.0+), o `source_record` enviado é
+fundido no gravado, sem apagar chave nenhuma. Sem a flag, nada vai no
+corpo e o registro é substituído, como sempre. No lote,
+`upsert-cases-batch --on-conflict merge` faz o mesmo para todos os itens.
+
+### Contando casos
+
+<div class="pm-terminal" data-pm-terminal data-pm-command="casehub count-cases --environment prod --group-by status">
+<div class="termynal" data-termynal data-ty-startDelay="500" data-ty-typeDelay="45" data-ty-lineDelay="800">
+<span data-ty="input">casehub count-cases --environment prod --group-by status</span>
+<span data-ty>Total: 42</span>
+<span data-ty>aberto 30 · concluido 12</span>
+</div>
+</div>
+
+`--group-by` aceita `environment`, `status` e `source_schema`, e é
+repetível; `--filter` funciona como na listagem. Sem `--group-by`, sai
+só o total.
+
+### Cadastrando um schema a partir dos casos
+
+```bash
+casehub infer-source-schema --name registro.v1 --output registro.json
+# ajuste registro.json: títulos, tipos mais estritos, required
+casehub upsert-source-schema --name registro.v1 --schema-file registro.json
+casehub get-source-schema --name registro.v1
+casehub validate-source-record --name registro.v1 --record-json '{"referencia": 7}'
+```
+
+`infer-source-schema` deduz o schema dos casos já gravados, e o arquivo
+que ele grava é aceito por `upsert-source-schema` como está. Regravar um
+schema com mudança incompatível é aceito, e a CLI lista as mudanças.
