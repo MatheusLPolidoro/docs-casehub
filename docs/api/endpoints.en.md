@@ -13,6 +13,7 @@ way to obtain the credential.
 | `POST` | `/v1/cases/batch` | Creates or updates several cases. |
 | `GET` | `/v1/cases/{environment}/{automation}/{case_id}` | Fetches one case. |
 | `GET` | `/v1/cases` | Lists and counts cases. |
+| `GET` | `/v1/cases/totals` | Counts cases by environment, status and `source_schema`, since API 0.9.0. |
 
 **Case attachments** (since API 0.8.0)
 
@@ -491,6 +492,76 @@ sent and no delivery is recorded.**
 **Authorization on listings** — an OIDC client cannot see other automations
 by simply omitting the filter: the token's claim **is** the filter when none
 is given, and an explicit filter that disagrees answers 403.
+
+---
+
+## `GET` — totals
+
+```
+GET /v1/cases/totals
+```
+
+Since API 0.9.0. How many cases match the filters, and how many in each
+group — without fetching a page of cases or reading `source_record`. It is
+the route for a dashboard: the listing counts one set per call and returns
+a page along with it; the totals return every combination in a single
+query.
+
+```
+GET /v1/cases/totals?environment=prod&group_by=source_schema&group_by=status
+```
+
+```json
+{
+  "total": 1520,
+  "group_by": ["source_schema", "status"],
+  "groups": [
+    {"source_schema": "registro.v1", "status": "aberto", "count": 1000},
+    {"source_schema": "registro.v1", "status": "concluido", "count": 500},
+    {"source_schema": null, "status": "aberto", "count": 20}
+  ],
+  "truncated": false
+}
+```
+
+**Parameters**
+
+| Parameter | Note |
+|---|---|
+| The listing's filters | All of `GET /v1/cases` — `environment`, `automation`, `status`, `batch_ref`, `source_schema`, the dates, the cursor, `filter` and the operators over `source_record`, and `conditions` —, optional, with the same semantics and the same errors. |
+| `group_by` | Repeatable: `environment`, `status` and `source_schema`, without repetition. Without it, only `total`. |
+
+**The response**
+
+| Field | Meaning |
+|---|---|
+| `total` | How many cases match the filters — the same `total` the listing would give with them. |
+| `group_by` | The requested dimensions, in the requested order. |
+| `groups` | One entry per combination that has cases, with the requested dimensions and `count`. |
+| `truncated` | `true` when `groups` was cut at the ceiling of 1000 groups. |
+
+!!! tip "Order and the null group"
+    Groups come sorted by the dimensions, in `group_by` order, by code
+    point (`A` before `a`, which comes before `b`), with `null` last. A
+    case without `source_schema` lands in the `"source_schema": null`
+    group, and a combination with no cases does not appear — the
+    dashboard fills in zero for whatever it needs to show.
+
+!!! note "Cutting does not change `total`"
+    Beyond 1000 groups, the response carries the first 1000 and
+    `truncated: true`; `total` is still that of the whole set. With the
+    three dimensions, only an automation with many `source_schema` values
+    gets near that.
+
+!!! warning "An unknown or repeated dimension is 400"
+    `group_by=batch_ref`, `group_by=automation` and
+    `group_by=status&group_by=status` answer `400 invalid_request`. The
+    automation is always the token's, as in the listing.
+
+**Performance** — with fixed filters (`environment`, `status`,
+`source_schema`...), the count comes from a dedicated index, without
+reading the table. A filter over `source_record` or by date forces a read
+of the table: the result is still correct, it just costs more.
 
 ---
 

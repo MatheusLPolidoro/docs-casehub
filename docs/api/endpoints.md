@@ -13,6 +13,7 @@ obter a credencial.
 | `POST` | `/v1/cases/batch` | Cria ou atualiza vários casos. |
 | `GET` | `/v1/cases/{environment}/{automation}/{case_id}` | Consulta um caso. |
 | `GET` | `/v1/cases` | Lista e conta casos. |
+| `GET` | `/v1/cases/totals` | Conta casos por ambiente, status e `source_schema`, desde a API 0.9.0. |
 
 **Anexos de caso** (desde a API 0.8.0)
 
@@ -484,6 +485,76 @@ nenhuma entrega é registrada.**
 automações simplesmente omitindo o filtro: o claim do token **é** o
 filtro quando ele não é informado, e um filtro explícito divergente
 responde 403.
+
+---
+
+## `GET` — totais
+
+```
+GET /v1/cases/totals
+```
+
+Desde a API 0.9.0. Quantos casos casam com os filtros, e quantos em cada
+grupo — sem buscar página de casos nem ler o `source_record`. É a rota de
+um painel: a listagem conta um conjunto por chamada e devolve uma página
+junto; os totais devolvem todas as combinações numa consulta só.
+
+```
+GET /v1/cases/totals?environment=prod&group_by=source_schema&group_by=status
+```
+
+```json
+{
+  "total": 1520,
+  "group_by": ["source_schema", "status"],
+  "groups": [
+    {"source_schema": "registro.v1", "status": "aberto", "count": 1000},
+    {"source_schema": "registro.v1", "status": "concluido", "count": 500},
+    {"source_schema": null, "status": "aberto", "count": 20}
+  ],
+  "truncated": false
+}
+```
+
+**Parâmetros**
+
+| Parâmetro | Observação |
+|---|---|
+| Os filtros da listagem | Todos os de `GET /v1/cases` — `environment`, `automation`, `status`, `batch_ref`, `source_schema`, as datas, o cursor, `filter` e os operadores sobre o `source_record` e `conditions` —, opcionais, com a mesma semântica e os mesmos erros. |
+| `group_by` | Repetível: `environment`, `status` e `source_schema`, sem repetição. Sem ele, só o `total`. |
+
+**A resposta**
+
+| Campo | Significado |
+|---|---|
+| `total` | Quantos casos casam com os filtros — o mesmo `total` que a listagem daria com eles. |
+| `group_by` | As dimensões pedidas, na ordem pedida. |
+| `groups` | Uma entrada por combinação que tem casos, com as dimensões pedidas e `count`. |
+| `truncated` | `true` quando `groups` foi cortado no teto de 1000 grupos. |
+
+!!! tip "Ordem e grupo nulo"
+    Os grupos saem ordenados pelas dimensões, na ordem do `group_by`, por
+    ponto de código (`A` antes de `a`, que vem antes de `b`), com `null`
+    por último. Caso sem `source_schema` entra no grupo
+    `"source_schema": null`, e combinação sem caso não aparece — o painel
+    completa com zero o que precisar mostrar.
+
+!!! note "Cortar não muda o `total`"
+    Passando de 1000 grupos, a resposta traz os 1000 primeiros e
+    `truncated: true`; o `total` continua sendo o do conjunto inteiro.
+    Com as três dimensões, só uma automação com muitos `source_schema`
+    chega perto disso.
+
+!!! warning "Dimensão desconhecida ou repetida é 400"
+    `group_by=batch_ref`, `group_by=automation` e
+    `group_by=status&group_by=status` respondem
+    `400 invalid_request`. A automação é sempre a do token, como na
+    listagem.
+
+**Desempenho** — com filtros fixos (`environment`, `status`,
+`source_schema`...), a contagem sai de um índice próprio, sem ler a
+tabela. Filtro sobre o `source_record` ou por data obriga a ler a
+tabela: o resultado continua certo, só custa mais.
 
 ---
 
