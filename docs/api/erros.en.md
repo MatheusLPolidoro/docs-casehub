@@ -38,6 +38,9 @@ failures too — an internal bug does not escape in another format.
 | `attachment_limit_exceeded` | 507 | The case already holds the maximum number of attachments (50 by default) and the name is new. |
 | `attachment_quota_exceeded` | 507 | Storing it would exceed the automation's attachment space quota in that environment. |
 | `attachment_store_unavailable` | 503 | The attachment storage is down or switched off in this environment. Comes with `Retry-After`; try again after that time. |
+| `source_schema_not_found` | 404 | The token's automation has not registered a schema with that name. Since API 0.9.0. See [Record schemas](schemas.md). |
+| `invalid_source_schema` | 400 | The schema falls outside the accepted format; the message points at where (`/properties/itens/items`). |
+| `invalid_source_schema_name` | 400 | The schema name falls outside `[A-Za-z0-9][A-Za-z0-9._-]*` or is longer than 200 characters. |
 | `internal_error` | 500 | Unexpected service failure. |
 
 !!! note "409 shows up in two places, with different meanings"

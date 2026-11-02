@@ -31,6 +31,7 @@ way to obtain the credential.
 | `POST` | `/v1/auth/token` | Issues the token — relayed to the identity provider. See [Authentication](autenticacao.md). |
 | `POST` | `/v1/auth/refresh` | Renews the token. |
 | — | `/v1/webhooks*` | Seven routes for subscriptions and the delivery log. See [Webhooks](webhooks.md). |
+| — | `/v1/source-schemas*` | Six record-schema routes, since API 0.9.0. See [Record schemas](schemas.md). |
 | `GET` | `/health` | Liveness — does not touch the database. |
 | `GET` | `/ready` | Readiness — `SELECT 1`, answers 503 if the database is down. |
 

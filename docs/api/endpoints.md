@@ -31,6 +31,7 @@ obter a credencial.
 | `POST` | `/v1/auth/token` | Emite o token — repasse ao provedor de identidade. Ver [Autenticação](autenticacao.md). |
 | `POST` | `/v1/auth/refresh` | Renova o token. |
 | — | `/v1/webhooks*` | Sete rotas de assinatura e log de entregas. Ver [Webhooks](webhooks.md). |
+| — | `/v1/source-schemas*` | Seis rotas de schema do registro, desde a API 0.9.0. Ver [Schemas do registro](schemas.md). |
 | `GET` | `/health` | Liveness — não toca o banco. |
 | `GET` | `/ready` | Readiness — `SELECT 1`, responde 503 se o banco caiu. |
 
