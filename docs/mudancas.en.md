@@ -4,7 +4,76 @@ A record of the behaviour changes that affect whoever integrates. It does
 not replace each repository's `CHANGELOG.md` — only the ones that change
 the **contract** or require action from a consumer live here.
 
-Current versions: **API 0.9.0** and **SDK 0.9.0**.
+Current versions: **API 0.10.0** and **SDK 0.10.0**.
+
+---
+
+## Render templates — API 0.10.0 and SDK 0.10.0
+
+=== "Render templates"
+
+    **What changed.** The engine that builds a delivery's request has its
+    own registry, outside any subscription: `/v1/render-templates`, six
+    new routes. A `request` template is the delivery request, in the
+    `request_spec` grammar; a `view` is a view of the `source_record`,
+    which reshapes the record on the way out without storing anything. The
+    template declares the `source_schema` it reads, and the lookup returns
+    the fields it uses (`inputs`), checked against the registered schema —
+    a warning only, never a refusal. There is a preview of a stored
+    template and of a draft, against a case or a sample record. See
+    [Render templates](api/templates.md).
+
+    **What to do.** Nothing, if you do not use it: no existing route
+    changed its behaviour. This version's database revision only adds (an
+    empty table and a nullable column), and the service applies it on its
+    own at startup.
+
+=== "Rendered reads"
+
+    **What changed.** `GET /v1/cases` and the single-case lookup accept
+    `render_template=<name>`, and return `rendered` with what the template
+    builds for each case. It is how a frontend reads the same case in
+    different views; a schema's views are discovered with
+    `GET /v1/render-templates?source_schema=<name>&kind=view`. See
+    [Endpoints](api/endpoints.md#get-list-and-count).
+
+    **What to do.** Nothing: without the parameter, the response is the
+    previous one, without the `rendered` key. A client that validates the
+    single-case response with a strict model only sees the new key when it
+    asks for it.
+
+=== "Subscriptions with a template"
+
+    **What changed.** A subscription can use `template` instead of
+    `request_spec`: a `request` on a delivery to another API, or a `view`
+    on the classic webhook, where the payload's `source_record` is built
+    by the view. The reference is live — editing the template changes the
+    next deliveries — and removing a template in use answers
+    `409 render_template_in_use`. See [Webhooks](api/webhooks.md) and
+    [Delivering to other APIs](api/entregas.md).
+
+    **What to do.** Nothing: a subscription without `template` answers and
+    delivers exactly as before, including no `template` key in the
+    response. To switch an inline `request_spec` for a template, register
+    the template, check it with the preview and send
+    `{"template": "<name>", "request_spec": null}` in a `PATCH`. **The
+    body's key order changes in that switch**: the template keeps the
+    declared order, and the inline one did not — check with the
+    destination whether it matters before switching.
+
+=== "SDK 0.10.0"
+
+    **What changed.** The six template methods in both clients
+    (`upsert_render_template`, `get_render_template`,
+    `list_render_templates`, `delete_render_template`,
+    `preview_render_template` and `preview_render_template_draft`),
+    `render_template` and `render_connection` on `get_case` and
+    `list_cases`, and the matching CLI commands. No existing method
+    changed its behaviour without the new parameters.
+
+    **What to do.** To use the new features, `casehub>=0.10.0` and the API
+    from 0.10.0 onwards. Against an older API, the new routes answer
+    `404`. See [Synchronous client](sdk/cliente.md#render-templates).
 
 ---
 

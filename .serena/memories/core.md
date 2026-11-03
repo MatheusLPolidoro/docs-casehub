@@ -2,7 +2,7 @@
 
 Documentação central do ecossistema CaseHub (a API `fast-casehub` e o SDK
 `casehub`). mkdocs-material, **português e inglês**, versionada por `mike` — a versão
-do site é própria (`VERSION`, hoje `1.6.0`), **não** a da API nem a do SDK, porque ele
+do site é própria (`VERSION`, hoje `1.7.0`), **não** a da API nem a do SDK, porque ele
 documenta os dois com números diferentes.
 
 **Publicada em dois lugares, a partir do mesmo `main`** (2026-08-21):
@@ -272,6 +272,32 @@ cursor e os operadores `exists`/`not_exists`/`ne` nao tem metodo nem
 flag. O cursor atravessa em runtime (`**params` repassa o que nao e
 `None`), mas nao esta em `ListCasesParams` — verificado rodando
 `_build_list_query`.
+
+### Templates de montagem — API 0.10.0 e SDK 0.10.0 (2026-11-03)
+
+`VERSION` 1.6.0 → 1.7.0, escrito junto com a implementação (change
+`cadastrar-templates-de-montagem` do `fast-casehub`), nos dois idiomas:
+
+- **`api/templates`**, página nova no nav ("Templates de montagem" /
+  "Render templates"): os dois tipos (`request`, `view`), `inputs` para o
+  front, as duas prévias, as leituras montadas (`render_template`) e o uso
+  em assinatura (`request` com conexão, `view` no webhook clássico).
+- **`api/webhooks`** (campo `template` e a seção "Entregar uma visão do
+  registro"), **`api/entregas`** (dica do template `request`),
+  **`api/endpoints`** (`render_template` na listagem e na consulta de um
+  caso, e a linha da família de rotas), **`api/erros`** (os quatro
+  códigos `render_template_*`/`invalid_render_template*`).
+- **SDK**: `sdk/cliente` (seção e métodos), `sdk/assincrono` e `sdk/cli`.
+- `mudancas` (seção da 0.10.0 em quatro abas, versões atuais 0.10.0),
+  selos e aviso da capa, `instalacao`.
+
+Conferido: `--strict` verde (o `mkdocs.yml` valida âncoras), estrutura
+pt/en idêntica nos 20 pares — a comparação foi um script no scratchpad
+(títulos, admonições, abas, linhas de tabela e cercas por par) —, e
+captura do Edge headless de `api/templates` (pt e en) e `mudancas`. **Não
+há Chrome nesta máquina**: o headless que funciona é o
+`C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe`, contra um
+`python -m http.server` servindo `site/`.
 
 ### Merge, totais e schemas do registro — API 0.9.0 e SDK 0.9.0 (2026-11-02)
 

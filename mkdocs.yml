@@ -48,6 +48,7 @@ nav:
       - Autenticação: api/autenticacao.md
       - Endpoints: api/endpoints.md
       - Schemas do registro: api/schemas.md
+      - Templates de montagem: api/templates.md
       - Webhooks: api/webhooks.md
       - Entregas para outras APIs: api/entregas.md
       - Erros: api/erros.md
@@ -138,6 +139,7 @@ plugins:
             Retenção: Retention
             Entregas para outras APIs: Delivering to other APIs
             Schemas do registro: Record schemas
+            Templates de montagem: Render templates
             Cliente síncrono: Synchronous client
             Cliente assíncrono: Asynchronous client
             Operação: Operations

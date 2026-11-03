@@ -94,6 +94,7 @@ curl -sX POST https://casehub.interno/v1/webhooks \
 | `cursor_field` | enum | `updated` | `updated` ou `created` — qual carimbo a descoberta acompanha. |
 | `once_per_case` | bool | `false` | Entregar **no máximo uma vez** por caso. Desde a API 0.7.0. |
 | `enabled` | bool | `true` | Começar pausada é possível. |
+| `template` | string | — | Nome de um [template de montagem](templates.md) `view`: o `source_record` do payload sai montado por ele. Desde a API 0.10.0. |
 
 Toda regra omitida significa **todos**: uma assinatura sem regra nenhuma
 recebe tudo o que a automação produzir. Quem quer dois status cadastra
@@ -214,6 +215,29 @@ duas contam para o mesmo teto (`CASEHUB_MAX_SOURCE_FILTERS`, default
     O que não está declarado não sai daqui. Numa assinatura de terceiro,
     declarar os caminhos é mais barato que confiar que ninguém vai olhar
     o resto.
+
+---
+
+## Entregar uma visão do registro
+
+Desde a API 0.10.0, `template` aponta para um
+[template de montagem](templates.md) do tipo `view`, e o `source_record`
+do payload passa a sair **montado por ele**, no lugar do registro
+original — renomeado, recortado, com valores tratados. O resto do payload
+e a assinatura HMAC não mudam: o HMAC vale para os bytes que trafegam.
+
+```json
+{"url": "https://parceiro.exemplo/casehub", "template": "mailing.v1"}
+```
+
+- A projeção de `fields` vale **antes**: a visão lê o registro já
+  recortado.
+- Exige `include_source: true` e uma visão com objeto literal na raiz.
+- A referência é viva: regravar o template muda as próximas entregas.
+- Se a visão falhar para um caso, a entrega termina `abandoned`, com o
+  motivo.
+- `PATCH` com `"template": null` volta ao payload de sempre.
+- Assinatura sem `template` entrega exatamente o que sempre entregou.
 
 ---
 

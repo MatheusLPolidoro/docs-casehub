@@ -64,6 +64,13 @@ nomes: `on_conflict='merge'` em `upsert_case` e `upsert_cases_batch`,
 `await client.count_cases(group_by='status')`. Ver
 [Cliente síncrono](cliente.md#contando-casos).
 
+Os da API 0.10.0 também: os seis métodos de template
+(`upsert_render_template`, `get_render_template`,
+`list_render_templates`, `delete_render_template`,
+`preview_render_template` e `preview_render_template_draft`), e
+`render_template` em `get_case` e `list_cases`. Ver
+[Cliente síncrono](cliente.md#templates-de-montagem).
+
 ## Compartilhando entre tarefas concorrentes
 
 `httpx.AsyncClient` é *task-safe*, então uma única instância pode ser

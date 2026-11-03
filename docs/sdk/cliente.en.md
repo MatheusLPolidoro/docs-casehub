@@ -72,6 +72,12 @@ forwards to the identity provider.
 | `delete_source_schema(...)` | `DELETE /v1/source-schemas/{name}` |
 | `infer_source_schema(...)` | `GET /v1/source-schemas/{name}/inferred` |
 | `validate_source_record(...)` | `POST /v1/source-schemas/{name}/validate` |
+| `upsert_render_template(...)` | `PUT /v1/render-templates/{name}` (API 0.10.0+) |
+| `get_render_template(...)` | `GET /v1/render-templates/{name}` |
+| `list_render_templates(...)` | `GET /v1/render-templates` |
+| `delete_render_template(...)` | `DELETE /v1/render-templates/{name}` |
+| `preview_render_template(...)` | `POST /v1/render-templates/{name}/preview` |
+| `preview_render_template_draft(...)` | `POST /v1/render-templates/preview` |
 | `close()` | Closes the HTTP session. |
 
 They return the response JSON as a `dict`, with two exceptions:
@@ -248,7 +254,8 @@ Without `include='source_record'`, the items come without the JSON.
 !!! note "What the typed signature declares, and what it does not"
     `ListCasesParams` declares `environment`, `automation`, `status`,
     `batch_ref`, `source_schema`, `started_from`, `started_to`,
-    `include`, `page`, `page_size` and, since SDK 0.8.0, `render_with`.
+    `include`, `page`, `page_size`, since SDK 0.8.0 `render_with` and,
+    since SDK 0.10.0, `render_template` and `render_connection`.
 
     The cursor parameters (`created_since`, `updated_since`), the
     content operators — `exists`, `not_exists`, `ne` and, since API
@@ -304,6 +311,32 @@ With a schema registered for the `source_schema` you send, `upsert_case`
 and `upsert_cases_batch` also return `schema_check`, with the conformance
 warnings — **the case is stored either way**. The schema name is escaped as
 a path segment. See [Record schemas](../api/schemas.md).
+
+### Render templates
+
+Since SDK 0.10.0, with API 0.10.0 or later. A `view` template builds
+a view of the `source_record`; a `request`, the delivery request. The
+case reads accept `render_template` and return `rendered`.
+
+```python
+client.upsert_render_template(
+    'mailing.v1',
+    'view',
+    {'nome': {'$from': 'case.source_record.cliente.nome'}},
+    source_schema='registro.v1',
+)
+client.get_render_template('mailing.v1')   # definition, inputs, used_by
+client.list_render_templates(source_schema='registro.v1', kind='view')
+client.preview_render_template('mailing.v1', source_record={'cliente': {'nome': 'Ana'}})
+client.preview_render_template_draft('view', {'n': {'$from': 'case.case_id'}})
+client.get_case('prod', 'minha-automacao', 'c-1', render_template='mailing.v1')
+client.list_cases(environment='prod', render_template='mailing.v1')
+client.delete_render_template('mailing.v1')  # {'ok': True}
+```
+
+The template name is escaped as a path segment. Removing a template
+that a subscription uses raises `APIHTTPError` with `status_code`
+409. See [Render templates](../api/templates.md).
 
 ### Case attachments
 
