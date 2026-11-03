@@ -41,6 +41,10 @@ failures too — an internal bug does not escape in another format.
 | `source_schema_not_found` | 404 | The token's automation has not registered a schema with that name. Since API 0.9.0. See [Record schemas](schemas.md). |
 | `invalid_source_schema` | 400 | The schema falls outside the accepted format; the message points at where (`/properties/itens/items`). |
 | `invalid_source_schema_name` | 400 | The schema name falls outside `[A-Za-z0-9][A-Za-z0-9._-]*` or is longer than 200 characters. |
+| `render_template_not_found` | 404 | The token's automation has not registered a render template with that name. Since API 0.10.0. See [Render templates](templates.md). |
+| `invalid_render_template` | 400 | The template definition falls outside the grammar or its kind's profile (a `view` reading `delivery.id`, for instance); or rendering failed in the preview. |
+| `invalid_render_template_name` | 400 | The template name falls outside `[A-Za-z0-9][A-Za-z0-9._-]*` or is longer than 200 characters. |
+| `render_template_in_use` | 409 | A subscription uses the template — it is not removed nor changes kind, and nothing was changed. |
 | `internal_error` | 500 | Unexpected service failure. |
 
 !!! note "409 shows up in two places, with different meanings"

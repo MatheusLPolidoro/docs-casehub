@@ -32,6 +32,7 @@ obter a credencial.
 | `POST` | `/v1/auth/refresh` | Renova o token. |
 | — | `/v1/webhooks*` | Sete rotas de assinatura e log de entregas. Ver [Webhooks](webhooks.md). |
 | — | `/v1/source-schemas*` | Seis rotas de schema do registro, desde a API 0.9.0. Ver [Schemas do registro](schemas.md). |
+| — | `/v1/render-templates*` | Seis rotas de template de montagem, desde a API 0.10.0. Ver [Templates de montagem](templates.md). |
 | `GET` | `/health` | Liveness — não toca o banco. |
 | `GET` | `/ready` | Readiness — `SELECT 1`, responde 503 se o banco caiu. |
 
@@ -268,6 +269,11 @@ GET /v1/cases/{environment}/{automation}/{case_id}
 **Resposta** `200` com o caso completo, `source_record` incluído.
 `404 case_not_found` se não existir.
 
+Desde a API 0.10.0, `render_template=<nome>` acrescenta `rendered`, com o
+que aquele [template](templates.md) monta para o caso — num `view`, uma
+visão do `source_record`. Falha de montagem vem em `rendered.error`, e a
+resposta continua `200`. Sem o parâmetro, a resposta é a de sempre.
+
 ---
 
 ## `GET` — listar e contar
@@ -287,6 +293,7 @@ GET /v1/cases
 | `present` / `blank` / `matches` / `not_matches` / `in` / `not_in` | Idem, desde a API 0.7.0. |
 | `conditions` | A gramática inteira em JSON, com grupos `any`/`all`. |
 | `render_with` | Mostra, em cada item, o que uma assinatura enviaria — ver abaixo. |
+| `render_template` / `render_connection` | Mostra, em cada item, o que um template de montagem monta, desde a API 0.10.0 — ver abaixo. |
 | `batch_ref` | |
 | `source_schema` | |
 | `started_from` / `started_to` | Janela sobre `started_at` — a data do registro **na origem**. |
@@ -452,7 +459,7 @@ nenhuma entrega é registrada.**
 | Detalhe | Comportamento |
 |---|---|
 | assinatura de outra automação | `404`, como em todo o resto |
-| assinatura sem `request_spec` | `400`: não há o que montar |
+| assinatura sem `request_spec` nem `template` | `400`: não há o que montar |
 | assinatura desligada | funciona do mesmo jeito |
 | caso que falha ao montar | o item traz o erro, e a página continua |
 | `page_size` | teto próprio de 100 itens |
@@ -461,6 +468,16 @@ nenhuma entrega é registrada.**
     `render_with` responde *"o que sairia para este caso"*, não *"quais
     casos sairiam"*. Para ver o recorte, repita as condições da
     assinatura nos parâmetros da listagem.
+
+**Ler pela visão de um template: `render_template`**
+
+Desde a API 0.10.0, `render_template=<nome>` faz o mesmo com um
+[template de montagem](templates.md#leituras-montadas) cadastrado, sem
+assinatura. Num `view`, cada `rendered` traz `body`, `warnings` e
+`error` — uma visão do `source_record`, que é como um frontend lê os
+casos no formato que precisa. Num `request`, a forma do `render_with`, e
+`render_connection=<id>` monta a URL completa. Não se combina com
+`render_with`, tem o mesmo teto de página e não aplica projeção.
 
 **A resposta**
 

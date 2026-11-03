@@ -73,6 +73,12 @@ vence:
 | `delete-source-schema` | Remove um schema; nenhum caso muda. |
 | `infer-source-schema` | Deduz o schema dos casos gravados (`--output` grava em arquivo). |
 | `validate-source-record` | Confere um registro contra o schema, sem gravar. |
+| `upsert-render-template` | Cadastra ou substitui um template de montagem, de arquivo ou JSON inline (API 0.10.0+). |
+| `get-render-template` | Mostra os campos que um template lê e as assinaturas que o usam (`--json` imprime a definição). |
+| `list-render-templates` | Lista os templates, com `--source-schema` e `--kind`. |
+| `delete-render-template` | Remove um template; recusado se alguma assinatura o usa. |
+| `preview-render-template` | Mostra o que um template monta, contra um caso ou um registro de exemplo. |
+| `preview-render-template-draft` | Valida e monta um rascunho, sem gravar. |
 
 Todos aceitam sobrescrever a conexão por flag (`--base-url`,
 `--client-id`, `--token-url`, ...) sem depender do arquivo.
@@ -215,3 +221,20 @@ casehub validate-source-record --name registro.v1 --record-json '{"referencia": 
 `infer-source-schema` deduz o schema dos casos já gravados, e o arquivo
 que ele grava é aceito por `upsert-source-schema` como está. Regravar um
 schema com mudança incompatível é aceito, e a CLI lista as mudanças.
+
+### Lendo casos pela visão de um template
+
+```bash
+casehub upsert-render-template --name mailing.v1 --kind view \
+  --definition-file mailing.json --source-schema registro.v1
+casehub preview-render-template --name mailing.v1 \
+  --record-json '{"cliente": {"nome": "Ana"}}'
+casehub get-case --environment prod --automation minha-auto --case-id 123 \
+  --render-template mailing.v1
+casehub list-cases --environment prod --render-template mailing.v1
+```
+
+`preview-render-template-draft` faz o mesmo com uma definição que ainda
+não foi gravada, e mostra os campos que ela lê. Com `--render-template`,
+`get-case` e `list-cases` imprimem também o que o template monta para cada
+caso. Exigem a API 0.10.0 ou superior.

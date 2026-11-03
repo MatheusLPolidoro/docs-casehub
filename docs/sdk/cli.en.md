@@ -73,6 +73,12 @@ exists wins:
 | `delete-source-schema` | Removes a schema; no case changes. |
 | `infer-source-schema` | Infers the schema from the stored cases (`--output` writes it to a file). |
 | `validate-source-record` | Checks a record against the schema, without storing anything. |
+| `upsert-render-template` | Registers or replaces a render template, from a file or inline JSON (API 0.10.0+). |
+| `get-render-template` | Shows the fields a template reads and the subscriptions that use it (`--json` prints the definition). |
+| `list-render-templates` | Lists the templates, with `--source-schema` and `--kind`. |
+| `delete-render-template` | Removes a template; refused while a subscription uses it. |
+| `preview-render-template` | Shows what a template builds, against a case or a sample record. |
+| `preview-render-template-draft` | Validates and renders a draft, storing nothing. |
 
 All of them accept overriding the connection by flag (`--base-url`,
 `--client-id`, `--token-url`, ...) without relying on the file.
@@ -222,3 +228,20 @@ casehub validate-source-record --name record.v1 --record-json '{"reference": 7}'
 the file it writes is accepted by `upsert-source-schema` as it is.
 Re-registering a schema with an incompatible change is accepted, and the
 CLI lists the changes.
+
+### Reading cases through a template's view
+
+```bash
+casehub upsert-render-template --name mailing.v1 --kind view \
+  --definition-file mailing.json --source-schema registro.v1
+casehub preview-render-template --name mailing.v1 \
+  --record-json '{"cliente": {"nome": "Ana"}}'
+casehub get-case --environment prod --automation minha-auto --case-id 123 \
+  --render-template mailing.v1
+casehub list-cases --environment prod --render-template mailing.v1
+```
+
+`preview-render-template-draft` does the same with a definition not yet
+stored, and shows the fields it reads. With `--render-template`,
+`get-case` and `list-cases` also print what the template builds for each
+case. They require API 0.10.0 or later.

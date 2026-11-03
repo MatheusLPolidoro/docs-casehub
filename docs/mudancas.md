@@ -4,7 +4,76 @@ Registro das mudanças de comportamento que afetam quem integra. Não
 substitui o `CHANGELOG.md` de cada repositório — aqui ficam apenas as que
 mudam o **contrato** ou exigem ação de quem consome.
 
-Versões atuais: **API 0.9.0** e **SDK 0.9.0**.
+Versões atuais: **API 0.10.0** e **SDK 0.10.0**.
+
+---
+
+## Templates de montagem — API 0.10.0 e SDK 0.10.0
+
+=== "Templates de montagem"
+
+    **O que mudou.** O motor que monta a requisição de uma entrega ganhou
+    cadastro próprio, fora de qualquer assinatura: `/v1/render-templates`,
+    seis rotas novas. Um template `request` é a requisição de entrega, na
+    gramática do `request_spec`; um `view` é uma visão do `source_record`,
+    que transforma o registro na saída sem gravar nada. O template declara
+    o `source_schema` que lê, e a consulta devolve os campos que ele usa
+    (`inputs`), conferidos contra o schema cadastrado — só alerta, nunca
+    recusa. Há prévia de um template gravado e de um rascunho, contra um
+    caso ou contra um registro de exemplo. Ver
+    [Templates de montagem](api/templates.md).
+
+    **O que fazer.** Nada, para quem não usa: nenhuma rota que já existia
+    mudou de comportamento. A revisão do banco desta versão só acrescenta
+    (uma tabela vazia e uma coluna nula), e o serviço a aplica sozinho na
+    subida.
+
+=== "Leituras montadas"
+
+    **O que mudou.** `GET /v1/cases` e a consulta de um caso aceitam
+    `render_template=<nome>`, e devolvem `rendered` com o que o template
+    monta para cada caso. É como um frontend lê o mesmo caso em visões
+    diferentes; as visões de um schema se descobrem por
+    `GET /v1/render-templates?source_schema=<nome>&kind=view`. Ver
+    [Endpoints](api/endpoints.md#get-listar-e-contar).
+
+    **O que fazer.** Nada: sem o parâmetro, a resposta é a de antes, sem a
+    chave `rendered`. Um cliente que valide a resposta da consulta de um
+    caso com modelo estrito só vê a chave nova quando pedir.
+
+=== "Assinaturas com template"
+
+    **O que mudou.** Uma assinatura pode usar `template` no lugar de
+    `request_spec`: um `request` na entrega para outra API, ou um `view` no
+    webhook clássico, onde o `source_record` do payload passa a sair
+    montado pela visão. A referência é viva — editar o template muda as
+    próximas entregas — e remover um template em uso responde
+    `409 render_template_in_use`. Ver [Webhooks](api/webhooks.md) e
+    [Entregas para outras APIs](api/entregas.md).
+
+    **O que fazer.** Nada: assinatura sem `template` responde e entrega
+    exatamente como antes, inclusive sem a chave `template` na resposta.
+    Para trocar um `request_spec` inline por um template, cadastre o
+    template, confira com a prévia e mande
+    `{"template": "<nome>", "request_spec": null}` num `PATCH`. **A ordem
+    das chaves do corpo muda nessa troca**: o template guarda a ordem
+    declarada, e o inline não guardava — confira com o destino se ela
+    importa antes de trocar.
+
+=== "SDK 0.10.0"
+
+    **O que mudou.** Os seis métodos de template nos dois clientes
+    (`upsert_render_template`, `get_render_template`,
+    `list_render_templates`, `delete_render_template`,
+    `preview_render_template` e `preview_render_template_draft`),
+    `render_template` e `render_connection` em `get_case` e `list_cases`,
+    e os comandos correspondentes na CLI. Nenhum método que já existia
+    mudou de comportamento sem os parâmetros novos.
+
+    **O que fazer.** Para usar os recursos novos, `casehub>=0.10.0` e a
+    API a partir da 0.10.0. Contra uma API anterior, as rotas novas
+    respondem `404`. Ver
+    [Cliente síncrono](sdk/cliente.md#templates-de-montagem).
 
 ---
 

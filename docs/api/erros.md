@@ -41,6 +41,10 @@ inesperadas — um bug interno não escapa em outro formato.
 | `source_schema_not_found` | 404 | A automação do token não cadastrou schema com esse nome. Desde a API 0.9.0. Ver [Schemas do registro](schemas.md). |
 | `invalid_source_schema` | 400 | O schema foge do formato aceito; a mensagem aponta o local do problema (`/properties/itens/items`). |
 | `invalid_source_schema_name` | 400 | O nome do schema foge de `[A-Za-z0-9][A-Za-z0-9._-]*` ou passa de 200 caracteres. |
+| `render_template_not_found` | 404 | A automação do token não cadastrou template de montagem com esse nome. Desde a API 0.10.0. Ver [Templates de montagem](templates.md). |
+| `invalid_render_template` | 400 | A definição do template foge da gramática ou do perfil do tipo (um `view` lendo `delivery.id`, por exemplo); ou a montagem falhou na prévia. |
+| `invalid_render_template_name` | 400 | O nome do template foge de `[A-Za-z0-9][A-Za-z0-9._-]*` ou passa de 200 caracteres. |
+| `render_template_in_use` | 409 | Há assinatura usando o template — ele não é removido nem muda de tipo, e nada foi alterado. |
 | `internal_error` | 500 | Falha inesperada do serviço. |
 
 !!! note "409 aparece em dois lugares, com sentidos diferentes"
