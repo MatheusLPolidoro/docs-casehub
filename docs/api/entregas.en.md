@@ -149,6 +149,14 @@ the background, in a log nobody may read.
 The filtering rules are the webhook's. What changes is `request_spec` —
 and the central idea is one:
 
+!!! tip "The same layout in several subscriptions: a registered template"
+    Since API 0.10.0, the request can be registered once as a `request`
+    [render template](templates.md), and each subscription points at it
+    with `"template": "<name>"` instead of `request_spec`. The grammar is
+    this section's, the body's key order is kept as declared, and editing
+    the template changes the next deliveries of every subscription that
+    uses it. The inline `request_spec` keeps working as always.
+
 !!! abstract "The shape of the template is the shape of the destination"
     The body you declare **is** the body that goes out. A flat
     key-to-key map would not produce an array of label/value pairs; the
@@ -343,7 +351,10 @@ destination error in a background log. The `$alert`s that fired come
 under `warnings`, with no log record — a preview is not a delivery.
 
 To see the same over a whole page of cases, the listing accepts
-`render_with` — see [Endpoints](endpoints.md#get-list-and-count).
+`render_with` — see [Endpoints](endpoints.md#get-list-and-count). A
+registered template can be checked before any subscription exists, with
+the [template preview](templates.md#previewing-a-stored-template) and
+with `render_template` on the listing.
 
 ---
 

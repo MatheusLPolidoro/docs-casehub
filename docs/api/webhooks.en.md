@@ -97,6 +97,7 @@ curl -sX POST https://casehub.internal/v1/webhooks \
 | `cursor_field` | enum | `updated` | `updated` or `created` — which stamp discovery follows. |
 | `once_per_case` | bool | `false` | Deliver **at most once** per case. Since API 0.7.0. |
 | `enabled` | bool | `true` | Starting paused is possible. |
+| `template` | string | — | Name of a `view` [render template](templates.md): the payload's `source_record` is built by it. Since API 0.10.0. |
 
 Every omitted rule means **all**: a subscription with no rules receives
 everything its automation produces. Wanting two statuses means
@@ -222,6 +223,31 @@ group counts as one.
     What is not declared does not leave here. On a third-party
     subscription, declaring the paths is cheaper than trusting that
     nobody will look at the rest.
+
+---
+
+## Delivering a view of the record
+
+Since API 0.10.0, `template` points at a `view`
+[render template](templates.md), and the payload's `source_record` is
+**built by it**, in place of the original record — renamed, trimmed, with
+values treated. The rest of the payload and the HMAC signature do not
+change: the HMAC covers the bytes on the wire.
+
+```json
+{"url": "https://parceiro.exemplo/casehub", "template": "mailing.v1"}
+```
+
+- The `fields` projection applies **first**: the view reads the record
+  already trimmed.
+- It requires `include_source: true` and a view with a literal object at
+  its root.
+- The reference is live: rewriting the template changes the next
+  deliveries.
+- If the view fails for a case, the delivery ends `abandoned`, with the
+  reason.
+- A `PATCH` with `"template": null` goes back to the usual payload.
+- A subscription without `template` delivers exactly what it always did.
 
 ---
 

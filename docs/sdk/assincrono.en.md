@@ -62,6 +62,13 @@ The API 0.9.0 features exist in both clients, under the same names:
 `await` — for instance, `await client.count_cases(group_by='status')`.
 See [Synchronous client](cliente.md#counting-cases).
 
+So do the API 0.10.0 ones: the six template methods
+(`upsert_render_template`, `get_render_template`,
+`list_render_templates`, `delete_render_template`,
+`preview_render_template` and `preview_render_template_draft`), and
+`render_template` on `get_case` and `list_cases`. See
+[Synchronous client](cliente.md#render-templates).
+
 ## Sharing between concurrent tasks
 
 `httpx.AsyncClient` is *task-safe*, so a single instance can be shared by

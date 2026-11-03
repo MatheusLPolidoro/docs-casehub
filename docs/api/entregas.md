@@ -149,6 +149,15 @@ segundo plano, num registro que talvez ninguém consulte.
 As regras de filtro são as mesmas do webhook. O que muda é
 `request_spec` — e a ideia central é uma só:
 
+!!! tip "O mesmo layout em várias assinaturas: um template cadastrado"
+    Desde a API 0.10.0, a requisição pode ser cadastrada uma vez como
+    [template de montagem](templates.md) `request`, e cada assinatura
+    aponta para ela com `"template": "<nome>"` no lugar de
+    `request_spec`. A gramática é a mesma desta seção, a ordem das chaves
+    do corpo é guardada como declarada, e editar o template muda as
+    próximas entregas de todas as assinaturas que o usam. O
+    `request_spec` inline continua valendo como sempre.
+
 !!! abstract "A forma do template é a forma do destino"
     O corpo que você declara **é** o corpo que sai. Um mapa
     chave→chave plano não produziria um array de pares rótulo-valor; o
@@ -341,7 +350,10 @@ em `warnings`, sem gerar registro no log — a pré-visualização não é
 uma entrega.
 
 Para ver o mesmo sobre uma página inteira de casos, a listagem aceita
-`render_with` — veja [Endpoints](endpoints.md#get-listar-e-contar).
+`render_with` — veja [Endpoints](endpoints.md#get-listar-e-contar). Um
+template cadastrado se confere antes de qualquer assinatura existir, com
+a [prévia de template](templates.md#previa-de-um-template-gravado) e com
+`render_template` na listagem.
 
 ---
 

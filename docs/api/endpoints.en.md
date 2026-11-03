@@ -32,6 +32,7 @@ way to obtain the credential.
 | `POST` | `/v1/auth/refresh` | Renews the token. |
 | — | `/v1/webhooks*` | Seven routes for subscriptions and the delivery log. See [Webhooks](webhooks.md). |
 | — | `/v1/source-schemas*` | Six record-schema routes, since API 0.9.0. See [Record schemas](schemas.md). |
+| — | `/v1/render-templates*` | Six render-template routes, since API 0.10.0. See [Render templates](templates.md). |
 | `GET` | `/health` | Liveness — does not touch the database. |
 | `GET` | `/ready` | Readiness — `SELECT 1`, answers 503 if the database is down. |
 
@@ -271,6 +272,12 @@ GET /v1/cases/{environment}/{automation}/{case_id}
 **Response** `200` with the full case, `source_record` included.
 `404 case_not_found` if it does not exist.
 
+Since API 0.10.0, `render_template=<name>` adds `rendered`, with what
+that [template](templates.md) builds for the case — for a `view`, a view
+of the `source_record`. A rendering failure comes in `rendered.error`, and
+the response stays `200`. Without the parameter, the response is the
+usual one.
+
 ---
 
 ## `GET` — list and count
@@ -290,6 +297,7 @@ GET /v1/cases
 | `present` / `blank` / `matches` / `not_matches` / `in` / `not_in` | Same, since API 0.7.0. |
 | `conditions` | The whole grammar as JSON, with `any`/`all` groups. |
 | `render_with` | Shows, on each item, what a subscription would send — see below. |
+| `render_template` / `render_connection` | Shows, on each item, what a render template builds, since API 0.10.0 — see below. |
 | `batch_ref` | |
 | `source_schema` | |
 | `started_from` / `started_to` | Window over `started_at` — the record's date **at the source**. |
@@ -459,7 +467,7 @@ sent and no delivery is recorded.**
 | Detail | Behaviour |
 |---|---|
 | subscription of another automation | `404`, as everywhere else |
-| subscription with no `request_spec` | `400`: there is nothing to build |
+| subscription with neither `request_spec` nor `template` | `400`: there is nothing to build |
 | disabled subscription | works just the same |
 | a case that fails to build | the item carries the error, and the page goes on |
 | `page_size` | its own ceiling of 100 items |
@@ -468,6 +476,16 @@ sent and no delivery is recorded.**
     `render_with` answers *"what would go out for this case"*, not
     *"which cases would go out"*. To see the selection, repeat the
     subscription's conditions in the listing parameters.
+
+**Reading through a template's view: `render_template`**
+
+Since API 0.10.0, `render_template=<name>` does the same with a registered
+[render template](templates.md#rendered-reads), with no subscription. For
+a `view`, each `rendered` carries `body`, `warnings` and `error` — a view
+of the `source_record`, which is how a frontend reads cases in the shape
+it needs. For a `request`, the `render_with` shape, and
+`render_connection=<id>` builds the full URL. It does not combine with
+`render_with`, has the same page ceiling and applies no projection.
 
 **The response**
 
