@@ -210,9 +210,10 @@ item.
 </div>
 </div>
 
-`--group-by` accepts `environment`, `status` and `source_schema`, and can
-be repeated; `--filter` works as in the listing. Without `--group-by`,
-only the total comes out.
+`--group-by` accepts `environment`, `status`, `source_schema` and, with
+API 0.11.0 or later, `batch_ref`, and can be repeated; `--filter` works as
+in the listing. Without `--group-by`, only the total comes out. For each
+batch's total, use `--group-by batch_ref` alone.
 
 ### Registering a schema from the cases
 

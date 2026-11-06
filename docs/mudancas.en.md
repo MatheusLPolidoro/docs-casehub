@@ -8,6 +8,30 @@ Current versions: **API 0.10.0** and **SDK 0.10.0**.
 
 ---
 
+## Totals by batch — API 0.11.0
+
+=== "Totals by batch"
+
+    **What changed.** `GET /v1/cases/totals` accepts `group_by=batch_ref`,
+    combinable with the other dimensions: `group_by=batch_ref` gives each
+    batch's total in a single call, and
+    `group_by=batch_ref&group_by=status`, the split by status of each
+    batch. A case without a batch lands in the `"batch_ref": null` group,
+    and the same order and the same ceiling of 1000 groups as the other
+    dimensions apply. The count by batch, alone or with status, comes
+    from a dedicated index, without reading the table. See
+    [Endpoints](api/endpoints.md#get-totals).
+
+    **What to do.** Nothing, if you do not use it: whoever does not ask for
+    the batch gets the same response as before. On a dashboard by batch,
+    take each batch's total from `group_by=batch_ref` alone, not from
+    adding up the split by status: cut at the ceiling (`truncated: true`),
+    it carries the last batch incomplete. The SDK already passes the
+    dimension on; against an API older than 0.11.0, the server answers
+    `400 invalid_request`.
+
+---
+
 ## Render templates — API 0.10.0 and SDK 0.10.0
 
 === "Render templates"
