@@ -273,6 +273,28 @@ flag. O cursor atravessa em runtime (`**params` repassa o que nao e
 `None`), mas nao esta em `ListCasesParams` — verificado rodando
 `_build_list_query`.
 
+### Totais por lote — API 0.11.0 (2026-11-05, ainda sem release)
+
+Change `agrupar-totais-por-lote` do `fast-casehub`: `group_by=batch_ref` em
+`GET /v1/cases/totals`. Entrou nos dois idiomas, na `desenv`:
+- **`api/endpoints`**: a linha da tabela de rotas, a dimensão no
+  parâmetro `group_by`, o grupo `"batch_ref": null`, o corte por
+  combinação no aviso do teto, o exemplo de `400` (que antes era
+  justamente `group_by=batch_ref`) e o bloco "Lotes num painel" com as
+  duas chamadas. O parágrafo "Desempenho" diz que a contagem por lote,
+  sozinho ou com status, sai de um índice próprio (a revisão `0013` da
+  API, medida no `docs/go-live.md` dela, passo 11);
+- **`sdk/cliente`** e **`sdk/cli`**, com a mesma regra: o total do lote
+  vem de `group_by=batch_ref` sozinho, nunca da soma da divisão por
+  status. `sdk/assincrono` não lista dimensões e não mudou;
+- **`mudancas`**: seção "Totais por lote — API 0.11.0", com a mesma frase
+  do índice.
+
+**`VERSION`, selos da capa e "Versões atuais" não subiram**: a 0.11.0 da
+API ainda não foi cortada e leva outras mudanças que o site não documenta
+(escape de ponto em chave, destinos internos por allowlist, API só em
+`/v1` no prod). Sobem juntos no release, com essas páginas.
+
 ### Templates de montagem — API 0.10.0 e SDK 0.10.0 (2026-11-03)
 
 `VERSION` 1.6.0 → 1.7.0, escrito junto com a implementação (change
