@@ -215,6 +215,15 @@ API 0.11.0 or later, `batch_ref`, and can be repeated; `--filter` works as
 in the listing. Without `--group-by`, only the total comes out. For each
 batch's total, use `--group-by batch_ref` alone.
 
+With API 0.12.0 or later, `--search` looks for a term in any value of
+the record, in `case_id` and in `batch_ref`, in `list-cases` and in
+`count-cases`:
+
+```bash
+casehub list-cases --environment prod --search maria --started-from 2026-11-01T00:00:00-03:00
+casehub count-cases --environment prod --search maria --group-by status
+```
+
 ### Registering a schema from the cases
 
 ```bash

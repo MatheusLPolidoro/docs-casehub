@@ -296,6 +296,7 @@ GET /v1/cases
 | `filter` / `ne` / `exists` / `not_exists` | Filters over `source_record` — see below. |
 | `present` / `blank` / `matches` / `not_matches` / `in` / `not_in` | Same, since API 0.7.0. |
 | `conditions` | The whole grammar as JSON, with `any`/`all` groups. |
+| `search` | A term in any value of `source_record`, in `case_id` or in `batch_ref`, since API 0.12.0 — see below. |
 | `render_with` | Shows, on each item, what a subscription would send — see below. |
 | `render_template` / `render_connection` | Shows, on each item, what a render template builds, since API 0.10.0 — see below. |
 | `batch_ref` | |
@@ -452,6 +453,46 @@ The top-level list is an `AND`; `{"any": [...]}` is OR and
 empty group or an unknown operator answer `400`. `conditions` adds up
 with the simple parameters — and shares the same ceiling.
 
+**Search without knowing the field: `search`**
+
+Since API 0.12.0, `search=<term>` matches the case in which the term
+appears as **part of the text** of some value of `source_record` —
+text, number or boolean, at any level, including inside lists —, of
+`case_id` or of `batch_ref`:
+
+```
+GET /v1/cases?search=maria&started_from=2026-11-01T00:00:00-03:00
+```
+
+| Detail | Behavior |
+|---|---|
+| case | ignored: `search=ação` finds `AÇÃO` |
+| accents | not ignored: `search=acao` does **not** find `ação` |
+| key names | not searched: `search=telefone` does not find `{"telefone": "1234"}` |
+| `null`, object and list as a whole | do not match; the values inside them do |
+| numbers and booleans | by the text the database writes: `true`, `false`, and the number without exponent |
+| `%`, `_` and `\` | are text, never wildcards |
+| combination | adds up with every other filter, as AND; `total` and paging are those of the matched set |
+| surrounding spaces | trimmed; an empty term is the same as not sending it |
+| length | up to 200 characters; above it, `400 invalid_request` |
+| filter ceiling | the search does **not** count towards it |
+
+!!! warning "Always send the period"
+    The search uses no index: it reads the records left after the other
+    filters. A query that takes longer than 15 seconds is cut and
+    answers `400 invalid_request`, asking for a shorter period
+    (`started_from`) or a more specific term.
+
+!!! note "The term goes to no log or trace"
+    The term may be personal data. The API records only its length, and
+    the query string is redacted from the access line and from the
+    trace — see [Observability](../operacao/observabilidade.md).
+
+!!! tip "On an API older than 0.12.0"
+    The parameter is ignored without error, and the listing comes back
+    **without** the search. Check the version (`/v1/openapi.json`)
+    before relying on it.
+
 !!! tip "`source_record` does not come by default in a listing"
     Only with `include=source_record`. A listing of 500 cases with each
     one's full JSON is a large payload and rarely what you want.
@@ -555,7 +596,7 @@ GET /v1/cases/totals?environment=prod&group_by=source_schema&group_by=status
 
 | Parameter | Note |
 |---|---|
-| The listing's filters | All of `GET /v1/cases` — `environment`, `automation`, `status`, `batch_ref`, `source_schema`, the dates, the cursor, `filter` and the operators over `source_record`, and `conditions` —, optional, with the same semantics and the same errors. |
+| The listing's filters | All of `GET /v1/cases` — `environment`, `automation`, `status`, `batch_ref`, `source_schema`, the dates, the cursor, `filter` and the operators over `source_record`, `conditions` and, since API 0.12.0, `search` —, optional, with the same semantics and the same errors. |
 | `group_by` | Repeatable: `environment`, `status`, `source_schema` and, since API 0.11.0, `batch_ref`, without repetition. Without it, only `total`. |
 
 **The response**

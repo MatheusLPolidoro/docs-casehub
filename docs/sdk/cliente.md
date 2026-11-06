@@ -251,7 +251,8 @@ Sem `include='source_record'`, os itens vêm sem o JSON.
     `ListCasesParams` declara `environment`, `automation`, `status`,
     `batch_ref`, `source_schema`, `started_from`, `started_to`,
     `include`, `page`, `page_size`, desde o SDK 0.8.0 `render_with` e,
-    desde o SDK 0.10.0, `render_template` e `render_connection`.
+    desde o SDK 0.10.0, `render_template` e `render_connection`, e,
+    desde o SDK 0.12.0, `search`.
 
     Os parâmetros de cursor (`created_since`, `updated_since`), os
     operadores de conteúdo — `exists`, `not_exists`, `ne` e, desde a
@@ -289,6 +290,31 @@ Num painel por lote, o total de cada lote vem de
 `count_cases(group_by='batch_ref')`, e a divisão por status, de
 `count_cases(group_by=['batch_ref', 'status'])`. Não some a segunda para
 ter o total: com `truncated` verdadeiro, o último lote vem pela metade.
+
+### Procurando um termo
+
+Desde o SDK 0.12.0, com a API 0.12.0 ou superior. `search` procura o
+termo como parte de qualquer valor do `source_record`, do `case_id` ou do
+`batch_ref`, sem saber o campo, e vale em `list_cases` e em
+`count_cases`:
+
+```python
+pagina = client.list_cases(
+    environment='prod',
+    search='maria',
+    started_from='2026-11-01T00:00:00-03:00',
+)
+chips = client.count_cases(
+    environment='prod', search='maria', group_by='status'
+)
+```
+
+Não diferencia maiúsculas, mas diferencia acentos, e nomes de chave não
+entram. Soma com os demais filtros, e o `total` e os totais saem exatos.
+Até 200 caracteres; uma busca que passa de 15 s volta como `APIHTTPError`
+com `status_code=400`, então mande sempre o período. Numa API anterior à
+0.12.0, o parâmetro é ignorado e a listagem vem **sem** a busca. Ver
+[Endpoints](../api/endpoints.md#get-listar-e-contar).
 
 ### Schemas do registro
 
