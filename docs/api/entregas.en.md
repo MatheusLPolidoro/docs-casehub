@@ -77,7 +77,8 @@ into a header whose name and format are also yours.
     Some APIs do not even document what the token field is called in
     the login response. Find out with the
     [connection test](#2-check-the-credential): if the path is wrong,
-    the response says exactly that.
+    the response says exactly that. A field with a dot in its name is
+    escaped: `access\.token`.
 
 The login body is built from the registered secrets and supports
 composition — `$secret`, `$const` and `$concat`. That is what allows a
@@ -107,6 +108,45 @@ Stricter than webhook registration, deliberately: a webhook URL
 **receives** the case, while a connection may **send a username and
 password** to the destination. Private network, loopback and metadata
 addresses are rejected at registration.
+
+Since API 0.11.0, an internal-network destination is an **exception that
+whoever operates the environment declares**, in
+`CASEHUB_DELIVERY_INTERNAL_DESTINATIONS`: a JSON list of entries, each
+with the range (`cidr`), the automations that may use it (`automations`,
+required) and, if needed, the ports (`ports`), `http` without TLS
+(`allow_http`) and a CA of its own (`ca_bundle`).
+
+```bash
+CASEHUB_DELIVERY_INTERNAL_DESTINATIONS='[{"cidr": "10.0.0.15/32", "automations": ["minha-automacao"], "ports": [443], "ca_bundle": "/certs/destino.pem"}]'
+```
+
+- **The release matches on the address the host resolves to.** Loopback,
+  link-local, metadata, multicast and reserved ranges can never be
+  released. A range that contains the service's own database, OIDC issuer
+  or object storage prevents startup, with the entry and the reason in
+  the log.
+- **`ca_bundle` replaces the system CAs** for the destinations the entry
+  covers: to trust more than one, put them in the same PEM. The
+  certificate must still match the URL's host, so a certificate issued
+  for a name calls for the connection registered by name.
+- **`allow_http` makes username, password, token and body travel in the
+  clear** to the destination, and each such entry logs a warning at
+  startup. With `http`, the URL must carry the destination's IP, not a
+  name: the name would be resolved again at send time. Redirects are
+  not followed: an `http` that only redirects to `https` will not do.
+- **A connection that only exists by exception is checked again** before
+  every login, delivery and test — one that uses `http`, or an internal
+  IP in the URL. If the entry leaves, nothing else is sent to the
+  destination, and the connection ends up disabled with the reason in
+  `disabled_reason`.
+- **Changing the list requires restarting the service.** Each refusal by
+  the guard is counted in `casehub.delivery.destination_refusals` — see
+  [Observability](../operacao/observabilidade.md#metrics).
+
+With no entry covering the address, registration answers
+`400 invalid_connection_config`, as before. A TLS error on a released
+destination comes with a hint of what to do: register by the
+certificate's name, reissue it with the IP, or declare `ca_bundle`.
 
 ### Throughput
 
@@ -210,7 +250,7 @@ and the central idea is one:
 
 Paths use the same dotted grammar as the filters, including list
 indexes: `case.source_record.extras.0.label`, and a negative index
-counts from the end.
+counts from the end. A dot inside a key's name goes as `\.`.
 
 ### Value transforms
 

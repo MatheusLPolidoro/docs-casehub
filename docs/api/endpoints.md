@@ -360,6 +360,15 @@ GET /v1/cases?filter=referencia=REF-12345&filter=uf=SP
 Caminho aninhado usa ponto (`origem.id`), e **segmento numérico indexa
 array** (`telas.0`).
 
+Desde a API 0.11.0, o ponto que faz parte do nome da chave vai escapado
+com `\`: `filter=cod\.cliente=123` filtra pela chave `cod.cliente`, e
+`filter=origem.nota\.fiscal=7` pela chave `nota.fiscal` dentro de
+`origem`. Na URL, a barra invertida vai como `%5C`. `\\` é a barra
+invertida literal antes de um ponto ou no fim da chave; antes de qualquer
+outro caractere, ela fica como está. A regra é a mesma para todo caminho
+sobre o `source_record`: condições, assinaturas, templates e o
+`token_path` das conexões.
+
 Em `filter=` e `ne=`, só o **primeiro** `=` separa a chave do valor, então
 um valor que contenha `=` atravessa inteiro — `filter=expr=a=b` filtra
 `expr` pelo valor `a=b`.

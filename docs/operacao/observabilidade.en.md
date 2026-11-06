@@ -43,6 +43,7 @@ the `_total` suffix — `casehub.api.errors` becomes
 | `casehub.retention.deleted` | counter | `automation`, `environment` | Cases purged per job run. |
 | `casehub.retention.skipped` | counter | `reason` (`param_source_unconfigured`, `canary_missing`) | Cycles that did **not** purge by term, for lack of the sentinel. See [Retention](../api/retencao.md#without-the-sentinel-nothing-leaves-by-term). |
 | `casehub.webhook.delivered` | counter | `automation`, `environment`, `outcome` | Webhook delivery **attempts**, by outcome. |
+| `casehub.delivery.destination_refusals` | counter | `stage` (`register`, `send`, `test`), `reason` (`not_allowlisted`, `http_not_allowed`, `http_requires_ip`, `port_not_allowed`, `ca_mismatch`, `unresolved_http`, `scheme`, `userinfo`) | Connection destinations refused by the guard, by stage and reason. Since API 0.11.0. |
 
 The attachment sweeper's metrics (`casehub.attachment.*`) are in
 [Retention](../api/retencao.md#case-attachments).
@@ -221,6 +222,7 @@ for referential integrity.
 | `casehub.retention.deleted` off expectation | A badly configured term in ParamManager. |
 | `casehub.retention.skipped` climbing | Purging by term stopped: the sentinel is missing, or ParamManager is unreachable with no local copy. Since API 0.8.0 this **no longer** falls back to a default term. |
 | `casehub.webhook.delivered{outcome="failed"}` climbing | A partner endpoint is down. Consecutive failures disable the subscription on their own — see [Webhooks](../api/webhooks.md#when-it-fails). |
+| `casehub.delivery.destination_refusals{stage="send"}` above zero | A connection that only existed by exception lost its release and stopped sending — see [Delivering to other APIs](../api/entregas.md#base_url-requires-tls-and-an-external-destination). |
 
 !!! danger "A batch with a rejected item produces no HTTP error"
     It is the most common blind spot: the 5xx dashboard stays clean while
