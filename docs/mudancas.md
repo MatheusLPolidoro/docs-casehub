@@ -8,6 +8,42 @@ Versões atuais: **API 0.11.0** e **SDK 0.11.0**.
 
 ---
 
+## Busca textual e query redigida — API 0.12.0 e SDK 0.12.0
+
+=== "Busca textual"
+
+    **O que mudou.** `GET /v1/cases` e `GET /v1/cases/totals` aceitam
+    `search`: o caso casa quando o termo aparece como parte de algum
+    valor do `source_record` (em qualquer nível, inclusive dentro de
+    listas), do `case_id` ou do `batch_ref`. Não diferencia maiúsculas,
+    mas diferencia acentos, e nomes de chave não entram. Soma com os
+    demais filtros, e o `total`, a paginação e os totais por status saem
+    exatos. Até 200 caracteres; uma busca que passa de 15 s responde
+    `400 invalid_request`. Ver
+    [Endpoints](api/endpoints.md#get-listar-e-contar).
+
+    **O que fazer.** Nada, para quem não usa: sem `search`, a resposta é
+    a de antes. Quem usa manda sempre o período (`started_from`), porque
+    a busca lê os registros que sobram depois dos outros filtros. Numa
+    API anterior à 0.12.0 o parâmetro é ignorado sem erro, e a listagem
+    vem sem a busca. No SDK, `search` em `list_cases` e `count_cases`, e
+    `--search` na CLI.
+
+=== "Query redigida"
+
+    **O que mudou.** A linha de acesso do servidor HTTP e o trace deixam
+    de gravar os valores da query string que vêm do `source_record`: o
+    termo de `search` e os valores de `filter`, `ne`, `matches`,
+    `not_matches`, `in`, `not_in` e `conditions` aparecem como
+    `REDACTED`, com o nome do parâmetro. Ver
+    [Observabilidade](operacao/observabilidade.md).
+
+    **O que fazer.** Nada no contrato. Quem depurava pelos valores da
+    query no trace passa a vê-los redigidos; os parâmetros fixos
+    (`environment`, `status`, datas, paginação) continuam com o valor.
+
+---
+
 ## Totais por lote, chave com ponto e destinos internos — API 0.11.0 e SDK 0.11.0
 
 === "Totais por lote"

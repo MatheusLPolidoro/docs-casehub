@@ -102,9 +102,9 @@ métricas respondiam "quem/quando/quantas", e quem olhasse apenas o Loki
 não tinha como saber que uma consulta tinha acontecido.
 
 !!! danger "O que esses logs deliberadamente não carregam"
-    `source_record` e os **valores** de `filter=` ficam fora. Só as
-    chaves usadas no filtro aparecem, nunca o conteúdo — é payload de
-    negócio, potencialmente com dado sensível.
+    `source_record`, os **valores** de `filter=` e o termo de `search`
+    ficam fora. Só as chaves usadas no filtro aparecem, nunca o
+    conteúdo — é payload de negócio, potencialmente com dado sensível.
 
     No cadastro de webhook, a URL do parceiro é registrada só como
     esquema e host (`https://hooks.exemplo.com/<redigido>`). Em boa parte
@@ -179,6 +179,26 @@ e logs ao collector com a mesma configuração do serviço.
 
     A decisão de produto sobre armazenar dado sensível cobre o
     **armazenamento**, não a observabilidade.
+
+!!! danger "Os valores da query saem redigidos (desde a API 0.12.0)"
+    O termo de `search` e os valores de `filter`, `ne`, `matches`,
+    `not_matches`, `in`, `not_in` e `conditions` vêm do `source_record`
+    e podem ser dado pessoal. Por isso a linha de acesso do servidor
+    HTTP (stdout) e o span HTTP (`url.query`) trocam o valor desses
+    parâmetros por `REDACTED`, e mantêm o nome:
+
+    ```text
+    GET /v1/cases?search=REDACTED&filter=REDACTED&environment=prod&page=2
+    ```
+
+    Mantêm o valor só os parâmetros que não carregam dado do registro:
+    `environment`, `automation`, `status`, `batch_ref`, `source_schema`,
+    as datas e o cursor, a paginação, `include`, `group_by` e os que
+    recebem só caminho (`exists`, `not_exists`, `present`, `blank`).
+    Qualquer parâmetro novo sai redigido até ser incluído nessa lista.
+    O log de acesso da aplicação registra só o tamanho do termo
+    (`casehub.search_length`). Antes da 0.12.0, os valores de `filter`
+    e dos demais operadores iam inteiros para o trace e para o stdout.
 
 !!! warning "`CASEHUB_DB_ECHO=true` quebra isso"
     Ligar o echo do SQLAlchemy faz o SQL — com os parâmetros, incluindo

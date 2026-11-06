@@ -8,6 +8,44 @@ Current versions: **API 0.11.0** and **SDK 0.11.0**.
 
 ---
 
+## Text search and redacted query — API 0.12.0 and SDK 0.12.0
+
+=== "Text search"
+
+    **What changed.** `GET /v1/cases` and `GET /v1/cases/totals` accept
+    `search`: a case matches when the term appears as part of some value
+    of `source_record` (at any level, including inside lists), of
+    `case_id` or of `batch_ref`. Case is ignored but accents are not, and
+    key names are not searched. It adds up with the other filters, and
+    `total`, paging and the totals by status come out exact. Up to 200
+    characters; a search that takes longer than 15 s answers
+    `400 invalid_request`. See
+    [Endpoints](api/endpoints.md#get-list-and-count).
+
+    **What to do.** Nothing, if you do not use it: without `search`, the
+    response is the same as before. If you do, always send the period
+    (`started_from`), because the search reads the records left after
+    the other filters. On an API older than 0.12.0 the parameter is
+    ignored without error, and the listing comes back without the
+    search. In the SDK, `search` in `list_cases` and `count_cases`, and
+    `--search` in the CLI.
+
+=== "Redacted query"
+
+    **What changed.** The HTTP server's access line and the trace no
+    longer record the query string values that come from
+    `source_record`: the `search` term and the values of `filter`, `ne`,
+    `matches`, `not_matches`, `in`, `not_in` and `conditions` show up as
+    `REDACTED`, with the parameter name. See
+    [Observability](operacao/observabilidade.md).
+
+    **What to do.** Nothing in the contract. Whoever debugged by the
+    query values in the trace now sees them redacted; the fixed
+    parameters (`environment`, `status`, dates, paging) keep their
+    value.
+
+---
+
 ## Totals by batch, keys with a dot and internal destinations — API 0.11.0 and SDK 0.11.0
 
 === "Totals by batch"
