@@ -200,7 +200,7 @@ duas contam para o mesmo teto (`CASEHUB_MAX_SOURCE_FILTERS`, default
 ## Escolher os campos do `source_record`
 
 `fields` é uma lista de caminhos pontilhados — a mesma gramática do
-`filter=origem.id=42`:
+`filter=origem.id=42`, inclusive o `\.` para o ponto dentro da chave:
 
 | `fields` | O que chega em `source_record` |
 |---|---|

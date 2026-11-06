@@ -2,7 +2,7 @@
 
 Documentação central do ecossistema CaseHub (a API `fast-casehub` e o SDK
 `casehub`). mkdocs-material, **português e inglês**, versionada por `mike` — a versão
-do site é própria (`VERSION`, hoje `1.7.0`), **não** a da API nem a do SDK, porque ele
+do site é própria (`VERSION`, hoje `1.8.0`), **não** a da API nem a do SDK, porque ele
 documenta os dois com números diferentes.
 
 **Publicada em dois lugares, a partir do mesmo `main`** (2026-08-21):
@@ -273,7 +273,32 @@ flag. O cursor atravessa em runtime (`**params` repassa o que nao e
 `None`), mas nao esta em `ListCasesParams` — verificado rodando
 `_build_list_query`.
 
-### Totais por lote — API 0.11.0 (2026-11-05, ainda sem release)
+### API 0.11.0 e SDK 0.11.0 — site 1.8.0 (2026-11-06)
+
+`VERSION` 1.7.0 → 1.8.0, no corte da 0.11.0 da API e do SDK, nos dois
+idiomas. Entrou o que a seção abaixo, dos totais por lote, tinha deixado
+para o release:
+
+- **`mudancas`**: a seção da 0.11.0 virou cinco abas — totais por lote,
+  chave com ponto, destinos internos, só `/v1` no `prod` (a que quebra)
+  e SDK 0.11.0 (só texto) —, e "Versões atuais" 0.11.0/0.11.0.
+- **`api/endpoints`** (o `\.` na regra de caminho), **`api/webhooks`**
+  (`fields`), **`api/entregas`** (caminhos, `token_path` e a allowlist
+  com exemplo genérico: `10.0.0.15/32`, `minha-automacao`, nada do caso
+  real), **`api/schemas`** (a dica do `segments`).
+- **`operacao/observabilidade`** (`casehub.delivery.destination_refusals`,
+  com os oito motivos, e a linha em "O que observar"),
+  **`operacao/deploy`** (o painel na raiz e o aviso do `/v1`),
+  **`instalacao`** (a variável da allowlist e as versões) e a capa
+  (selos e aviso).
+
+**Sem domínio, IP ou nome de destino reais**, pela regra de "O que este
+site não pode dizer". Conferido: `--strict` verde, estrutura pt/en
+idêntica em todos os pares (títulos, admoestações, abas, tabelas, cercas
+e itens), e o HTML com as abas, o aviso e as linhas novas, sem markdown
+cru.
+
+### Totais por lote — API 0.11.0 (2026-11-05)
 
 Change `agrupar-totais-por-lote` do `fast-casehub`: `group_by=batch_ref` em
 `GET /v1/cases/totals`. Entrou nos dois idiomas, na `desenv`:
@@ -290,10 +315,7 @@ Change `agrupar-totais-por-lote` do `fast-casehub`: `group_by=batch_ref` em
 - **`mudancas`**: seção "Totais por lote — API 0.11.0", com a mesma frase
   do índice.
 
-**`VERSION`, selos da capa e "Versões atuais" não subiram**: a 0.11.0 da
-API ainda não foi cortada e leva outras mudanças que o site não documenta
-(escape de ponto em chave, destinos internos por allowlist, API só em
-`/v1` no prod). Sobem juntos no release, com essas páginas.
+`VERSION`, selos e "Versões atuais" subiram no release (seção acima).
 
 ### Templates de montagem — API 0.10.0 e SDK 0.10.0 (2026-11-03)
 

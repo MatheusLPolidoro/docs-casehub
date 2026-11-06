@@ -24,7 +24,7 @@ flowchart TD
 | Profile | What it starts |
 |---|---|
 | `uat` | API + Postgres + Keycloak + nginx — a complete, disposable local stack. |
-| `prod` | The API, nginx — HTTPS only — and the documentation, pointing at infrastructure that already exists. |
+| `prod` | The API, nginx — HTTPS only — and the documentation, pointing at infrastructure that already exists. The domain's root belongs to the CaseHub dashboard, which runs in another compose project. |
 
 The two are **mutually exclusive**, and in both it is **nginx** that
 publishes the port on the host: the API services publish no port at all
@@ -39,6 +39,15 @@ the API.
     the proxy from `certs/`, outside git; without them nginx does not start.
     Nothing changes on the API side — `X-Forwarded-Proto` starts reading
     `https` on its own.
+
+!!! warning "On `prod`, the API answers only on `/v1/`, `/health` and `/ready` (since API 0.11.0)"
+    The rest of the root goes to the CaseHub dashboard, reached over a
+    network that both composes declare under the same name, with no
+    startup order. With the dashboard down, only the root answers `502`;
+    the API and the documentation stay up. Whoever called the API without
+    the prefix now gets the dashboard's HTML: see
+    [What changed](../mudancas.md). On `uat`, which has no dashboard, the
+    root still goes to the API.
 
 ### Healthcheck
 

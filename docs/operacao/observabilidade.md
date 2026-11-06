@@ -43,6 +43,7 @@ contadores ganham o sufixo `_total` — `casehub.api.errors` vira
 | `casehub.retention.deleted` | contador | `automation`, `environment` | Casos expurgados por execução do job. |
 | `casehub.retention.skipped` | contador | `reason` (`param_source_unconfigured`, `canary_missing`) | Ciclos que **não** expurgaram por prazo, por falta da sentinela. Ver [Retenção](../api/retencao.md#sem-a-sentinela-nada-sai-por-prazo). |
 | `casehub.webhook.delivered` | contador | `automation`, `environment`, `outcome` | **Tentativas** de entrega de webhook, por desfecho. |
+| `casehub.delivery.destination_refusals` | contador | `stage` (`register`, `send`, `test`), `reason` (`not_allowlisted`, `http_not_allowed`, `http_requires_ip`, `port_not_allowed`, `ca_mismatch`, `unresolved_http`, `scheme`, `userinfo`) | Destinos de conexão recusados pela guarda, por etapa e motivo. Desde a API 0.11.0. |
 
 As métricas do varredor de anexos (`casehub.attachment.*`) estão em
 [Retenção](../api/retencao.md#anexos-de-caso).
@@ -221,6 +222,7 @@ não para integridade referencial.
 | `casehub.retention.deleted` fora do esperado | Prazo mal configurado no ParamManager. |
 | `casehub.retention.skipped` subindo | O expurgo por prazo parou: falta a sentinela, ou o ParamManager está inacessível sem cópia local. Desde a API 0.8.0 isso **não** cai mais num prazo padrão. |
 | `casehub.webhook.delivered{outcome="failed"}` subindo | Endpoint de parceiro fora do ar. Falhas seguidas desativam a assinatura sozinhas — ver [Webhooks](../api/webhooks.md#quando-falha). |
+| `casehub.delivery.destination_refusals{stage="send"}` acima de zero | Uma conexão que só existia por exceção perdeu a liberação e parou de enviar — ver [Entregas para outras APIs](../api/entregas.md#base_url-exige-tls-e-destino-externo). |
 
 !!! danger "Lote com item recusado não gera erro HTTP"
     É o ponto cego mais comum: o painel de erros 5xx fica limpo enquanto

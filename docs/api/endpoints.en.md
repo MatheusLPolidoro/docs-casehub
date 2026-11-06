@@ -364,6 +364,14 @@ GET /v1/cases?filter=referencia=REF-12345&filter=uf=SP
 Nested paths use a dot (`origem.id`), and a **numeric segment indexes an
 array** (`telas.0`).
 
+Since API 0.11.0, a dot that is part of the key's name is escaped with
+`\`: `filter=cod\.cliente=123` filters by the key `cod.cliente`, and
+`filter=origem.nota\.fiscal=7` by the key `nota.fiscal` inside `origem`.
+In the URL, the backslash goes as `%5C`. `\\` is a literal backslash
+before a dot or at the end of the key; before any other character, it
+stays as it is. The rule is the same for every path over `source_record`:
+conditions, subscriptions, templates and the connections' `token_path`.
+
 In `filter=` and `ne=`, only the **first** `=` separates key from value,
 so a value containing `=` goes through whole — `filter=expr=a=b` filters
 `expr` by the value `a=b`.

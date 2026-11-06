@@ -77,7 +77,8 @@ nome e formato também são seus.
 !!! tip "`token_path` é configurável porque o nome do campo varia"
     Há API que sequer publica como se chama o campo do token na
     resposta do login. Descubra com o [teste de conexão](#2-conferir-a-credencial):
-    se o caminho estiver errado, a resposta diz exatamente isso.
+    se o caminho estiver errado, a resposta diz exatamente isso. Campo
+    com ponto no nome vai escapado: `access\.token`.
 
 O corpo do login é montado a partir dos segredos cadastrados, e aceita
 composição — `$secret`, `$const` e `$concat`. É o que permite um
@@ -107,6 +108,42 @@ Mais estrito que o cadastro de webhook, e de propósito: a URL de um
 webhook **recebe** o caso, enquanto uma conexão pode **enviar usuário e
 senha** ao destino. Endereço de rede privada, laço local ou metadata é
 recusado no cadastro.
+
+Desde a API 0.11.0, destino da rede interna é **exceção que quem opera o
+ambiente declara**, em `CASEHUB_DELIVERY_INTERNAL_DESTINATIONS`: uma lista
+JSON de entradas, cada uma com a faixa (`cidr`), as automações que podem
+usá-la (`automations`, obrigatório) e, se precisar, as portas (`ports`),
+o `http` sem TLS (`allow_http`) e uma CA própria (`ca_bundle`).
+
+```bash
+CASEHUB_DELIVERY_INTERNAL_DESTINATIONS='[{"cidr": "10.0.0.15/32", "automations": ["minha-automacao"], "ports": [443], "ca_bundle": "/certs/destino.pem"}]'
+```
+
+- **A liberação casa pelo endereço para onde o host resolve.** Laço
+  local, link-local, metadata, multicast e faixas reservadas nunca são
+  liberáveis. Uma faixa que contenha o banco, o emissor OIDC ou o storage
+  do próprio serviço impede a subida, com a entrada e o motivo no log.
+- **`ca_bundle` substitui as CAs do sistema** nos destinos que a entrada
+  cobre: para confiar em mais de uma, junte-as no mesmo PEM. O
+  certificado ainda precisa bater com o host da URL, então um certificado
+  emitido para um nome pede a conexão cadastrada pelo nome.
+- **`allow_http` faz usuário, senha, token e corpo trafegarem em claro**
+  até o destino, e cada entrada assim gera um aviso na subida. Com
+  `http`, a URL precisa trazer o IP do destino, e não um nome: o nome
+  seria resolvido de novo na hora do envio. Redirecionamento não é
+  seguido: um `http` que só redireciona para `https` não serve.
+- **Conexão que só existe por exceção é conferida de novo** antes de cada
+  login, entrega e teste — a que usa `http`, ou IP interno na URL. Se a
+  entrada sair, nada mais é enviado ao destino, e a conexão acaba
+  desativada com o motivo em `disabled_reason`.
+- **Mudar a lista exige reiniciar o serviço.** Cada recusa da guarda conta
+  em `casehub.delivery.destination_refusals` — ver
+  [Observabilidade](../operacao/observabilidade.md#metricas).
+
+Sem entrada que cubra o endereço, o cadastro responde
+`400 invalid_connection_config`, como antes. Erro de TLS num destino
+liberado vem com a dica do que fazer: cadastrar pelo nome do
+certificado, reemiti-lo com o IP, ou declarar `ca_bundle`.
 
 ### Vazão
 
@@ -211,7 +248,7 @@ As regras de filtro são as mesmas do webhook. O que muda é
 
 Os caminhos usam a mesma gramática pontilhada dos filtros, incluindo
 índice de lista: `case.source_record.extras.0.rotulo`, e negativo conta
-do fim.
+do fim. Ponto dentro do nome da chave vai como `\.`.
 
 ### Tratamentos de valor
 

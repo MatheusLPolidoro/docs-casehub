@@ -126,7 +126,8 @@ that same order:
     A record coming from a spreadsheet or a fixed-width file has keys
     like `DT.ULT.ALT.`, which no text path can split without escaping.
     `segments` is unambiguous: use `path` to display and `segments` to
-    navigate.
+    navigate. To filter by such a key, escape the dot:
+    `filter=DT\.ULT\.ALT\.=...`, since API 0.11.0.
 
 With no schema of that name, `404 source_schema_not_found` — and
 [inference](#inferring-from-stored-cases) answers anyway.
