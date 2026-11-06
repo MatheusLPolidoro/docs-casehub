@@ -280,9 +280,15 @@ totais = client.count_cases(
 ```
 
 Aceita os mesmos filtros de `list_cases`. `group_by` aceita
-`environment`, `status` e `source_schema`, como texto ou lista, e
-`conditions` em lista ou dicionário é serializado em JSON pela lib. Ver
+`environment`, `status`, `source_schema` e, com a API 0.11.0 ou
+superior, `batch_ref`, como texto ou lista, e `conditions` em lista ou
+dicionário é serializado em JSON pela lib. Ver
 [Endpoints](../api/endpoints.md#get-totais).
+
+Num painel por lote, o total de cada lote vem de
+`count_cases(group_by='batch_ref')`, e a divisão por status, de
+`count_cases(group_by=['batch_ref', 'status'])`. Não some a segunda para
+ter o total: com `truncated` verdadeiro, o último lote vem pela metade.
 
 ### Schemas do registro
 

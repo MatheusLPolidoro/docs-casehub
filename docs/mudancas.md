@@ -8,6 +8,28 @@ Versões atuais: **API 0.10.0** e **SDK 0.10.0**.
 
 ---
 
+## Totais por lote — API 0.11.0
+
+=== "Totais por lote"
+
+    **O que mudou.** `GET /v1/cases/totals` aceita `group_by=batch_ref`,
+    combinável com as outras dimensões: `group_by=batch_ref` dá o total de
+    cada lote numa chamada só, e `group_by=batch_ref&group_by=status`, a
+    divisão por status de cada lote. Caso sem lote entra no grupo
+    `"batch_ref": null`, e valem a mesma ordem e o mesmo teto de 1000
+    grupos das outras dimensões. A contagem por lote, sozinho ou com
+    status, sai de um índice próprio, sem ler a tabela. Ver
+    [Endpoints](api/endpoints.md#get-totais).
+
+    **O que fazer.** Nada, para quem não usa: quem não pede o lote recebe a
+    mesma resposta de antes. Num painel por lote, tire o total de cada lote
+    de `group_by=batch_ref` sozinho, e não da soma da divisão por status:
+    cortada no teto (`truncated: true`), ela traz o último lote pela
+    metade. O SDK já repassa a dimensão; contra uma API anterior à 0.11.0,
+    o servidor responde `400 invalid_request`.
+
+---
+
 ## Templates de montagem — API 0.10.0 e SDK 0.10.0
 
 === "Templates de montagem"
