@@ -242,6 +242,7 @@ não para integridade referencial.
 | `casehub.retention.deleted` fora do esperado | Prazo mal configurado no ParamManager. |
 | `casehub.retention.skipped` subindo | O expurgo por prazo parou: falta a sentinela, ou o ParamManager está inacessível sem cópia local. Desde a API 0.8.0 isso **não** cai mais num prazo padrão. |
 | `casehub.webhook.delivered{outcome="failed"}` subindo | Endpoint de parceiro fora do ar. Falhas seguidas desativam a assinatura sozinhas — ver [Webhooks](../api/webhooks.md#quando-falha). |
+| Log `WARNING` "Busca cortada pelo teto de tempo" (`casehub_search_timeout="true"`) | Uma busca (`search`, desde a API 0.12.0) passou de 15 s e foi cortada com `400`. A busca não tem índice: cortes **com** período (`casehub_search_com_periodo="true"`) numa automação dizem que o volume dela passou do que a busca aguenta. O log traz o tamanho do termo e as chaves dos filtros, nunca o termo. |
 | `casehub.delivery.destination_refusals{stage="send"}` acima de zero | Uma conexão que só existia por exceção perdeu a liberação e parou de enviar — ver [Entregas para outras APIs](../api/entregas.md#base_url-exige-tls-e-destino-externo). |
 
 !!! danger "Lote com item recusado não gera erro HTTP"

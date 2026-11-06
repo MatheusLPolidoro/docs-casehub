@@ -472,8 +472,10 @@ GET /v1/cases?search=maria&started_from=2026-11-01T00:00:00-03:00
 
 !!! warning "Mande sempre o período"
     A busca não usa índice: ela lê os registros que sobram depois dos
-    outros filtros. Uma consulta que passa de 15 segundos é cortada e
-    responde `400 invalid_request`, pedindo um período menor
+    outros filtros, e o tempo cresce com os casos do período — conte com
+    segundos, não milissegundos, numa automação com dezenas de milhares
+    de casos no período. Uma consulta que passa de 15 segundos é cortada
+    e responde `400 invalid_request`, pedindo um período menor
     (`started_from`) ou um termo mais específico.
 
 !!! note "O termo não vai para log nem trace"
