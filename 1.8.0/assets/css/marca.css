@@ -1,0 +1,97 @@
+/*
+ * Marca do CaseHub.
+ *
+ * A paleta base vem do tema (blue / indigo no claro, teal no escuro). Aqui
+ * ficam as variáveis que os outros arquivos deste diretório consomem —
+ * `termynal.css` e `tipografia.css` leem `--pm-cor`, `--pm-borda` e
+ * `--pm-fundo-suave` — mais a marca animada da página inicial e a linha de
+ * selos.
+ *
+ * O prefixo `pm-` vem do `docs-param-manager`, de onde estes arquivos foram
+ * trazidos. Renomear tudo para `ch-` seria uma renomeação em cascata em
+ * quatro arquivos para não ganhar nada: o que interessa é que os dois sites
+ * possam receber a mesma correção sem tradução no meio.
+ */
+
+:root {
+  --pm-cor: #1565c0;
+  --pm-borda: rgba(21, 101, 192, 0.28);
+  --pm-fundo-suave: rgba(21, 101, 192, 0.06);
+}
+
+[data-md-color-scheme='slate'] {
+  --pm-cor: #90caf9;
+  --pm-borda: rgba(144, 202, 249, 0.32);
+  --pm-fundo-suave: rgba(144, 202, 249, 0.08);
+}
+
+/* ------------------------------------------------------------- marca */
+
+/* `flex-basis` em `rem` e `max-width` em vez de largura fixa: a marca
+   encolhe com a coluna em vez de forçar rolagem horizontal (WCAG 1.4.10).
+   O `aspect-ratio` — o mesmo do viewBox recortado em
+   `assets/marca-animada.svg` — reserva a altura desde o primeiro quadro de
+   renderização, então trocar o cartaz pela animação não empurra o texto
+   para baixo. */
+.pm-marca {
+  position: relative;
+  flex: 1 1 20rem;
+  min-width: 0;
+  max-width: 32rem;
+  margin: 0 0 1.5rem;
+}
+
+/* O `md_in_html` embrulha cada filho em `<p>` ao processar o bloco como
+   Markdown — inclusive o `<svg>` vazio da animação. Sem zerar a margem
+   sobra um vão que muda de tamanho conforme a animação está ou não
+   escondida. */
+.pm-marca p {
+  margin: 0;
+}
+
+.pm-marca__cartaz img,
+.pm-marca__tela {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1645 / 620;
+}
+
+/* O `display: block` acima vence o `display: none` que o navegador aplica a
+   `[hidden]`; sem isto o cartaz e a animação apareceriam juntos. */
+.pm-marca [hidden] {
+  display: none !important;
+}
+
+/* Na impressão sobra o cartaz: o `<svg>` animado fica vazio no fim de cada
+   volta, e o papel não tem volta seguinte. */
+@media print {
+  .pm-marca__tela {
+    display: none !important;
+  }
+
+  .pm-marca__cartaz {
+    display: block !important;
+  }
+}
+
+/* ------------------------------------------------------------- selos */
+
+/* `align-items: center` porque os selos não têm todos a mesma altura, e
+   `flex-wrap` porque quatro deles não cabem lado a lado na largura de
+   celular. */
+.md-typeset .pm-selos p {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 1.5rem;
+}
+
+/* Altura em `rem` para acompanhar o zoom do texto, e não ficar presa ao
+   pixel da imagem. */
+.md-typeset .pm-selos img {
+  height: 1.05rem;
+  width: auto;
+  vertical-align: middle;
+}
