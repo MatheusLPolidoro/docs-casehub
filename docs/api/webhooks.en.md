@@ -208,7 +208,7 @@ group counts as one.
 ## Choosing the `source_record` fields
 
 `fields` is a list of dotted paths — the same grammar as
-`filter=origem.id=42`:
+`filter=origem.id=42`, including `\.` for a dot inside a key:
 
 | `fields` | What arrives in `source_record` |
 |---|---|

@@ -286,9 +286,15 @@ totais = client.count_cases(
 ```
 
 It accepts the same filters as `list_cases`. `group_by` accepts
-`environment`, `status` and `source_schema`, as text or a list, and a list
-or dict `conditions` is serialized to JSON by the library. See
+`environment`, `status`, `source_schema` and, with API 0.11.0 or later,
+`batch_ref`, as text or a list, and a list or dict `conditions` is
+serialized to JSON by the library. See
 [Endpoints](../api/endpoints.md#get-totals).
+
+On a dashboard by batch, each batch's total comes from
+`count_cases(group_by='batch_ref')`, and the split by status from
+`count_cases(group_by=['batch_ref', 'status'])`. Do not add up the second
+to get the total: when `truncated` is true, the last batch is incomplete.
 
 ### Record schemas
 

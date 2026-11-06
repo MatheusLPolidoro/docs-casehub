@@ -4,7 +4,92 @@ A record of the behaviour changes that affect whoever integrates. It does
 not replace each repository's `CHANGELOG.md` — only the ones that change
 the **contract** or require action from a consumer live here.
 
-Current versions: **API 0.10.0** and **SDK 0.10.0**.
+Current versions: **API 0.11.0** and **SDK 0.11.0**.
+
+---
+
+## Totals by batch, keys with a dot and internal destinations — API 0.11.0 and SDK 0.11.0
+
+=== "Totals by batch"
+
+    **What changed.** `GET /v1/cases/totals` accepts `group_by=batch_ref`,
+    combinable with the other dimensions: `group_by=batch_ref` gives each
+    batch's total in a single call, and
+    `group_by=batch_ref&group_by=status`, the split by status of each
+    batch. A case without a batch lands in the `"batch_ref": null` group,
+    and the same order and the same ceiling of 1000 groups as the other
+    dimensions apply. The count by batch, alone or with status, comes
+    from a dedicated index, without reading the table. See
+    [Endpoints](api/endpoints.md#get-totals).
+
+    **What to do.** Nothing, if you do not use it: whoever does not ask for
+    the batch gets the same response as before. On a dashboard by batch,
+    take each batch's total from `group_by=batch_ref` alone, not from
+    adding up the split by status: cut at the ceiling (`truncated: true`),
+    it carries the last batch incomplete. The SDK already passes the
+    dimension on; against an API older than 0.11.0, the server answers
+    `400 invalid_request`.
+
+=== "Keys with a dot"
+
+    **What changed.** A path over `source_record` accepts `\.` for a dot
+    that is part of the key's name: `filter=cod\.cliente=123` filters by
+    the key `cod.cliente`, and `filter=origem.nota\.fiscal=7` by the key
+    `nota.fiscal` inside `origem`. Until now, a key with a dot was always
+    read as a nested path, and the response came back empty, with no
+    error. The escape applies to every path: the listing's and the
+    totals' filters and operators, `conditions`, the subscriptions'
+    `source_conditions` and `fields`, the templates' `$from` and the
+    connections' `token_path`, on both backends. `\\` is a literal
+    backslash before a dot or at the end of the key. See
+    [Endpoints](api/endpoints.md#get-list-and-count).
+
+    **What to do.** Nothing: a path without `\` means exactly what it
+    meant before, and whatever was already registered stays the same. In
+    the URL, the backslash goes as `%5C`.
+
+=== "Internal destinations"
+
+    **What changed.** A delivery connection may point at the internal
+    network when whoever operates the environment releases the
+    destination in `CASEHUB_DELIVERY_INTERNAL_DESTINATIONS`, by address
+    range and by automation, with optional ports, `http` without TLS
+    (always by IP) and a CA of its own. The release matches on the address the host
+    resolves to, and loopback, link-local, metadata, multicast and
+    reserved ranges can never be released. The guard's refusals are now
+    counted in `casehub.delivery.destination_refusals`. See
+    [Delivering to other APIs](api/entregas.md#base_url-requires-tls-and-an-external-destination).
+
+    **What to do.** Nothing, if you do not use it: with no entry covering
+    the address, registration answers the same
+    `400 invalid_connection_config` as before. A connection that only
+    exists by exception (`http`, or an internal IP in the URL) is checked
+    again before every login, delivery and test: if the entry leaves the
+    environment, nothing else is sent to the destination, and the
+    connection ends up disabled with the reason in `disabled_reason`.
+
+=== "Only /v1 on prod"
+
+    **What changed.** On the `prod` profile, the API now answers only on
+    `/v1/`, `/health` and `/ready`, and the rest of the root belongs to the
+    CaseHub dashboard. Until now, a path without the prefix, such as
+    `/cases`, also reached the API. On `uat`, which has no dashboard, the
+    root still goes to the API.
+
+    **What to do.** Check that every call carries `/v1`. The SDK already
+    builds its routes with it, but `CASEHUB_TOKEN_URL` is written by hand
+    and must end in `/v1/auth/token`. A call without the prefix now gets
+    the dashboard's HTML page instead of the API's response.
+
+=== "SDK 0.11.0"
+
+    **What changed.** Text only: the `count_cases` docstrings and the
+    `count-cases` command's help now name `batch_ref` as a `group_by`
+    dimension. No method changed behaviour.
+
+    **What to do.** Nothing. SDK 0.10.0 already passes
+    `group_by=batch_ref` on; what decides whether the dimension exists is
+    the API, from 0.11.0 on.
 
 ---
 

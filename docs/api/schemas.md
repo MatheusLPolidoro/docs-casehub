@@ -126,7 +126,8 @@ nível, nessa mesma ordem:
     Registro vindo de planilha ou de arquivo de largura fixa tem chave
     como `DT.ULT.ALT.`, que nenhum caminho em texto separa sem escape.
     `segments` não tem ambiguidade: use `path` para mostrar e `segments`
-    para navegar.
+    para navegar. Para filtrar por uma chave assim, escape o ponto:
+    `filter=DT\.ULT\.ALT\.=...`, desde a API 0.11.0.
 
 Sem schema com esse nome, `404 source_schema_not_found` — e a
 [inferência](#inferir-dos-casos-gravados) responde mesmo assim.

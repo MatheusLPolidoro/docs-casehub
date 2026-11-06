@@ -24,7 +24,7 @@ flowchart TD
 | Profile | O que sobe |
 |---|---|
 | `uat` | API + Postgres + Keycloak + nginx — stack local completa e descartável. |
-| `prod` | A API, o nginx — só HTTPS — e a documentação, apontando para a infraestrutura que já existe. |
+| `prod` | A API, o nginx — só HTTPS — e a documentação, apontando para a infraestrutura que já existe. A raiz do domínio é do painel do CaseHub, que roda em outro projeto compose. |
 
 Os dois são **mutuamente exclusivos**, e nos dois quem publica a porta no
 host é o **nginx**: os serviços de API não publicam porta nenhuma e só
@@ -39,6 +39,14 @@ a API.
     proxy a partir de `certs/`, fora do git; sem eles o nginx não sobe. Do
     lado da API nada muda — o `X-Forwarded-Proto` passa a valer `https`
     sozinho.
+
+!!! warning "No `prod`, a API responde só em `/v1/`, `/health` e `/ready` (desde a API 0.11.0)"
+    O resto da raiz vai para o painel do CaseHub, alcançado por uma rede
+    que os dois composes declaram com o mesmo nome, sem ordem de subida.
+    Com o painel fora do ar, só a raiz responde `502`; a API e a
+    documentação seguem no ar. Quem chamava a API sem o prefixo passa a
+    receber o HTML do painel: ver [O que mudou](../mudancas.md). No `uat`,
+    que não tem painel, a raiz continua indo para a API.
 
 ### Healthcheck
 

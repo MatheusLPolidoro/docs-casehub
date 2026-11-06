@@ -204,9 +204,10 @@ corpo e o registro é substituído, como sempre. No lote,
 </div>
 </div>
 
-`--group-by` aceita `environment`, `status` e `source_schema`, e é
-repetível; `--filter` funciona como na listagem. Sem `--group-by`, sai
-só o total.
+`--group-by` aceita `environment`, `status`, `source_schema` e, com a
+API 0.11.0 ou superior, `batch_ref`, e é repetível; `--filter` funciona
+como na listagem. Sem `--group-by`, sai só o total. Para o total de cada
+lote, use `--group-by batch_ref` sozinho.
 
 ### Cadastrando um schema a partir dos casos
 

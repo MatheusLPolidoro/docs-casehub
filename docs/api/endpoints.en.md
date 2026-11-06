@@ -13,7 +13,7 @@ way to obtain the credential.
 | `POST` | `/v1/cases/batch` | Creates or updates several cases. |
 | `GET` | `/v1/cases/{environment}/{automation}/{case_id}` | Fetches one case. |
 | `GET` | `/v1/cases` | Lists and counts cases. |
-| `GET` | `/v1/cases/totals` | Counts cases by environment, status and `source_schema`, since API 0.9.0. |
+| `GET` | `/v1/cases/totals` | Counts cases by environment, status and `source_schema`, since API 0.9.0, and by batch, since 0.11.0. |
 
 **Case attachments** (since API 0.8.0)
 
@@ -364,6 +364,14 @@ GET /v1/cases?filter=referencia=REF-12345&filter=uf=SP
 Nested paths use a dot (`origem.id`), and a **numeric segment indexes an
 array** (`telas.0`).
 
+Since API 0.11.0, a dot that is part of the key's name is escaped with
+`\`: `filter=cod\.cliente=123` filters by the key `cod.cliente`, and
+`filter=origem.nota\.fiscal=7` by the key `nota.fiscal` inside `origem`.
+In the URL, the backslash goes as `%5C`. `\\` is a literal backslash
+before a dot or at the end of the key; before any other character, it
+stays as it is. The rule is the same for every path over `source_record`:
+conditions, subscriptions, templates and the connections' `token_path`.
+
 In `filter=` and `ne=`, only the **first** `=` separates key from value,
 so a value containing `=` goes through whole — `filter=expr=a=b` filters
 `expr` by the value `a=b`.
@@ -524,7 +532,7 @@ Since API 0.9.0. How many cases match the filters, and how many in each
 group — without fetching a page of cases or reading `source_record`. It is
 the route for a dashboard: the listing counts one set per call and returns
 a page along with it; the totals return every combination in a single
-query.
+query. Grouping by batch (`batch_ref`) exists since 0.11.0.
 
 ```
 GET /v1/cases/totals?environment=prod&group_by=source_schema&group_by=status
@@ -548,7 +556,7 @@ GET /v1/cases/totals?environment=prod&group_by=source_schema&group_by=status
 | Parameter | Note |
 |---|---|
 | The listing's filters | All of `GET /v1/cases` — `environment`, `automation`, `status`, `batch_ref`, `source_schema`, the dates, the cursor, `filter` and the operators over `source_record`, and `conditions` —, optional, with the same semantics and the same errors. |
-| `group_by` | Repeatable: `environment`, `status` and `source_schema`, without repetition. Without it, only `total`. |
+| `group_by` | Repeatable: `environment`, `status`, `source_schema` and, since API 0.11.0, `batch_ref`, without repetition. Without it, only `total`. |
 
 **The response**
 
@@ -563,24 +571,54 @@ GET /v1/cases/totals?environment=prod&group_by=source_schema&group_by=status
     Groups come sorted by the dimensions, in `group_by` order, by code
     point (`A` before `a`, which comes before `b`), with `null` last. A
     case without `source_schema` lands in the `"source_schema": null`
-    group, and a combination with no cases does not appear — the
-    dashboard fills in zero for whatever it needs to show.
+    group, a case without a batch in the `"batch_ref": null` group, and a
+    combination with no cases does not appear — the dashboard fills in
+    zero for whatever it needs to show.
 
 !!! note "Cutting does not change `total`"
     Beyond 1000 groups, the response carries the first 1000 and
-    `truncated: true`; `total` is still that of the whole set. With the
-    three dimensions, only an automation with many `source_schema` values
-    gets near that.
+    `truncated: true`; `total` is still that of the whole set. The cut
+    is per combination: with `group_by=batch_ref&group_by=status`, the
+    last batch in the response may come with only some of its statuses.
+    With the batch, reaching the ceiling is common — see below how to
+    build a dashboard by batch.
 
 !!! warning "An unknown or repeated dimension is 400"
-    `group_by=batch_ref`, `group_by=automation` and
-    `group_by=status&group_by=status` answer `400 invalid_request`. The
+    `group_by=case_id`, `group_by=automation` and
+    `group_by=status&group_by=status` answer `400 invalid_request` — and
+    so does `group_by=batch_ref` on an API older than 0.11.0. The
     automation is always the token's, as in the listing.
+
+**Batches on a dashboard** — since API 0.11.0, it takes two calls:
+
+```
+GET /v1/cases/totals?environment=prod&group_by=batch_ref
+GET /v1/cases/totals?environment=prod&group_by=batch_ref&group_by=status
+```
+
+```json
+{
+  "total": 1200,
+  "group_by": ["batch_ref"],
+  "groups": [
+    {"batch_ref": "lote-a", "count": 700},
+    {"batch_ref": "lote-b", "count": 480},
+    {"batch_ref": null, "count": 20}
+  ],
+  "truncated": false
+}
+```
+
+The first gives each batch's total, complete; the second, the split by
+status. Do not add up the second to get a batch's total: when it comes
+with `truncated: true`, the last batch is incomplete. If batches with
+statuses go past the ceiling, narrow them by date, with `started_from`.
 
 **Performance** — with fixed filters (`environment`, `status`,
 `source_schema`...), the count comes from a dedicated index, without
-reading the table. A filter over `source_record` or by date forces a read
-of the table: the result is still correct, it just costs more.
+reading the table. Since API 0.11.0, so does the count by batch, alone or
+with status. A filter over `source_record` or by date forces a read of
+the table: the result is still correct, it just costs more.
 
 ---
 

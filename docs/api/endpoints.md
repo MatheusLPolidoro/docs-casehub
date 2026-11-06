@@ -13,7 +13,7 @@ obter a credencial.
 | `POST` | `/v1/cases/batch` | Cria ou atualiza vários casos. |
 | `GET` | `/v1/cases/{environment}/{automation}/{case_id}` | Consulta um caso. |
 | `GET` | `/v1/cases` | Lista e conta casos. |
-| `GET` | `/v1/cases/totals` | Conta casos por ambiente, status e `source_schema`, desde a API 0.9.0. |
+| `GET` | `/v1/cases/totals` | Conta casos por ambiente, status e `source_schema`, desde a API 0.9.0, e por lote, desde a 0.11.0. |
 
 **Anexos de caso** (desde a API 0.8.0)
 
@@ -360,6 +360,15 @@ GET /v1/cases?filter=referencia=REF-12345&filter=uf=SP
 Caminho aninhado usa ponto (`origem.id`), e **segmento numérico indexa
 array** (`telas.0`).
 
+Desde a API 0.11.0, o ponto que faz parte do nome da chave vai escapado
+com `\`: `filter=cod\.cliente=123` filtra pela chave `cod.cliente`, e
+`filter=origem.nota\.fiscal=7` pela chave `nota.fiscal` dentro de
+`origem`. Na URL, a barra invertida vai como `%5C`. `\\` é a barra
+invertida literal antes de um ponto ou no fim da chave; antes de qualquer
+outro caractere, ela fica como está. A regra é a mesma para todo caminho
+sobre o `source_record`: condições, assinaturas, templates e o
+`token_path` das conexões.
+
 Em `filter=` e `ne=`, só o **primeiro** `=` separa a chave do valor, então
 um valor que contenha `=` atravessa inteiro — `filter=expr=a=b` filtra
 `expr` pelo valor `a=b`.
@@ -515,7 +524,8 @@ GET /v1/cases/totals
 Desde a API 0.9.0. Quantos casos casam com os filtros, e quantos em cada
 grupo — sem buscar página de casos nem ler o `source_record`. É a rota de
 um painel: a listagem conta um conjunto por chamada e devolve uma página
-junto; os totais devolvem todas as combinações numa consulta só.
+junto; os totais devolvem todas as combinações numa consulta só. O
+agrupamento por lote (`batch_ref`) existe desde a 0.11.0.
 
 ```
 GET /v1/cases/totals?environment=prod&group_by=source_schema&group_by=status
@@ -539,7 +549,7 @@ GET /v1/cases/totals?environment=prod&group_by=source_schema&group_by=status
 | Parâmetro | Observação |
 |---|---|
 | Os filtros da listagem | Todos os de `GET /v1/cases` — `environment`, `automation`, `status`, `batch_ref`, `source_schema`, as datas, o cursor, `filter` e os operadores sobre o `source_record` e `conditions` —, opcionais, com a mesma semântica e os mesmos erros. |
-| `group_by` | Repetível: `environment`, `status` e `source_schema`, sem repetição. Sem ele, só o `total`. |
+| `group_by` | Repetível: `environment`, `status`, `source_schema` e, desde a API 0.11.0, `batch_ref`, sem repetição. Sem ele, só o `total`. |
 
 **A resposta**
 
@@ -554,24 +564,53 @@ GET /v1/cases/totals?environment=prod&group_by=source_schema&group_by=status
     Os grupos saem ordenados pelas dimensões, na ordem do `group_by`, por
     ponto de código (`A` antes de `a`, que vem antes de `b`), com `null`
     por último. Caso sem `source_schema` entra no grupo
-    `"source_schema": null`, e combinação sem caso não aparece — o painel
+    `"source_schema": null`, caso sem lote entra no grupo
+    `"batch_ref": null`, e combinação sem caso não aparece — o painel
     completa com zero o que precisar mostrar.
 
 !!! note "Cortar não muda o `total`"
     Passando de 1000 grupos, a resposta traz os 1000 primeiros e
     `truncated: true`; o `total` continua sendo o do conjunto inteiro.
-    Com as três dimensões, só uma automação com muitos `source_schema`
-    chega perto disso.
+    O corte é por combinação: com `group_by=batch_ref&group_by=status`,
+    o último lote da resposta pode vir só com parte dos status. Com o
+    lote, chegar ao teto é comum — veja abaixo como montar um painel por
+    lote.
 
 !!! warning "Dimensão desconhecida ou repetida é 400"
-    `group_by=batch_ref`, `group_by=automation` e
-    `group_by=status&group_by=status` respondem
-    `400 invalid_request`. A automação é sempre a do token, como na
-    listagem.
+    `group_by=case_id`, `group_by=automation` e
+    `group_by=status&group_by=status` respondem `400 invalid_request` —
+    e `group_by=batch_ref` também, numa API anterior à 0.11.0. A
+    automação é sempre a do token, como na listagem.
+
+**Lotes num painel** — desde a API 0.11.0, são duas chamadas:
+
+```
+GET /v1/cases/totals?environment=prod&group_by=batch_ref
+GET /v1/cases/totals?environment=prod&group_by=batch_ref&group_by=status
+```
+
+```json
+{
+  "total": 1200,
+  "group_by": ["batch_ref"],
+  "groups": [
+    {"batch_ref": "lote-a", "count": 700},
+    {"batch_ref": "lote-b", "count": 480},
+    {"batch_ref": null, "count": 20}
+  ],
+  "truncated": false
+}
+```
+
+A primeira dá o total de cada lote, completo; a segunda, a divisão por
+status. Não some a segunda para ter o total do lote: quando ela vem com
+`truncated: true`, o último lote está pela metade. Se os lotes com status
+passarem do teto, limite pela data, com `started_from`.
 
 **Desempenho** — com filtros fixos (`environment`, `status`,
 `source_schema`...), a contagem sai de um índice próprio, sem ler a
-tabela. Filtro sobre o `source_record` ou por data obriga a ler a
+tabela. Desde a API 0.11.0, a contagem por lote, sozinho ou com status,
+também. Filtro sobre o `source_record` ou por data obriga a ler a
 tabela: o resultado continua certo, só custa mais.
 
 ---

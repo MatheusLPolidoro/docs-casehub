@@ -4,7 +4,87 @@ Registro das mudanças de comportamento que afetam quem integra. Não
 substitui o `CHANGELOG.md` de cada repositório — aqui ficam apenas as que
 mudam o **contrato** ou exigem ação de quem consome.
 
-Versões atuais: **API 0.10.0** e **SDK 0.10.0**.
+Versões atuais: **API 0.11.0** e **SDK 0.11.0**.
+
+---
+
+## Totais por lote, chave com ponto e destinos internos — API 0.11.0 e SDK 0.11.0
+
+=== "Totais por lote"
+
+    **O que mudou.** `GET /v1/cases/totals` aceita `group_by=batch_ref`,
+    combinável com as outras dimensões: `group_by=batch_ref` dá o total de
+    cada lote numa chamada só, e `group_by=batch_ref&group_by=status`, a
+    divisão por status de cada lote. Caso sem lote entra no grupo
+    `"batch_ref": null`, e valem a mesma ordem e o mesmo teto de 1000
+    grupos das outras dimensões. A contagem por lote, sozinho ou com
+    status, sai de um índice próprio, sem ler a tabela. Ver
+    [Endpoints](api/endpoints.md#get-totais).
+
+    **O que fazer.** Nada, para quem não usa: quem não pede o lote recebe a
+    mesma resposta de antes. Num painel por lote, tire o total de cada lote
+    de `group_by=batch_ref` sozinho, e não da soma da divisão por status:
+    cortada no teto (`truncated: true`), ela traz o último lote pela
+    metade. O SDK já repassa a dimensão; contra uma API anterior à 0.11.0,
+    o servidor responde `400 invalid_request`.
+
+=== "Chave com ponto"
+
+    **O que mudou.** Um caminho sobre o `source_record` aceita `\.` para o
+    ponto que faz parte do nome da chave: `filter=cod\.cliente=123` filtra
+    pela chave `cod.cliente`, e `filter=origem.nota\.fiscal=7` pela chave
+    `nota.fiscal` dentro de `origem`. Até aqui, uma chave com ponto era
+    sempre lida como caminho aninhado, e a resposta vinha vazia, sem erro.
+    O escape vale para todo caminho: os filtros e operadores da listagem e
+    dos totais, `conditions`, o `source_conditions` e o `fields` das
+    assinaturas, o `$from` dos templates e o `token_path` das conexões, nos
+    dois backends. `\\` é a barra invertida literal antes de um ponto ou no
+    fim da chave. Ver [Endpoints](api/endpoints.md#get-listar-e-contar).
+
+    **O que fazer.** Nada: caminho sem `\` significa exatamente o mesmo de
+    antes, e o que já estava cadastrado segue igual. Na URL, a barra
+    invertida vai como `%5C`.
+
+=== "Destinos internos"
+
+    **O que mudou.** Uma conexão de destino pode apontar para a rede
+    interna quando quem opera o ambiente libera o destino em
+    `CASEHUB_DELIVERY_INTERNAL_DESTINATIONS`, por faixa de endereços e por
+    automação, com portas, `http` sem TLS (sempre pelo IP) e uma CA
+    própria opcionais. A
+    liberação casa pelo endereço para onde o host resolve, e laço local,
+    link-local, metadata, multicast e faixas reservadas nunca são
+    liberáveis. As recusas da guarda passam a contar em
+    `casehub.delivery.destination_refusals`. Ver
+    [Entregas para outras APIs](api/entregas.md#base_url-exige-tls-e-destino-externo).
+
+    **O que fazer.** Nada, para quem não usa: sem entrada que cubra o
+    endereço, o cadastro responde o mesmo `400 invalid_connection_config`
+    de antes. Uma conexão que só existe por exceção (`http`, ou IP interno
+    na URL) é conferida de novo antes de cada login, entrega e teste: se a
+    entrada sair do ambiente, nada mais é enviado ao destino, e a conexão
+    acaba desativada com o motivo em `disabled_reason`.
+
+=== "Só /v1 no prod"
+
+    **O que mudou.** No profile `prod`, a API passa a responder só em
+    `/v1/`, `/health` e `/ready`, e o resto da raiz é do painel do CaseHub.
+    Até aqui, um caminho sem o prefixo, como `/cases`, também chegava à
+    API. No `uat`, que não tem painel, a raiz continua indo para a API.
+
+    **O que fazer.** Confira que toda chamada leva o `/v1`. O SDK já monta
+    as rotas com ele, mas a `CASEHUB_TOKEN_URL` é escrita à mão e precisa
+    terminar em `/v1/auth/token`. Uma chamada sem o prefixo passa a
+    receber a página do painel, em HTML, no lugar da resposta da API.
+
+=== "SDK 0.11.0"
+
+    **O que mudou.** Só texto: as docstrings de `count_cases` e a ajuda do
+    comando `count-cases` passam a citar `batch_ref` como dimensão de
+    `group_by`. Nenhum método mudou de comportamento.
+
+    **O que fazer.** Nada. O SDK 0.10.0 já repassa `group_by=batch_ref`; o
+    que decide se a dimensão existe é a API, a partir da 0.11.0.
 
 ---
 

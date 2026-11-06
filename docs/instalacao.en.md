@@ -17,8 +17,8 @@ Requires **Python 3.11+**. The runtime dependencies are `httpx`, `typer`,
 `toml` and `rich`.
 
 !!! warning "Pin the version"
-    The current SDK version is **0.10.0**, and the API is at **0.10.0**.
-    Prefer `pip install "casehub==0.10.0"` over installing with no floor, so
+    The current SDK version is **0.11.0**, and the API is at **0.11.0**.
+    Prefer `pip install "casehub==0.11.0"` over installing with no floor, so
     that an environment does not wake up on an incompatible version.
 
     Two versions to avoid. **0.8.0** has two defects in case
@@ -117,6 +117,7 @@ infrastructure.
 | `CASEHUB_MAX_SOURCE_FILTERS` | `20` | Ceiling of `source_record` filters per query — and per webhook subscription. |
 | `CASEHUB_RETENTION_ENABLED` | `true` | Turns the purge job on. |
 | `CASEHUB_WEBHOOK_ENABLED` | `true` | Turns the webhook dispatcher on. The other `CASEHUB_WEBHOOK_*` are in [Webhooks](api/webhooks.md#operations). |
+| `CASEHUB_DELIVERY_INTERNAL_DESTINATIONS` | empty | Internal-network destinations released for delivery connections, by range and by automation. Empty = none. Since API 0.11.0; see [Delivering to other APIs](api/entregas.md#base_url-requires-tls-and-an-external-destination). |
 | `CASEHUB_LOG_CONSOLE` | `true` | Also writes the logs to the process's stdout, besides OTLP. See [Observability](operacao/observabilidade.md#correlation). |
 | `CASEHUB_NGINX_MAX_BODY` | `300m` | Maximum body the reverse proxy accepts. |
 | `CASEHUB_HOST` | `127.0.0.1` | Interface Uvicorn listens on. |
