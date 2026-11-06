@@ -479,8 +479,10 @@ GET /v1/cases?search=maria&started_from=2026-11-01T00:00:00-03:00
 
 !!! warning "Always send the period"
     The search uses no index: it reads the records left after the other
-    filters. A query that takes longer than 15 seconds is cut and
-    answers `400 invalid_request`, asking for a shorter period
+    filters, and its time grows with the cases in the period — expect
+    seconds, not milliseconds, on an automation with tens of thousands
+    of cases in the period. A query that takes longer than 15 seconds is
+    cut and answers `400 invalid_request`, asking for a shorter period
     (`started_from`) or a more specific term.
 
 !!! note "The term goes to no log or trace"

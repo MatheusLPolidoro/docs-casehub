@@ -289,7 +289,10 @@ release, como na 1.8.0:
 - **`mudancas`**: seção "Busca textual e query redigida", com duas abas.
 
 Conferido: `--strict` verde e a estrutura pt/en idêntica nas cinco
-páginas. Para o build local, o `mkdocs` do pyenv não tem os plugins: um
+páginas. Depois da medição, por decisão do usuário a busca segue **sem índice**,
+com teto de 15 s: o aviso de `api/endpoints` diz para contar com segundos,
+e `operacao/observabilidade` ganhou a linha do log `WARNING` do corte em
+"O que observar". Para o build local, o `mkdocs` do pyenv não tem os plugins: um
 venv com `requirements.txt` resolve.
 
 ### API 0.11.0 e SDK 0.11.0 — site 1.8.0 (2026-11-06)

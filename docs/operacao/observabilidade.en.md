@@ -243,6 +243,7 @@ for referential integrity.
 | `casehub.retention.deleted` off expectation | A badly configured term in ParamManager. |
 | `casehub.retention.skipped` climbing | Purging by term stopped: the sentinel is missing, or ParamManager is unreachable with no local copy. Since API 0.8.0 this **no longer** falls back to a default term. |
 | `casehub.webhook.delivered{outcome="failed"}` climbing | A partner endpoint is down. Consecutive failures disable the subscription on their own — see [Webhooks](../api/webhooks.md#when-it-fails). |
+| `WARNING` log "Busca cortada pelo teto de tempo" (`casehub_search_timeout="true"`) | A search (`search`, since API 0.12.0) took longer than 15 s and was cut with `400`. The search has no index: cuts **with** a period (`casehub_search_com_periodo="true"`) in one automation mean its volume outgrew what the search can handle. The log carries the term's length and the filter keys, never the term. |
 | `casehub.delivery.destination_refusals{stage="send"}` above zero | A connection that only existed by exception lost its release and stopped sending — see [Delivering to other APIs](../api/entregas.md#base_url-requires-tls-and-an-external-destination). |
 
 !!! danger "A batch with a rejected item produces no HTTP error"
