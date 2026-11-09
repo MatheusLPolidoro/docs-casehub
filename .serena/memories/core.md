@@ -2,7 +2,7 @@
 
 Documentação central do ecossistema CaseHub (a API `fast-casehub` e o SDK
 `casehub`). mkdocs-material, **português e inglês**, versionada por `mike` — a versão
-do site é própria (`VERSION`, hoje `1.8.0`), **não** a da API nem a do SDK, porque ele
+do site é própria (`VERSION`, hoje `1.9.0`), **não** a da API nem a do SDK, porque ele
 documenta os dois com números diferentes.
 
 **Publicada em dois lugares, a partir do mesmo `main`** (2026-08-21):
@@ -272,6 +272,28 @@ cursor e os operadores `exists`/`not_exists`/`ne` nao tem metodo nem
 flag. O cursor atravessa em runtime (`**params` repassa o que nao e
 `None`), mas nao esta em `ListCasesParams` — verificado rodando
 `_build_list_query`.
+
+### Busca textual e query redigida — API 0.12.0 e SDK 0.12.0, site 1.9.0 (2026-11-09)
+
+Change `adicionar-busca-textual-na-listagem` do `fast-casehub`, na
+`desenv`, nos dois idiomas. No corte (2026-11-09), `VERSION` 1.8.0 → 1.9.0,
+e selos, aviso da capa, instalação e "Versões atuais" em 0.12.0/0.12.0:
+- **`api/endpoints`**: `search` na tabela de filtros, a seção "Procurar
+  sem saber o campo" (tabela do que casa, o teto de 15 s, o termo fora
+  do log, API anterior ignora) e `search` nos filtros dos totais;
+- **`operacao/observabilidade`**: a query redigida (`REDACTED`) na linha
+  de acesso e no trace, por lista de permissão, e o termo de `search` no
+  aviso dos logs de acesso;
+- **`sdk/cliente`** ("Procurando um termo", e `search` no que
+  `ListCasesParams` declara) e **`sdk/cli`** (`--search`);
+- **`mudancas`**: seção "Busca textual e query redigida", com duas abas.
+
+Conferido: `--strict` verde e a estrutura pt/en idêntica nas cinco
+páginas. Depois da medição, por decisão do usuário a busca segue **sem índice**,
+com teto de 15 s: o aviso de `api/endpoints` diz para contar com segundos,
+e `operacao/observabilidade` ganhou a linha do log `WARNING` do corte em
+"O que observar". Para o build local, o `mkdocs` do pyenv não tem os plugins: um
+venv com `requirements.txt` resolve.
 
 ### API 0.11.0 e SDK 0.11.0 — site 1.8.0 (2026-11-06)
 

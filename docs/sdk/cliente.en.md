@@ -255,7 +255,8 @@ Without `include='source_record'`, the items come without the JSON.
     `ListCasesParams` declares `environment`, `automation`, `status`,
     `batch_ref`, `source_schema`, `started_from`, `started_to`,
     `include`, `page`, `page_size`, since SDK 0.8.0 `render_with` and,
-    since SDK 0.10.0, `render_template` and `render_connection`.
+    since SDK 0.10.0, `render_template` and `render_connection`, and,
+    since SDK 0.12.0, `search`.
 
     The cursor parameters (`created_since`, `updated_since`), the
     content operators — `exists`, `not_exists`, `ne` and, since API
@@ -295,6 +296,32 @@ On a dashboard by batch, each batch's total comes from
 `count_cases(group_by='batch_ref')`, and the split by status from
 `count_cases(group_by=['batch_ref', 'status'])`. Do not add up the second
 to get the total: when `truncated` is true, the last batch is incomplete.
+
+### Searching for a term
+
+Since SDK 0.12.0, with API 0.12.0 or later. `search` looks for the term
+as part of any value of `source_record`, of `case_id` or of `batch_ref`,
+without knowing the field, and works in `list_cases` and in
+`count_cases`:
+
+```python
+pagina = client.list_cases(
+    environment='prod',
+    search='maria',
+    started_from='2026-11-01T00:00:00-03:00',
+)
+chips = client.count_cases(
+    environment='prod', search='maria', group_by='status'
+)
+```
+
+Case is ignored but accents are not, and key names are not searched. It
+adds up with the other filters, and `total` and the totals come out
+exact. Up to 200 characters; a search that takes longer than 15 s comes
+back as `APIHTTPError` with `status_code=400`, so always send the
+period. On an API older than 0.12.0 the parameter is ignored and the
+listing comes back **without** the search. See
+[Endpoints](../api/endpoints.md#get-list-and-count).
 
 ### Record schemas
 

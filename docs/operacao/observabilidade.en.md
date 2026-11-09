@@ -102,9 +102,9 @@ and metrics answered "who/when/how many", and anyone looking at Loki
 alone had no way to know a query had happened.
 
 !!! danger "What these logs deliberately do not carry"
-    `source_record` and the **values** of `filter=` are left out. Only the
-    keys used in the filter appear, never the content — it is business
-    payload, potentially with sensitive data.
+    `source_record`, the **values** of `filter=` and the `search` term
+    are left out. Only the keys used in the filter appear, never the
+    content — it is business payload, potentially with sensitive data.
 
     On webhook registration, the partner URL is logged as scheme and host
     only (`https://hooks.example.com/<redacted>`). In a good share of
@@ -180,6 +180,27 @@ and logs to the collector with the same configuration as the service.
     The product decision about storing sensitive data covers **storage**,
     not observability.
 
+!!! danger "Query values are redacted (since API 0.12.0)"
+    The `search` term and the values of `filter`, `ne`, `matches`,
+    `not_matches`, `in`, `not_in` and `conditions` come from
+    `source_record` and may be personal data. That is why the HTTP
+    server's access line (stdout) and the HTTP span (`url.query`)
+    replace the value of those parameters with `REDACTED`, and keep the
+    name:
+
+    ```text
+    GET /v1/cases?search=REDACTED&filter=REDACTED&environment=prod&page=2
+    ```
+
+    Only the parameters that carry no record data keep their value:
+    `environment`, `automation`, `status`, `batch_ref`, `source_schema`,
+    the dates and the cursor, paging, `include`, `group_by` and the ones
+    that take only a path (`exists`, `not_exists`, `present`, `blank`).
+    Any new parameter is redacted until it is added to that list. The
+    application's access log records only the term's length
+    (`casehub.search_length`). Before 0.12.0, the values of `filter`
+    and of the other operators went in full to the trace and to stdout.
+
 !!! warning "`CASEHUB_DB_ECHO=true` breaks this"
     Turning SQLAlchemy's echo on sends the SQL — with its parameters,
     `source_record` included — to stdout. It is useful in local debugging
@@ -222,6 +243,7 @@ for referential integrity.
 | `casehub.retention.deleted` off expectation | A badly configured term in ParamManager. |
 | `casehub.retention.skipped` climbing | Purging by term stopped: the sentinel is missing, or ParamManager is unreachable with no local copy. Since API 0.8.0 this **no longer** falls back to a default term. |
 | `casehub.webhook.delivered{outcome="failed"}` climbing | A partner endpoint is down. Consecutive failures disable the subscription on their own — see [Webhooks](../api/webhooks.md#when-it-fails). |
+| `WARNING` log "Busca cortada pelo teto de tempo" (`casehub_search_timeout="true"`) | A search (`search`, since API 0.12.0) took longer than 15 s and was cut with `400`. The search has no index: cuts **with** a period (`casehub_search_com_periodo="true"`) in one automation mean its volume outgrew what the search can handle. The log carries the term's length and the filter keys, never the term. |
 | `casehub.delivery.destination_refusals{stage="send"}` above zero | A connection that only existed by exception lost its release and stopped sending — see [Delivering to other APIs](../api/entregas.md#base_url-requires-tls-and-an-external-destination). |
 
 !!! danger "A batch with a rejected item produces no HTTP error"
