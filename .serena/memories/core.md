@@ -2,7 +2,7 @@
 
 Documentação central do ecossistema CaseHub (a API `fast-casehub` e o SDK
 `casehub`). mkdocs-material, **português e inglês**, versionada por `mike` — a versão
-do site é própria (`VERSION`, hoje `1.8.0`), **não** a da API nem a do SDK, porque ele
+do site é própria (`VERSION`, hoje `1.9.0`), **não** a da API nem a do SDK, porque ele
 documenta os dois com números diferentes.
 
 **Publicada em dois lugares, a partir do mesmo `main`** (2026-08-21):
@@ -273,11 +273,11 @@ flag. O cursor atravessa em runtime (`**params` repassa o que nao e
 `None`), mas nao esta em `ListCasesParams` — verificado rodando
 `_build_list_query`.
 
-### Busca textual e query redigida — API 0.12.0 (2026-11-06, em andamento)
+### Busca textual e query redigida — API 0.12.0 e SDK 0.12.0, site 1.9.0 (2026-11-09)
 
 Change `adicionar-busca-textual-na-listagem` do `fast-casehub`, na
-`desenv`, nos dois idiomas. `VERSION`, selos e "Versões atuais" sobem no
-release, como na 1.8.0:
+`desenv`, nos dois idiomas. No corte (2026-11-09), `VERSION` 1.8.0 → 1.9.0,
+e selos, aviso da capa, instalação e "Versões atuais" em 0.12.0/0.12.0:
 - **`api/endpoints`**: `search` na tabela de filtros, a seção "Procurar
   sem saber o campo" (tabela do que casa, o teto de 15 s, o termo fora
   do log, API anterior ignora) e `search` nos filtros dos totais;
