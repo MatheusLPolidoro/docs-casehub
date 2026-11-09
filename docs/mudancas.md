@@ -4,7 +4,7 @@ Registro das mudanças de comportamento que afetam quem integra. Não
 substitui o `CHANGELOG.md` de cada repositório — aqui ficam apenas as que
 mudam o **contrato** ou exigem ação de quem consome.
 
-Versões atuais: **API 0.11.0** e **SDK 0.11.0**.
+Versões atuais: **API 0.12.0** e **SDK 0.12.0**.
 
 ---
 
